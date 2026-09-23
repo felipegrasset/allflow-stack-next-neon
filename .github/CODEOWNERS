@@ -1,0 +1,5 @@
+# Read-only zones (CONVENTIONS.md §"Zonas de no-edición"): they are extended,
+# never edited in place — AllFlow's template updates merge over them (U2).
+# Any change here needs AllFlow's review.
+/components/ui/     @allflow/templates
+/server/auth/       @allflow/templates

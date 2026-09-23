@@ -34,3 +34,10 @@ pnpm-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+!.env.example
+
+# dev mail outbox + playwright
+.dev-outbox*.jsonl
+/test-results/
+/playwright-report/
+/playwright/.cache/

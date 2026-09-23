@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "sentinels": [
+    {
+      "literal": "allflow-sentinel-app-name",
+      "value": "{{appName}}",
+      "files": ["package.json", "lib/site.ts"]
+    },
+    {
+      "literal": "Allflow Sentinel App",
+      "value": "{{appTitle}}",
+      "files": ["lib/site.ts"]
+    },
+    {
+      "literal": "https://allflow-sentinel-domain.example",
+      "value": "https://{{domain}}",
+      "files": [".env.example", "lib/site.ts"]
+    },
+    {
+      "literal": "--brand-h: 195;",
+      "value": "--brand-h: {{brandH}};",
+      "files": ["app/globals.css"]
+    },
+    {
+      "literal": "--brand-c: 0.12;",
+      "value": "--brand-c: {{brandC}};",
+      "files": ["app/globals.css"]
+    }
+  ]
+}
