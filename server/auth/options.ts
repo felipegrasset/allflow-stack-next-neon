@@ -17,15 +17,16 @@ import { nextCookies } from "better-auth/next-js"
 import { magicLink, organization } from "better-auth/plugins"
 
 import { ac, roles } from "@/lib/permissions"
-import { APP_TITLE, APP_URL } from "@/lib/site"
+import { APP_TITLE, publicUrl, vercelOrigins } from "@/lib/site"
 import { createDialect, getKysely } from "@/server/db/pool"
-import { sendEmail } from "@/server/email/send"
+import { emailVerificationRequired, sendEmail } from "@/server/email/send"
 import { magicLinkEmail, resetPasswordEmail, verifyEmail } from "@/server/email/templates"
 import { joinDefaultOrganization } from "./bootstrap"
 
 export const authOptions = {
   appName: APP_TITLE,
-  baseURL: process.env.BETTER_AUTH_URL ?? APP_URL,
+  baseURL: publicUrl(),
+  trustedOrigins: vercelOrigins(),
   secret: process.env.BETTER_AUTH_SECRET,
 
   database: {
@@ -37,7 +38,8 @@ export const authOptions = {
 
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true,
+    // Off only on a deployed app without an email provider (see send.ts).
+    requireEmailVerification: emailVerificationRequired(),
     minPasswordLength: 8,
     sendResetPassword: async ({ user, url }) => {
       await sendEmail(resetPasswordEmail(user.email, url))

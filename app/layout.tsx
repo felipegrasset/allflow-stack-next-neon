@@ -7,7 +7,7 @@ import { AppToaster } from "@/components/app-toaster"
 import { ThemeScript } from "@/components/theme-provider"
 import { ThemeSync } from "@/components/theme-sync"
 import { authCopy } from "@/lib/copy/auth"
-import { APP_TITLE, APP_URL } from "@/lib/site"
+import { APP_TITLE, publicUrl } from "@/lib/site"
 import { cn } from "@/lib/utils"
 import { faultsEnabled, throwIfFault } from "@/server/e2e-faults"
 
@@ -15,7 +15,7 @@ const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })
 const fontMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.BETTER_AUTH_URL ?? APP_URL),
+  metadataBase: new URL(publicUrl()),
   title: { default: APP_TITLE, template: `%s · ${APP_TITLE}` },
   applicationName: APP_TITLE,
 }

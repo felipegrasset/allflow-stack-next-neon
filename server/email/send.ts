@@ -39,3 +39,17 @@ export async function sendEmail(email: Email): Promise<void> {
     await appendFile(outbox, JSON.stringify({ ...email, at: new Date().toISOString() }) + "\n")
   }
 }
+
+/**
+ * Whether sign-up has to wait for the email to be verified.
+ *
+ * Yes when there is a way to deliver the email (Resend), and yes off Vercel
+ * (local dev and CI read the link from the console / the dev outbox). The one
+ * case where it is off: a deployed app without an email provider — there the
+ * link only reaches the server logs, and requiring it would leave every new
+ * user stuck on "check your email". Connecting Resend turns it back on.
+ */
+export function emailVerificationRequired(): boolean {
+  if (process.env.RESEND_API_KEY) return true
+  return !process.env.VERCEL
+}

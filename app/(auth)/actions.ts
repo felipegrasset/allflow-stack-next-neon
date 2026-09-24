@@ -19,6 +19,7 @@ import {
 } from "@/lib/schemas/auth"
 import { auth } from "@/server/auth"
 import { limit } from "@/server/rate-limit"
+import { emailVerificationRequired } from "@/server/email/send"
 
 /**
  * The auth kit's Server Actions. Every one re-validates with the same Zod
@@ -65,6 +66,10 @@ export async function signUpAction(input: unknown): Promise<FormResult<keyof Sig
     console.error("[signUp]", err)
     return { ok: false, formError: c.signup.failed }
   }
+  // Without email verification (a deployed app with no email provider, see
+  // server/email/send.ts) Better Auth already signed the user in: straight
+  // to the app, where the onboarding gate takes over.
+  if (!emailVerificationRequired()) return { ok: true, redirectTo: "/" }
   return { ok: true, redirectTo: `/verify-email?email=${encodeURIComponent(parsed.data.email)}` }
 }
 

@@ -310,3 +310,23 @@ Dos detalles que ya resolvió `e2e/states.spec.ts`:
 Una pantalla nueva con estado de error o de carga agrega su falla al tipo
 `E2EFault` y su llamada (`throwIfFault`, `slowIfFault`) en la página, nunca
 en `components/ui/**` ni en `server/auth/**`.
+
+## Desplegado en Vercel: URL, correo y migraciones
+
+Tres comportamientos que sólo aparecen cuando la app corre en Vercel (24/09/2026):
+
+- **La URL pública la decide `publicUrl()`** (`lib/site.ts`): `BETTER_AUTH_URL`
+  si está; en producción, el dominio real que Vercel asignó
+  (`VERCEL_PROJECT_PRODUCTION_URL`); en un preview, su propia URL. No fijes
+  `BETTER_AUTH_URL` a `<nombre>.vercel.app` a mano: si ese nombre estaba
+  tomado, Vercel asignó otro y todos los redirects de auth se rompen. Los
+  orígenes de Vercel (producción, deployment y rama) van en `trustedOrigins`.
+- **La verificación de correo depende de si hay cómo mandarlo**
+  (`emailVerificationRequired()` en `server/email/send.ts`): con
+  `RESEND_API_KEY` se exige; fuera de Vercel (local, CI) también, con el link
+  en la consola; desplegada **sin** proveedor de correo, no — si no, nadie
+  pasaría de "revisa tu correo". Conectar Resend la vuelve a activar.
+- **El esquema se aplica en el deploy de producción:** `vercel-build` corre
+  `server/db/migrate.ts --production-only` antes de `next build`. Los previews
+  comparten la `DATABASE_URL` de producción, por eso no migran: una migración
+  de un PR no llega a la base viva antes de mergearse.

@@ -34,6 +34,13 @@ const MIGRATIONS: Record<string, Migration> = {
 const provider: MigrationProvider = { getMigrations: async () => MIGRATIONS }
 
 async function main() {
+  // `vercel-build` runs this before `next build` on every Vercel deploy, but
+  // only production migrates: previews share the production DATABASE_URL, and
+  // a PR's migration must not reach the live database before it's merged.
+  if (process.argv.includes("--production-only") && process.env.VERCEL_ENV !== "production") {
+    console.log(`[db:migrate] VERCEL_ENV=${process.env.VERCEL_ENV ?? "(none)"}: sólo producción migra, se salta`)
+    return
+  }
   const down = process.argv.includes("--down")
   const db = getKysely()
   console.log(`[db:migrate] driver: ${driverKind()}`)
