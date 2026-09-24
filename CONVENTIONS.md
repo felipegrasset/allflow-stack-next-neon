@@ -110,7 +110,7 @@ ya están instaladas. Rutas: `/login` (contraseña o magic link), `/signup`,
 El piso mínimo no tiene overlay `storage`. La foto de perfil se valida en el
 navegador **antes** de subir nada (PNG, JPG, WebP o GIF, hasta 5 MB), se
 recorta cuadrada y se reduce a **256 px** en un `<canvas>`
-(`lib/avatar.ts`), y se guarda como **data URL** (WebP, o JPEG si el navegador
+(`lib/avatar-image.ts`), y se guarda como **data URL** (WebP, o JPEG si el navegador
 no codifica WebP; ~10–40 KB) en la columna `"user".image` vía
 `auth.api.updateUser`. El servidor vuelve a validar formato y tamaño
 (`avatarSchema`, máximo 200 000 caracteres). Costo: esa cadena viaja en cada
@@ -159,9 +159,12 @@ en el primer bloque de `app/globals.css`, **y nada más**. Los tokens semántico
 (`--primary`, `--ring`, `--accent`, `--muted`…) se derivan de esos dos en claro
 y en oscuro, y mantienen el contraste.
 
-Excepción ya aplicada en el template: `--destructive` no se deriva de la marca
-y quedó en L 0.50 (claro) y 0.80 (oscuro), no en los valores de shadcn: con
-ellos el botón destructivo y el texto de las alertas no llegaban a 4,5:1.
+Excepción: `--destructive` (que no se deriva de la marca) se corrige en
+`app/tokens-contrast.css`, cargado por el layout **después** de
+`globals.css`: L 0.50 en claro y 0.80 en oscuro, porque con los valores de
+shadcn el botón destructivo y el texto de las alertas no llegaban a 4,5:1. Vive
+aparte para que el registry nunca tenga que pisar `globals.css` (ahí está la
+marca del cliente).
 
 Nunca elijas un color de texto a mano: usa los pares `bg-primary
 text-primary-foreground`, `bg-muted text-muted-foreground`, etc. El test

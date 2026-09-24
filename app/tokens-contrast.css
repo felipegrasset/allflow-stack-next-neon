@@ -1,0 +1,17 @@
+/*
+ * Contrast fixes that the auth/profile kits need (T2), loaded by app/layout.tsx
+ * AFTER globals.css so they win without editing it (globals.css holds the
+ * client's brand, which the registry must never overwrite).
+ *
+ * --destructive is not derived from the brand. With shadcn's values the
+ * destructive button (text over its own 10% / 20% tint) measured 3.8:1 in
+ * light and 4.3:1 in dark, and the destructive alert text 4.49:1 — axe
+ * (WCAG 2.2 AA) wants 4.5:1. Same hue, lower L in light, higher L in dark.
+ */
+:root {
+  --destructive: oklch(0.5 0.21 27.325);
+}
+
+.dark {
+  --destructive: oklch(0.8 0.15 22.216);
+}

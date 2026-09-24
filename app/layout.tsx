@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 
 import "./globals.css"
+import "./tokens-contrast.css"
 import { AppToaster } from "@/components/app-toaster"
 import { ThemeScript } from "@/components/theme-provider"
 import { ThemeSync } from "@/components/theme-sync"

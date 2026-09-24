@@ -21,7 +21,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress, ProgressLabel } from "@/components/ui/progress"
 import { Spinner } from "@/components/ui/spinner"
 import { toast } from "@/components/ui/toast"
-import { checkAvatarFile, toAvatarDataUrl } from "@/lib/avatar"
+import { checkAvatarFile, toAvatarDataUrl } from "@/lib/avatar-image"
 import { profileCopy } from "@/lib/copy/profile"
 import { describedBy } from "@/lib/forms"
 import { AVATAR_ACCEPT } from "@/lib/schemas/profile"
