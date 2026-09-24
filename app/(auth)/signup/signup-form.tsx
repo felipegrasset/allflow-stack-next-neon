@@ -5,21 +5,18 @@ import { useRouter } from "next/navigation"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 
-import { signUpSchema, type SignUpInput } from "@/lib/schemas/auth"
-import { signUpAction } from "../actions"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Button } from "@/components/ui/button"
+import { FormAlert } from "@/components/form-alert"
+import { SubmitButton } from "@/components/submit-button"
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { Spinner } from "@/components/ui/spinner"
-
-const describedBy = (...ids: (string | false | null | undefined)[]) =>
-  ids.filter(Boolean).join(" ") || undefined
+import { authCopy } from "@/lib/copy/auth"
+import { describedBy } from "@/lib/forms"
+import { signUpSchema, type SignUpInput } from "@/lib/schemas/auth"
+import { signUpAction } from "../actions"
 
 /**
- * Minimal sign-up (T1) — T2 replaces it with the registry's auth kit. It
- * already follows the form pattern of CONVENTIONS.md: Field + Controller,
- * one Zod schema on both sides, the five a11y rules.
+ * The reference form of CONVENTIONS.md §"Formularios": Field + Controller, one
+ * Zod schema on both sides, the five a11y rules, server errors via setError.
  */
 export function SignUpForm() {
   const router = useRouter()
@@ -41,23 +38,19 @@ export function SignUpForm() {
     startTransition(async () => {
       const res = await signUpAction(values)
       if (res.ok) {
-        router.push(res.redirectTo)
+        router.push(res.redirectTo ?? "/verify-email")
         return
       }
-      if (res.fieldErrors?.email) {
-        setError("email", { message: res.fieldErrors.email }, { shouldFocus: true })
-      }
+      // Server error on a field: mounted on the field, with focus (rule 4).
+      if (res.fieldErrors?.email) setError("email", { message: res.fieldErrors.email }, { shouldFocus: true })
       if (res.formError) setError("root.serverError", { message: res.formError })
     })
   })
 
+  const c = authCopy
   return (
-    <form onSubmit={onSubmit} noValidate className="flex flex-col gap-6">
-      {errors.root?.serverError && (
-        <Alert variant="destructive" role="alert">
-          <AlertDescription>{errors.root.serverError.message}</AlertDescription>
-        </Alert>
-      )}
+    <form onSubmit={onSubmit} noValidate className="flex flex-col gap-6" aria-label={c.signup.title}>
+      {errors.root?.serverError && <FormAlert>{errors.root.serverError.message}</FormAlert>}
 
       <FieldGroup>
         <Controller
@@ -65,12 +58,12 @@ export function SignUpForm() {
           control={control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid || undefined}>
-              <FieldLabel htmlFor="name">Nombre</FieldLabel>
+              <FieldLabel htmlFor="name">{c.common.name}</FieldLabel>
               <Input
                 {...field}
                 id="name"
                 autoComplete="name"
-                disabled={isPending}
+                readOnly={isPending}
                 aria-invalid={fieldState.invalid || undefined}
                 aria-describedby={describedBy(fieldState.invalid && "name-error")}
               />
@@ -84,19 +77,18 @@ export function SignUpForm() {
           control={control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid || undefined}>
-              <FieldLabel htmlFor="email">Correo electrónico</FieldLabel>
+              <FieldLabel htmlFor="email">{c.common.email}</FieldLabel>
               <Input
                 {...field}
                 id="email"
                 type="email"
                 autoComplete="email"
-                disabled={isPending}
+                inputMode="email"
+                readOnly={isPending}
                 aria-invalid={fieldState.invalid || undefined}
                 aria-describedby={describedBy("email-description", fieldState.invalid && "email-error")}
               />
-              <FieldDescription id="email-description">
-                Te enviaremos un enlace para confirmarlo.
-              </FieldDescription>
+              <FieldDescription id="email-description">{c.signup.emailHelp}</FieldDescription>
               {fieldState.invalid && <FieldError id="email-error">{fieldState.error?.message}</FieldError>}
             </Field>
           )}
@@ -107,29 +99,24 @@ export function SignUpForm() {
           control={control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid || undefined}>
-              <FieldLabel htmlFor="password">Contraseña</FieldLabel>
+              <FieldLabel htmlFor="password">{c.common.password}</FieldLabel>
               <Input
                 {...field}
                 id="password"
                 type="password"
                 autoComplete="new-password"
-                disabled={isPending}
+                readOnly={isPending}
                 aria-invalid={fieldState.invalid || undefined}
                 aria-describedby={describedBy("password-description", fieldState.invalid && "password-error")}
               />
-              <FieldDescription id="password-description">Mínimo 8 caracteres.</FieldDescription>
-              {fieldState.invalid && (
-                <FieldError id="password-error">{fieldState.error?.message}</FieldError>
-              )}
+              <FieldDescription id="password-description">{c.signup.passwordHelp}</FieldDescription>
+              {fieldState.invalid && <FieldError id="password-error">{fieldState.error?.message}</FieldError>}
             </Field>
           )}
         />
       </FieldGroup>
 
-      <Button type="submit" disabled={isPending} aria-busy={isPending} className="w-full">
-        {isPending && <Spinner />}
-        {isPending ? "Creando cuenta…" : "Crear cuenta"}
-      </Button>
+      <SubmitButton pending={isPending} label={c.signup.submit} pendingLabel={c.signup.submitting} className="w-full" />
     </form>
   )
 }

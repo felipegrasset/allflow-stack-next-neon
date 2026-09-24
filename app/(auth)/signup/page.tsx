@@ -2,27 +2,29 @@ import type { Metadata } from "next"
 import Link from "next/link"
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { authCopy } from "@/lib/copy/auth"
 import { SignUpForm } from "./signup-form"
 
-export const metadata: Metadata = { title: "Crear cuenta" }
+export const metadata: Metadata = { title: authCopy.signup.title }
 
 export default function SignUpPage() {
+  const c = authCopy.signup
   return (
     <Card>
       <CardHeader>
         <CardTitle>
-          <h1 className="text-lg">Crear cuenta</h1>
+          <h1 className="text-lg">{c.title}</h1>
         </CardTitle>
-        <CardDescription>Regístrate con tu correo.</CardDescription>
+        <CardDescription>{c.description}</CardDescription>
       </CardHeader>
       <CardContent>
         <SignUpForm />
       </CardContent>
       <CardFooter className="justify-center text-sm">
         <span>
-          ¿Ya tienes cuenta?{" "}
+          {c.haveAccount}{" "}
           <Link href="/login" className="underline underline-offset-4">
-            Inicia sesión
+            {c.loginLink}
           </Link>
         </span>
       </CardFooter>

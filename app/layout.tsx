@@ -2,7 +2,10 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 
 import "./globals.css"
+import { AppToaster } from "@/components/app-toaster"
 import { ThemeScript } from "@/components/theme-provider"
+import { ThemeSync } from "@/components/theme-sync"
+import { authCopy } from "@/lib/copy/auth"
 import { APP_TITLE, APP_URL } from "@/lib/site"
 import { cn } from "@/lib/utils"
 
@@ -31,9 +34,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           href="#contenido"
           className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:ring-2 focus:ring-ring"
         >
-          Saltar al contenido
+          {authCopy.shell.skipLink}
         </a>
         {children}
+        {/* Without it toast.add() silently does nothing. */}
+        <AppToaster />
+        <ThemeSync />
       </body>
     </html>
   )

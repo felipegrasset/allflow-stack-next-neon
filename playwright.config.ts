@@ -4,7 +4,10 @@ import { join } from "node:path"
 /**
  * e2e against the PRODUCTION build (`pnpm build` first). Needs a migrated
  * database in DATABASE_URL (local Postgres or the CI `postgres:16` service).
- * Emails are captured in DEV_MAIL_OUTBOX, where the auth test reads links.
+ * Emails are captured in DEV_MAIL_OUTBOX, where the tests read links.
+ *
+ * The "setup" project (e2e/global.setup.ts) registers the test users first —
+ * the first one becomes admin — and saves their sessions in e2e/.auth/.
  */
 const PORT = Number(process.env.PORT ?? 3000)
 const BASE_URL = `http://localhost:${PORT}`
@@ -16,8 +19,11 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [["github"], ["list"]] : "list",
-  use: { baseURL: BASE_URL, trace: "retain-on-failure" },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  use: { baseURL: BASE_URL, trace: "retain-on-failure", locale: "es-CL" },
+  projects: [
+    { name: "setup", testMatch: /global\.setup\.ts/ },
+    { name: "chromium", use: { ...devices["Desktop Chrome"] }, dependencies: ["setup"] },
+  ],
   webServer: {
     command: `pnpm start --port ${PORT}`,
     url: BASE_URL,

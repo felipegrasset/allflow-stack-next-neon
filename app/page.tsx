@@ -1,65 +1,60 @@
-import Link from "next/link"
-import { headers } from "next/headers"
+import { redirect } from "next/navigation"
 
-import { logoutAction } from "./actions"
+import { AppShell } from "@/components/app-shell"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { Button } from "@/components/ui/button"
+import { ButtonLink } from "@/components/button-link"
+import { authCopy } from "@/lib/copy/auth"
 import { APP_TITLE } from "@/lib/site"
-import { auth } from "@/server/auth"
-import { DEFAULT_ORG_SLUG } from "@/server/auth/bootstrap"
-import { sql } from "@/lib/db"
+import { getAppRole, getSession, isAdminRole } from "@/server/session"
 
-/** The app shell's home (T1). T2 replaces it with the real dashboard. */
+/**
+ * Home. Signed out: the way in. Signed in: the onboarding gate (no
+ * onboardedAt → /onboarding), then the app's dashboard — replace the body of
+ * the signed-in branch with the app's real home.
+ */
 export default async function HomePage() {
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await getSession()
+  const c = authCopy.shell
 
-  // App data goes through `sql` (Neon HTTP driver in production).
-  const role = session
-    ? (
-        await sql<{ role: string }>`
-          select m.role
-          from member m
-          join organization o on o.id = m."organizationId"
-          where o.slug = ${DEFAULT_ORG_SLUG} and m."userId" = ${session.user.id}
-          limit 1`
-      )[0]?.role
-    : undefined
+  if (!session) {
+    return (
+      <div className="flex min-h-svh flex-col">
+        <header className="flex items-center justify-between border-b p-4">
+          <span className="text-sm font-medium">{APP_TITLE}</span>
+          <ThemeToggle />
+        </header>
+        <main id="contenido" className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
+          <h1 className="text-2xl font-semibold">{APP_TITLE}</h1>
+          <p className="text-sm text-muted-foreground">{c.guestDescription}</p>
+          <div className="flex gap-2">
+            <ButtonLink href="/login">
+              {authCopy.login.title}
+            </ButtonLink>
+            <ButtonLink href="/signup" variant="outline">
+              {authCopy.signup.title}
+            </ButtonLink>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
+  if (!session.user.onboardedAt) redirect("/onboarding")
+  const role = await getAppRole(session.user.id)
 
   return (
-    <div className="flex min-h-svh flex-col">
-      <header className="flex items-center justify-between border-b p-4">
-        <span className="text-sm font-medium">{APP_TITLE}</span>
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          {session && (
-            <form action={logoutAction}>
-              <Button type="submit" variant="outline" size="sm">
-                Cerrar sesión
-              </Button>
-            </form>
-          )}
-        </div>
-      </header>
-      <main id="contenido" className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
-        <h1 className="text-2xl font-semibold">{APP_TITLE}</h1>
-        {session ? (
-          <div className="flex flex-col gap-1 text-sm">
-            <p data-testid="session-email">
-              Sesión iniciada como <strong>{session.user.email}</strong>
-            </p>
-            {role && <p data-testid="session-role">Rol: {role}</p>}
-          </div>
-        ) : (
-          <div className="flex gap-2">
-            <Button render={<Link href="/login" />} nativeButton={false}>
-              Iniciar sesión
-            </Button>
-            <Button variant="outline" render={<Link href="/signup" />} nativeButton={false}>
-              Crear cuenta
-            </Button>
-          </div>
+    <AppShell user={session.user} isAdmin={isAdminRole(role)}>
+      <div className="flex flex-col gap-2">
+        <h1 className="text-2xl font-semibold">{c.welcome(session.user.name)}</h1>
+        <p data-testid="session-email" className="text-sm text-muted-foreground">
+          {c.signedInAs} <strong className="text-foreground">{session.user.email}</strong>
+        </p>
+        {role && (
+          <p data-testid="session-role" className="text-sm text-muted-foreground">
+            {c.role}: {role}
+          </p>
         )}
-      </main>
-    </div>
+      </div>
+    </AppShell>
   )
 }

@@ -21,7 +21,7 @@ import { APP_TITLE, APP_URL } from "@/lib/site"
 import { createDialect, getKysely } from "@/server/db/pool"
 import { sendEmail } from "@/server/email/send"
 import { magicLinkEmail, resetPasswordEmail, verifyEmail } from "@/server/email/templates"
-import { promoteFirstAdmin } from "./bootstrap"
+import { joinDefaultOrganization } from "./bootstrap"
 
 export const authOptions = {
   appName: APP_TITLE,
@@ -66,8 +66,9 @@ export const authOptions = {
     user: {
       create: {
         // Queued by Better Auth until the sign-up transaction commits.
+        // First user → admin; everyone else → member (T2, see bootstrap.ts).
         after: async (user) => {
-          await promoteFirstAdmin(getKysely(), user.id)
+          await joinDefaultOrganization(getKysely(), user.id)
         },
       },
     },

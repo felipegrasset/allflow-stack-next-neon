@@ -19,6 +19,7 @@ import type { Database } from "@/server/db/schema"
 
 export const DEFAULT_ORG_SLUG = APP_NAME
 export const ADMIN_ROLE = "admin"
+export const MEMBER_ROLE = "member"
 
 export async function ensureDefaultOrganization(db: Kysely<Database>): Promise<string> {
   await db
@@ -78,4 +79,32 @@ export async function promoteFirstAdmin(db: Kysely<Database>, userId?: string): 
       .execute()
     return true
   })
+}
+
+/**
+ * Every user belongs to the app's organization (T2): the first one as `admin`
+ * (promoteFirstAdmin), everyone after as `member` — so /admin/users, which
+ * lists the organization's members, sees every account and can change its
+ * role. Idempotent: an existing membership (whatever its role) is left alone.
+ */
+export async function joinDefaultOrganization(db: Kysely<Database>, userId: string): Promise<void> {
+  if (await promoteFirstAdmin(db, userId)) return
+  const orgId = await ensureDefaultOrganization(db)
+  await db
+    .insertInto("member")
+    .values({ id: randomUUID(), organizationId: orgId, userId, role: MEMBER_ROLE, createdAt: new Date() })
+    .onConflict((oc) => oc.columns(["organizationId", "userId"]).doNothing())
+    .execute()
+}
+
+/** Seed backfill: users created before T2 (or by hand) that have no membership. */
+export async function backfillMembers(db: Kysely<Database>): Promise<number> {
+  const orgId = await ensureDefaultOrganization(db)
+  const res = await sql`
+    insert into member (id, "organizationId", "userId", role, "createdAt")
+    select gen_random_uuid()::text, ${orgId}, u.id, ${MEMBER_ROLE}, now()
+    from "user" u
+    where not exists (select 1 from member m where m."organizationId" = ${orgId} and m."userId" = u.id)
+    on conflict ("organizationId", "userId") do nothing`.execute(db)
+  return Number(res.numAffectedRows ?? 0)
 }
