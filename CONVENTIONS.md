@@ -95,8 +95,12 @@ ya están instaladas. Rutas: `/login` (contraseña o magic link), `/signup`,
   `/admin/users` lista a todos con la API `listMembers` del plugin organization.
 - **Rate limit en las Server Actions de auth** (`server/rate-limit.ts`):
   `auth.api.*` llamado desde el servidor se salta el limitador HTTP de Better
-  Auth. Es en memoria y por proceso: suficiente para un servidor, no para N
-  instancias serverless — cuando haga falta, respáldalo con la base o Redis.
+  Auth. Vive en Postgres (tabla `rate_limit_hit`, migración `0002`): todas las
+  instancias serverless cuentan las mismas filas. Ventana deslizante, una
+  transacción por intento con un advisory lock por clave (dos intentos
+  simultáneos no pasan los dos), y las filas de más de una hora se borran en la
+  misma transacción. Para una regla nueva, agrégala a `RULES`; no llames a
+  `consume()` con el driver HTTP. `pnpm test:rate-limit` lo prueba contra la base.
 - **Olvidé mi contraseña** responde siempre lo mismo. **Registro sí dice "ese
   correo ya está registrado"** (lo pide la pantalla 2): es una enumeración de
   cuentas aceptada a propósito y limitada por el rate limit; para volver al
@@ -259,12 +263,50 @@ no repitas esos textos en otros archivos. `allflow.sentinels.json` lista los
 
 ```bash
 pnpm build && pnpm tsc --noEmit && pnpm lint && pnpm test:sentinels
-pnpm db:migrate && pnpm test:e2e   # con DATABASE_URL apuntando a un Postgres
+pnpm db:migrate && pnpm test:rate-limit && pnpm test:e2e   # con DATABASE_URL apuntando a un Postgres
 ```
 
 El e2e (`e2e/`) primero corre `global.setup.ts`, que registra por la UI a los
 usuarios de prueba (el primero queda admin) y guarda sus sesiones en
 `e2e/.auth/`. Después: axe en todas las pantallas, claro y oscuro
 (`a11y.spec.ts`), el flujo de auth (`auth.spec.ts`), el admin y el 403
-(`admin.spec.ts`) y el ciclo completo registro → … → login con la contraseña
-restablecida (`full-cycle.spec.ts`).
+(`admin.spec.ts`), el ciclo completo registro → … → login con la contraseña
+restablecida (`full-cycle.spec.ts`) y las pantallas de error, vacío y carga
+(`states.spec.ts`, ver §12).
+
+## 12 · Estados de error en el e2e
+
+`error.tsx`, `global-error.tsx`, el vacío y el error de `/admin/users` y los
+`loading.tsx` no aparecen en ningún flujo normal. Para probarlos,
+`server/e2e-faults.ts` inyecta fallas **sólo si el servidor corre con
+`E2E_FAULTS=1`** (lo pone `playwright.config.ts` en el `webServer`) **y no
+está en Vercel**. Sin esa variable, `fault()` devuelve `false` sin leer
+cookies: no cuesta nada y no vuelve dinámica ninguna página.
+
+Con la variable, el test elige las fallas con una cookie (`allflow-e2e-fault`,
+nombres separados por coma; los nombres están en `lib/e2e-faults.ts`):
+
+| Falla | Dónde | Qué pinta |
+|---|---|---|
+| `page-error` | `/settings/profile` lanza | `app/error.tsx` |
+| `layout-error` | el layout raíz lanza | `app/global-error.tsx` |
+| `admin-users-error` | `/admin/users` lanza | `admin/users/error.tsx` |
+| `admin-users-empty` | `/admin/users` lista sólo al admin | el estado vacío |
+| `slow` | `/admin/users` y `/settings/profile` esperan 1,5 s | sus `loading.tsx` |
+
+```ts
+await context.addCookies([{ name: E2E_FAULT_COOKIE, value: "admin-users-error", url: BASE }])
+```
+
+Dos detalles que ya resolvió `e2e/states.spec.ts`:
+
+- **Reintentar se prueba sacando la falla antes del clic**: así se verifica
+  que `retry()` vuelve a pedir el segmento, no que re-pinta el error.
+- **Los skeletons se esperan con `page.goto(url, { waitUntil: "commit" })`**:
+  el HTML en streaming trae `loading.tsx` primero; esperar a `load` salta
+  directo al contenido. Con un clic en un link, el prefetch puede haber traído
+  la página entera y el skeleton no llega a verse.
+
+Una pantalla nueva con estado de error o de carga agrega su falla al tipo
+`E2EFault` y su llamada (`throwIfFault`, `slowIfFault`) en la página, nunca
+en `components/ui/**` ni en `server/auth/**`.

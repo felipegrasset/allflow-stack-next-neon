@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 
 import { profileCopy } from "@/lib/copy/profile"
 import { LOCALES, type Locale } from "@/lib/schemas/profile"
+import { slowIfFault, throwIfFault } from "@/server/e2e-faults"
 import { requireOnboardedUser } from "@/server/session"
 import { AvatarEditor } from "./avatar-editor"
 import { ProfileForm } from "./profile-form"
@@ -10,6 +11,8 @@ export const metadata: Metadata = { title: profileCopy.profile.metaTitle }
 
 export default async function ProfilePage() {
   const { user } = await requireOnboardedUser("/settings/profile")
+  await slowIfFault()
+  await throwIfFault("page-error")
   const locale = (LOCALES as readonly string[]).includes(user.locale ?? "") ? (user.locale as Locale) : "es"
   return (
     <>

@@ -63,10 +63,13 @@ jobs:
       - name: Migrate + seed
         run: pnpm db:migrate
 
+      - name: Rate limit (Postgres)
+        run: pnpm test:rate-limit
+
       - name: Install Playwright (Chromium)
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: e2e (setup + a11y claro/oscuro en las 15 pantallas + flujos)
+      - name: e2e (setup + a11y claro/oscuro en las 15 pantallas + flujos + estados)
         run: pnpm test:e2e
 
       - uses: actions/upload-artifact@v4

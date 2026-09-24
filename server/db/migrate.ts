@@ -23,10 +23,12 @@ import { getKysely } from "./pool"
 import { driverKind } from "./driver"
 import { seed } from "./seed"
 import * as m0001 from "./migrations/0001_auth"
+import * as m0002 from "./migrations/0002_rate_limit"
 
 /** Explicit list, not a directory scan: works the same under tsx, bundlers and CI. */
 const MIGRATIONS: Record<string, Migration> = {
   "0001_auth": m0001,
+  "0002_rate_limit": m0002,
 }
 
 const provider: MigrationProvider = { getMigrations: async () => MIGRATIONS }
