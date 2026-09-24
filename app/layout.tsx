@@ -9,6 +9,7 @@ import { ThemeSync } from "@/components/theme-sync"
 import { authCopy } from "@/lib/copy/auth"
 import { APP_TITLE, APP_URL } from "@/lib/site"
 import { cn } from "@/lib/utils"
+import { faultsEnabled, throwIfFault } from "@/server/e2e-faults"
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })
 const fontMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" })
@@ -19,7 +20,9 @@ export const metadata: Metadata = {
   applicationName: APP_TITLE,
 }
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  // Only with E2E_FAULTS=1: without it no cookie is read and static pages stay static.
+  if (faultsEnabled()) await throwIfFault("layout-error")
   return (
     // suppressHydrationWarning: ThemeScript mutates <html class> before hydration.
     <html

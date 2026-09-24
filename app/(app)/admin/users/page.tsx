@@ -3,6 +3,7 @@ import { headers } from "next/headers"
 
 import { profileCopy } from "@/lib/copy/profile"
 import { auth } from "@/server/auth"
+import { fault, slowIfFault, throwIfFault } from "@/server/e2e-faults"
 import { getDefaultOrganizationId, requireAdmin } from "@/server/session"
 import { UsersTable, type MemberRow } from "./users-table"
 
@@ -15,6 +16,8 @@ export const metadata: Metadata = { title: profileCopy.adminUsers.metaTitle }
  */
 export default async function AdminUsersPage() {
   const { session } = await requireAdmin("/admin/users")
+  await slowIfFault()
+  await throwIfFault("admin-users-error")
   const organizationId = await getDefaultOrganizationId()
   if (!organizationId) throw new Error("La organización de la app no existe: corre `pnpm db:migrate`.")
 
@@ -22,7 +25,8 @@ export default async function AdminUsersPage() {
     query: { organizationId, limit: 500, sortBy: "createdAt", sortDirection: "asc" },
     headers: await headers(),
   })
-  const rows: MemberRow[] = members.map((m) => ({
+  const listed = (await fault("admin-users-empty")) ? members.filter((m) => m.userId === session.user.id) : members
+  const rows: MemberRow[] = listed.map((m) => ({
     id: m.id,
     userId: m.userId,
     role: m.role,

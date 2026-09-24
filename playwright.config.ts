@@ -34,6 +34,9 @@ export default defineConfig({
       DEV_MAIL_OUTBOX: OUTBOX,
       // Never send real email from tests.
       RESEND_API_KEY: "",
+      // Turns on server/e2e-faults.ts: e2e/states.spec.ts reaches the error,
+      // empty and loading screens through it. Never set outside the e2e.
+      E2E_FAULTS: "1",
     },
   },
 })

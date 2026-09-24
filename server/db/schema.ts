@@ -48,7 +48,15 @@ export interface OrganizationRoleTable {
   updatedAt: Timestamp | null
 }
 
+/** server/rate-limit.ts — one row per accepted attempt (migration 0002). */
+export interface RateLimitHitTable {
+  id: Generated<string>
+  key: string
+  at: Timestamp
+}
+
 export interface Database {
+  rate_limit_hit: RateLimitHitTable
   user: UserTable
   organization: OrganizationTable
   member: MemberTable
