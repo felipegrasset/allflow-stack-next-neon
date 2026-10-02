@@ -5,8 +5,9 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { ButtonLink } from "@/components/button-link"
 import { Button } from "@/components/ui/button"
 import { UserAvatar } from "@/components/user-avatar"
+import { BrandMark } from "@/components/brand-mark"
+import { navItems } from "@/config/nav"
 import { authCopy } from "@/lib/copy/auth"
-import { APP_TITLE } from "@/lib/site"
 import type { Session } from "@/server/auth"
 
 /**
@@ -29,20 +30,16 @@ export function AppShell({
       <header className="border-b">
         <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 p-4">
           <Link href="/" className="text-sm font-semibold">
-            {APP_TITLE}
+            <BrandMark />
           </Link>
           <nav aria-label={c.mainNav} className="flex items-center gap-1 text-sm">
-            <ButtonLink href="/" variant="ghost" size="sm">
-              {c.home}
-            </ButtonLink>
-            <ButtonLink href="/settings/profile" variant="ghost" size="sm">
-              {c.settings}
-            </ButtonLink>
-            {isAdmin && (
-              <ButtonLink href="/admin/users" variant="ghost" size="sm">
-                {c.admin}
-              </ButtonLink>
-            )}
+            {navItems
+              .filter((item) => !item.adminOnly || isAdmin)
+              .map((item) => (
+                <ButtonLink key={item.href} href={item.href} variant="ghost" size="sm">
+                  {item.label}
+                </ButtonLink>
+              ))}
           </nav>
           <div className="ml-auto flex items-center gap-2">
             <ThemeToggle />
