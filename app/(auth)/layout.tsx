@@ -1,14 +1,14 @@
 import Link from "next/link"
 
+import { BrandMark } from "@/components/brand-mark"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { APP_TITLE } from "@/lib/site"
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-svh flex-col">
       <header className="flex items-center justify-between p-4">
         <Link href="/" className="text-sm font-medium">
-          {APP_TITLE}
+          <BrandMark />
         </Link>
         <ThemeToggle />
       </header>

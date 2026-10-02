@@ -19,6 +19,7 @@ export type ResolvedTheme = "light" | "dark"
 
 const THEME_SCRIPT = `(function () { try {
   var t = localStorage.theme;
+  if (t !== "light" && t !== "dark") t = document.documentElement.dataset.defaultTheme;
   document.documentElement.classList.toggle("dark",
     t === "dark" ||
     (t !== "light" && matchMedia("(prefers-color-scheme: dark)").matches));
@@ -31,12 +32,18 @@ export function ThemeScript() {
 const QUERY = "(prefers-color-scheme: dark)"
 const listeners = new Set<() => void>()
 
+/** `data-default-theme` on <html> (app/layout.tsx), set by Forge's colorMode. */
+function defaultTheme(): Theme {
+  const t = document.documentElement.dataset.defaultTheme
+  return t === "light" || t === "dark" ? t : "system"
+}
+
 function stored(): Theme {
   try {
     const t = localStorage.getItem("theme")
-    return t === "light" || t === "dark" ? t : "system"
+    return t === "light" || t === "dark" ? t : defaultTheme()
   } catch {
-    return "system"
+    return defaultTheme()
   }
 }
 

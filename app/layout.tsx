@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
 
+import { body, heading, mono } from "./fonts"
 import "./globals.css"
 import "./tokens-contrast.css"
 import { AppToaster } from "@/components/app-toaster"
@@ -10,9 +10,6 @@ import { authCopy } from "@/lib/copy/auth"
 import { APP_TITLE, publicUrl } from "@/lib/site"
 import { cn } from "@/lib/utils"
 import { faultsEnabled, throwIfFault } from "@/server/e2e-faults"
-
-const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })
-const fontMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" })
 
 export const metadata: Metadata = {
   metadataBase: new URL(publicUrl()),
@@ -28,7 +25,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     <html
       lang="es"
       suppressHydrationWarning
-      className={cn("antialiased", fontMono.variable, "font-sans", geist.variable)}
+      data-default-theme="system"
+      className={cn("antialiased", mono.variable, "font-sans", body.variable, heading.variable)}
     >
       <head>
         <ThemeScript />

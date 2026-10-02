@@ -25,6 +25,31 @@
       "literal": "--brand-c: 0.12;",
       "value": "--brand-c: {{brandC}};",
       "files": ["app/globals.css"]
+    },
+    {
+      "literal": "--radius: 0.625rem;",
+      "value": "--radius: {{radius}};",
+      "files": ["app/globals.css"]
+    },
+    {
+      "literal": "--density: 1;",
+      "value": "--density: {{density}};",
+      "files": ["app/globals.css"]
+    },
+    {
+      "literal": "Geist as HeadingFont",
+      "value": "{{fontHeading}} as HeadingFont",
+      "files": ["app/fonts.ts"]
+    },
+    {
+      "literal": "Geist as BodyFont",
+      "value": "{{fontBody}} as BodyFont",
+      "files": ["app/fonts.ts"]
+    },
+    {
+      "literal": "data-default-theme=\"system\"",
+      "value": "data-default-theme=\"{{colorMode}}\"",
+      "files": ["app/layout.tsx"]
     }
   ]
 }

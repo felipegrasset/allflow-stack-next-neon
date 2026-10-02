@@ -29,7 +29,19 @@ import {
 const ROOT = join(import.meta.dirname, "..")
 
 /** The template's own defaults, i.e. what each literal must render back to. */
-const DEFAULTS: Partial<ForgeAnswers> = { brandH: 195, brandC: 0.12 }
+const DEFAULTS: ForgeAnswers = {
+  appName: "x",
+  appTitle: "x",
+  domain: "x.cl",
+  brandH: 195,
+  brandC: 0.12,
+  radius: "0.625rem",
+  density: 1,
+  fontHeading: "Geist",
+  fontBody: "Geist",
+  colorMode: "system",
+  db: "neon-postgres",
+}
 
 const SAMPLE: ForgeAnswers = {
   appName: "ferreteria-sur",
@@ -37,6 +49,11 @@ const SAMPLE: ForgeAnswers = {
   domain: "ferreteriasur.cl",
   brandH: 28,
   brandC: 0.17,
+  radius: "1rem",
+  density: 0.85,
+  fontHeading: "Fraunces",
+  fontBody: "IBM_Plex_Sans",
+  colorMode: "dark",
   db: "neon-postgres",
 }
 
@@ -69,17 +86,30 @@ test("allflow.sentinels.json parses with Forge's parser", () => {
   loadConfig()
 })
 
-test("declares the five sentinels Forge needs, one per answer", () => {
+test("declares one sentinel per answer Forge fills", () => {
   const cfg = loadConfig()
   const keys = cfg.sentinels.flatMap((s) => [...s.value.matchAll(/\{\{\s*([A-Za-z]+)\s*\}\}/g)].map((m) => m[1]))
-  assert.deepEqual([...keys].sort(), ["appName", "appTitle", "brandC", "brandH", "domain"])
+  assert.deepEqual([...keys].sort(), [
+    "appName",
+    "appTitle",
+    "brandC",
+    "brandH",
+    "colorMode",
+    "density",
+    "domain",
+    "fontBody",
+    "fontHeading",
+    "radius",
+  ])
 })
 
-test("brand sentinels are the literal CSS declarations with the template defaults", () => {
+test("every sentinel renders back to its literal with the template defaults", () => {
   for (const s of loadConfig().sentinels) {
-    if (!/brandH|brandC/.test(s.value)) continue
-    assert.equal(fillValue(s.value, DEFAULTS as ForgeAnswers), s.literal, `${s.literal} ≠ su value con los defaults`)
-    assert.match(s.literal, /^--brand-[hc]: [0-9.]+;$/)
+    if (!/brandH|brandC|radius|density|font|colorMode/.test(s.value)) continue
+    assert.equal(fillValue(s.value, DEFAULTS), s.literal, `${s.literal} ≠ su value con los defaults`)
+  }
+  for (const s of loadConfig().sentinels) {
+    if (/brandH|brandC|radius|density/.test(s.value)) assert.match(s.literal, /^--[a-z-]+: [0-9.]+(rem)?;$/)
   }
 })
 
@@ -88,7 +118,10 @@ test("every whitelisted file exists and still contains its literal", () => {
   for (const s of loadConfig().sentinels) {
     for (const f of s.files) {
       assert.ok(files.has(f), `${f} (lista blanca de "${s.literal}") no existe o no está en git`)
-      assert.ok(files.get(f)!.includes(s.literal), `${f} ya no contiene "${s.literal}": saca el archivo de la lista blanca`)
+      assert.ok(
+        files.get(f)!.includes(s.literal),
+        `${f} ya no contiene "${s.literal}": saca el archivo de la lista blanca`
+      )
     }
   }
 })
@@ -101,6 +134,11 @@ test("Forge's render() over the whole repo: no sentinel outside its whitelist, n
   const css = res.files.get("app/globals.css")!
   assert.ok(css.includes(`--brand-h: ${SAMPLE.brandH};`))
   assert.ok(css.includes(`--brand-c: ${SAMPLE.brandC};`))
+  assert.ok(css.includes(`--radius: ${SAMPLE.radius};`))
+  assert.ok(css.includes(`--density: ${SAMPLE.density};`))
+  const fonts = res.files.get("app/fonts.ts")!
+  assert.ok(fonts.includes(`${SAMPLE.fontHeading} as HeadingFont`) && fonts.includes(`${SAMPLE.fontBody} as BodyFont`))
+  assert.ok(res.files.get("app/layout.tsx")!.includes(`data-default-theme="${SAMPLE.colorMode}"`))
   const pkg = JSON.parse(res.files.get("package.json")!) as { name: string }
   assert.equal(pkg.name, SAMPLE.appName)
   assert.ok(res.files.get("lib/site.ts")!.includes(`"https://${SAMPLE.domain}"`))

@@ -25,20 +25,41 @@ export type ForgeAnswers = {
   domain: string
   brandH: number
   brandC: number
+  /** CSS length, e.g. "0.625rem". */
+  radius: string
+  /** Spacing scale: 1 (comfortable) or 0.85 (compact). */
+  density: number
+  /** next/font/google export name, e.g. "Geist", "Plus_Jakarta_Sans". */
+  fontHeading: string
+  fontBody: string
+  colorMode: "light" | "dark" | "system"
   db: Database
 }
 export type AnswerKey = keyof ForgeAnswers
-const ANSWER_KEYS: readonly AnswerKey[] = ["appName", "appTitle", "domain", "brandH", "brandC", "db"]
+const ANSWER_KEYS: readonly AnswerKey[] = [
+  "appName",
+  "appTitle",
+  "domain",
+  "brandH",
+  "brandC",
+  "radius",
+  "density",
+  "fontHeading",
+  "fontBody",
+  "colorMode",
+  "db",
+]
 
 export type SentinelConfig = { version: 1; sentinels: SentinelSpec[] }
 export type SentinelSpec = { literal: string; value: string; files: string[] }
 
 export type RenderIssueCode =
-  | "invalid_answers"
-  | "invalid_sentinels"
-  | "sentinel_outside_whitelist"
-  | "sentinel_leftover"
-export type RenderIssue = { code: RenderIssueCode; message: string; path?: string }
+  "invalid_answers" | "invalid_sentinels" | "sentinel_outside_whitelist" | "sentinel_leftover"
+export type RenderIssue = {
+  code: RenderIssueCode
+  message: string
+  path?: string
+}
 export type RenderResult = { ok: true; files: Map<string, string> } | { ok: false; issues: RenderIssue[] }
 
 export const SENTINELS_FILE = "allflow.sentinels.json"
@@ -74,7 +95,11 @@ export function parseSentinelConfig(
     ) {
       return bad(`sentinels[${i}] debe tener literal, value (strings) y files (string[]).`)
     }
-    sentinels.push({ literal: spec.literal, value: spec.value, files: spec.files })
+    sentinels.push({
+      literal: spec.literal,
+      value: spec.value,
+      files: spec.files,
+    })
   }
   const issues = checkSentinelConfig({ version: 1, sentinels })
   return issues.length ? { ok: false, issues } : { ok: true, config: { version: 1, sentinels } }
@@ -96,6 +121,7 @@ function checkSentinelConfig(config: SentinelConfig): RenderIssue[] {
   return issues
 }
 
+const FONT_EXPORT = /^[A-Z][A-Za-z0-9]*(?:_[A-Z0-9][A-Za-z0-9]*)*$/
 const SLUG = /^[a-z0-9](?:[a-z0-9-]{0,98}[a-z0-9])?$/
 const HOSTNAME = /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/
 const UNSAFE_TITLE = /["'`\\<>${}\u0000-\u001f\u007f]/
@@ -110,6 +136,13 @@ export function validateAnswers(a: ForgeAnswers): RenderIssue[] {
   if (!HOSTNAME.test(a.domain)) push(`domain "${a.domain}" debe ser un hostname sin esquema (ej. miapp.cl).`)
   if (!Number.isFinite(a.brandH) || a.brandH < 0 || a.brandH >= 360) push("brandH debe estar en [0, 360).")
   if (!Number.isFinite(a.brandC) || a.brandC < 0 || a.brandC > 0.4) push("brandC debe estar en [0, 0.4].")
+  if (!/^\d{1,2}(\.\d{1,3})?rem$/.test(a.radius)) push(`radius "${a.radius}" debe ser un largo en rem (ej. 0.625rem).`)
+  if (a.density !== 1 && a.density !== 0.85) push("density debe ser 1 o 0.85.")
+  for (const k of ["fontHeading", "fontBody"] as const)
+    if (!FONT_EXPORT.test(a[k]))
+      push(`${k} "${a[k]}" debe ser un nombre de import de next/font/google (ej. Plus_Jakarta_Sans).`)
+  if (!["light", "dark", "system"].includes(a.colorMode))
+    push(`colorMode "${a.colorMode}" debe ser light, dark o system.`)
   if (!(DATABASES as readonly string[]).includes(a.db)) push(`db "${a.db}" no está en el catálogo.`)
   return issues
 }
@@ -119,7 +152,11 @@ export function fillValue(template: string, a: ForgeAnswers): string {
 }
 
 /** render()'s sentinel passes (1 and 6 in Forge), nothing else. */
-export function renderSentinels(files: Map<string, string>, sentinels: SentinelConfig, answers: ForgeAnswers): RenderResult {
+export function renderSentinels(
+  files: Map<string, string>,
+  sentinels: SentinelConfig,
+  answers: ForgeAnswers
+): RenderResult {
   const early = [...validateAnswers(answers), ...checkSentinelConfig(sentinels)]
   if (early.length) return { ok: false, issues: early }
 
