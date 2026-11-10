@@ -22,10 +22,10 @@ import { Progress, ProgressLabel } from "@/components/ui/progress"
 import { Spinner } from "@/components/ui/spinner"
 import { toast } from "@/components/ui/toast"
 import { checkAvatarFile, toAvatarDataUrl } from "@/lib/avatar-image"
-import { profileCopy } from "@/lib/copy/profile"
 import { describedBy } from "@/lib/forms"
 import { AVATAR_ACCEPT } from "@/lib/schemas/profile"
 import { updateAvatarAction } from "../actions"
+import { useCopy } from "@/modules/i18n/ui/use-copy"
 
 /**
  * Avatar (8b): initials when there is no photo; type/size checked BEFORE
@@ -33,6 +33,7 @@ import { updateAvatarAction } from "../actions"
  * if saving fails; removing asks for confirmation.
  */
 export function AvatarEditor({ name, image }: { name: string; image: string | null }) {
+  const profileCopy = useCopy("profile")
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
   const [saved, setSaved] = useState(image)

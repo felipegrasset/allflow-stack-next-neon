@@ -3,12 +3,13 @@
 import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
-import { authCopy } from "@/lib/copy/auth"
 import { LoginForm } from "./login-form"
 import { MagicLinkForm } from "./magic-link-form"
+import { useCopy } from "@/modules/i18n/ui/use-copy"
 
 /** Password login by default; magic link one click away (plugin configured in server/auth). */
 export function LoginPanel({ next }: { next: string }) {
+  const authCopy = useCopy("auth")
   const [mode, setMode] = useState<"password" | "magic">("password")
   return (
     <div className="flex flex-col gap-4">

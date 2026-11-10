@@ -3,20 +3,19 @@
 import { headers } from "next/headers"
 import { APIError } from "better-auth/api"
 
-import { profileCopy } from "@/lib/copy/profile"
 import type { FormResult } from "@/lib/schemas/auth"
 import {
   avatarSchema,
-  changePasswordSchema,
-  profileSchema,
+  profileSchemas,
   type ChangePasswordInput,
   type ProfileInput,
 } from "@/lib/schemas/profile"
+import { isLocale } from "@/modules/i18n/contracts"
+import { getCopy } from "@/modules/i18n/server/copy"
+import { setLocaleCookie } from "@/modules/i18n/server/cookie"
 import { auth } from "@/server/auth"
 import { limit } from "@/server/rate-limit"
 import { requireOnboardedUser } from "@/server/session"
-
-const c = profileCopy
 
 function codeOf(err: unknown): string | undefined {
   if (err instanceof APIError) return (err.body as { code?: string } | undefined)?.code
@@ -25,6 +24,8 @@ function codeOf(err: unknown): string | undefined {
 
 export async function updateProfileAction(input: unknown): Promise<FormResult<keyof ProfileInput>> {
   await requireOnboardedUser("/settings/profile")
+  const c = await getCopy("profile")
+  const { profileSchema } = profileSchemas(c.validation)
   const parsed = profileSchema.safeParse(input)
   if (!parsed.success) {
     const fieldErrors: Partial<Record<keyof ProfileInput, string>> = {}
@@ -37,6 +38,8 @@ export async function updateProfileAction(input: unknown): Promise<FormResult<ke
     console.error("[profile:update]", err)
     return { ok: false, formError: c.common.serverError }
   }
+  // The profile's language becomes the active one (the selector's cookie).
+  if (isLocale(parsed.data.locale)) await setLocaleCookie(parsed.data.locale)
   return { ok: true }
 }
 
@@ -46,6 +49,7 @@ export async function updateProfileAction(input: unknown): Promise<FormResult<ke
  */
 export async function updateAvatarAction(input: unknown): Promise<FormResult<"image">> {
   await requireOnboardedUser("/settings/profile")
+  const c = await getCopy("profile")
   const parsed = avatarSchema.safeParse(input)
   if (!parsed.success) return { ok: false, formError: c.avatar.invalidType }
   try {
@@ -59,6 +63,8 @@ export async function updateAvatarAction(input: unknown): Promise<FormResult<"im
 
 export async function changePasswordAction(input: unknown): Promise<FormResult<keyof ChangePasswordInput>> {
   const session = await requireOnboardedUser("/settings/security")
+  const c = await getCopy("profile")
+  const { changePasswordSchema } = profileSchemas(c.validation)
   const parsed = changePasswordSchema.safeParse(input)
   if (!parsed.success) return { ok: false, formError: c.common.serverError }
 
@@ -83,6 +89,7 @@ export async function changePasswordAction(input: unknown): Promise<FormResult<k
 
 export async function revokeOtherSessionsAction(): Promise<FormResult<never>> {
   await requireOnboardedUser("/settings/security")
+  const c = await getCopy("profile")
   try {
     await auth.api.revokeOtherSessions({ headers: await headers() })
   } catch (err) {

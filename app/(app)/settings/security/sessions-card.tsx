@@ -17,10 +17,11 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "@/components/ui/toast"
-import { profileCopy } from "@/lib/copy/profile"
 import { revokeOtherSessionsAction } from "../actions"
+import { useCopy } from "@/modules/i18n/ui/use-copy"
 
 export function SessionsCard({ count }: { count: number }) {
+  const profileCopy = useCopy("profile")
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [confirmOpen, setConfirmOpen] = useState(false)

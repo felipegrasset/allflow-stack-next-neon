@@ -2,13 +2,16 @@ import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 
 import { ThemeToggle } from "@/components/theme-toggle"
-import { profileCopy } from "@/lib/copy/profile"
 import { LOCALES, type Locale } from "@/lib/schemas/profile"
 import { APP_TITLE } from "@/lib/site"
 import { requireUser } from "@/server/session"
 import { OnboardingWizard } from "./onboarding-wizard"
+import { getCopy } from "@/modules/i18n/server/copy"
 
-export const metadata: Metadata = { title: profileCopy.onboarding.metaTitle }
+export async function generateMetadata(): Promise<Metadata> {
+  const profileCopy = await getCopy("profile")
+  return { title: profileCopy.onboarding.metaTitle }
+}
 
 /** The onboarding gate's destination: every signed-in user without "onboardedAt" lands here. */
 export default async function OnboardingPage({ searchParams }: { searchParams: Promise<{ paso?: string }> }) {

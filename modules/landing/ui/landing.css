@@ -1,0 +1,22 @@
+/*
+ * Entrada de los bloques. Regla: el contenido es visible POR DEFECTO y la
+ * animación solo lo anima hacia su estado final (`backwards` pinta el estado
+ * inicial solo mientras corre). Si el CSS no carga, el navegador no soporta la
+ * animación o el usuario pide menos movimiento, el hero se ve igual: ningún
+ * estado `opacity: 0` vive fuera de los keyframes y no hay JS de por medio.
+ */
+@keyframes lnd-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .lnd-in {
+    animation: lnd-in 0.5s ease-out backwards;
+  }
+  .lnd-in-2 {
+    animation: lnd-in 0.5s ease-out 0.12s backwards;
+  }
+}

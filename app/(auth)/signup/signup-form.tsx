@@ -1,6 +1,6 @@
 "use client"
 
-import { useTransition } from "react"
+import { useMemo, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -9,16 +9,18 @@ import { FormAlert } from "@/components/form-alert"
 import { SubmitButton } from "@/components/submit-button"
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { authCopy } from "@/lib/copy/auth"
 import { describedBy } from "@/lib/forms"
-import { signUpSchema, type SignUpInput } from "@/lib/schemas/auth"
+import { authSchemas, type SignUpInput } from "@/lib/schemas/auth"
 import { signUpAction } from "../actions"
+import { useCopy } from "@/modules/i18n/ui/use-copy"
 
 /**
  * The reference form of CONVENTIONS.md §"Formularios": Field + Controller, one
  * Zod schema on both sides, the five a11y rules, server errors via setError.
  */
 export function SignUpForm() {
+  const authCopy = useCopy("auth")
+  const { signUpSchema } = useMemo(() => authSchemas(authCopy.validation), [authCopy])
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const {
