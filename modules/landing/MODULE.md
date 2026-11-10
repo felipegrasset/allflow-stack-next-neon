@@ -27,6 +27,20 @@ contenido y orden, no CSS.
 - `ui/blocks/*` — un componente por bloque, función pura de sus props; ninguno importa a otro (lo verifica una prueba).
 - `server/lead.ts`, `server/actions.ts` — entrega del lead.
 
+## Plantillas por arquetipo (T10)
+`templates/` trae 5 combinaciones de bloques con su copy base en español:
+`ecommerce`, `bookings-services`, `education`, `minimal-tech` y `community`
+(`TEMPLATES` en `templates/index.ts`; cada una es `{ landing, copy }`). Usarla =
+copiar su `landing` a `landing.json` y su `copy` a `copy.ts`. Cada plantilla
+pasa por el mismo esquema y las mismas pruebas que la landing por defecto.
+Limitaciones: copy solo en `es` (el `en` va con T4); la plantilla de tienda aún
+no tiene bloque de catálogo (viene con el módulo de comercio, fase L3 del plan).
+
+**Enlace con la génesis: pendiente (cambio en allflow.biz).** Que `landing.tsx`
+de la génesis escoja la plantilla por el arquetipo de la spec, escriba
+`landing.json` + `copy.ts` en la app y enlace `/` a este módulo (hoy `/` sigue
+siendo `app/(marketing)/landing.tsx`; el módulo vive en `/landing`).
+
 ## Re-tematizar (LND-3)
 Solo tokens (`bg-primary`, `text-muted-foreground`, `border`…). Cambiar `--brand-h` / `--brand-c` en `app/globals.css` re-tema la landing. Un color literal o una paleta de Tailwind (`bg-blue-500`) falla `pnpm test:modules`.
 
@@ -50,4 +64,4 @@ Código propio. Los patrones vienen de las fichas de `INV-DISENO-REFERENTES.md` 
 Copiar la carpeta y `pnpm modules:sync` (crea el shim `app/(marketing)/landing/page.tsx`). Quitar: borrar la carpeta y `pnpm modules:sync`. Sin tablas que revertir.
 
 ## Pendiente
-Enlazar con la génesis (`app/(marketing)/landing.tsx` y `/`) — ver T10; e2e/axe de `/landing`; módulo `i18n` (T4) para levantar `copy.ts`.
+Enlazar plantillas y `/` con la génesis (allflow.biz); e2e/axe de `/landing`; módulo `i18n` (T4) para levantar `copy.ts`.
