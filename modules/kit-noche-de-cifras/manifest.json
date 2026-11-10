@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "kit-noche-de-cifras",
+  "feature": "kit-noche-de-cifras",
+  "version": "0.1.0",
+  "title": "Kit Noche de Cifras",
+  "description": "Dashboard analítico oscuro: KPIs con tendencia, gráfico de línea y de barras, tabla con filtro de fecha, detalle lateral, alertas y estados.",
+  "dependsOn": ["kit-core"],
+  "routes": [
+    {
+      "path": "/kits/noche-de-cifras",
+      "entry": "ui/page.tsx",
+      "group": "marketing"
+    }
+  ]
+}

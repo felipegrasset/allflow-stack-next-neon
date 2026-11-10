@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "id": "kit-ruta-viva",
+  "feature": "kit-ruta-viva",
+  "version": "0.1.0",
+  "title": "Kit Ruta Viva",
+  "description": "Operación y reparto: rutas, pedidos, mapa de zonas de maqueta, repartidores, línea de tiempo, escaneo e incidencias.",
+  "dependsOn": ["kit-core"],
+  "routes": [
+    { "path": "/kits/ruta-viva", "entry": "ui/page.tsx", "group": "marketing" }
+  ]
+}
