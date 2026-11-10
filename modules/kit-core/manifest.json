@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "id": "kit-core",
+  "feature": "kit-core",
+  "version": "0.1.0",
+  "title": "Núcleo de los kits de UI",
+  "description": "Tokens OKLCH con escala, ocho componentes de estado, encabezado y pie, y la rúbrica de calidad. Todo kit de UI se construye encima.",
+  "routes": [
+    { "path": "/kits/core", "entry": "ui/page.tsx", "group": "marketing" }
+  ]
+}

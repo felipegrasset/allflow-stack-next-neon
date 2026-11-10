@@ -1,0 +1,416 @@
+/*
+ * kit-core — tokens de los kits de UI (T17).
+ *
+ * Regla: NINGÚN color propio. Todo sale de los tokens semánticos del tema
+ * (--background, --primary, --muted…) o se deriva de --brand-h / --brand-c.
+ * Cambiar esos dos números en app/globals.css re-tematiza el núcleo y todo
+ * kit construido encima. Los tonos de estado (éxito, advertencia) tienen su
+ * propio matiz fijo, que no depende de la marca para que «éxito» nunca se
+ * vuelva rojo con una marca roja.
+ *
+ * Los pares fondo/texto están medidos para WCAG 2.2 AA en claro y oscuro
+ * (texto L 0.38 sobre fondo L 0.96, y L 0.85 sobre L 0.26).
+ */
+
+/* ── Escala (no depende del modo) ──────────────────────────────────────────── */
+:root {
+  /* Tipografía: fluida entre 375 y 1280 px. */
+  --kit-text-xs: 0.75rem;
+  --kit-text-sm: 0.875rem;
+  --kit-text-base: 1rem;
+  --kit-text-lg: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
+  --kit-text-xl: clamp(1.25rem, 1.1rem + 0.7vw, 1.625rem);
+  --kit-text-2xl: clamp(1.5rem, 1.2rem + 1.4vw, 2.25rem);
+  --kit-text-3xl: clamp(1.875rem, 1.3rem + 2.6vw, 3rem);
+  --kit-text-4xl: clamp(2.25rem, 1.3rem + 4.2vw, 4.25rem);
+  --kit-leading-tight: 1.15;
+  --kit-leading-snug: 1.3;
+  --kit-leading-normal: 1.55;
+  --kit-tracking-tight: -0.025em;
+  --kit-tracking-wide: 0.08em;
+  --kit-weight-regular: 400;
+  --kit-weight-medium: 500;
+  --kit-weight-semibold: 600;
+  --kit-weight-bold: 700;
+  --kit-measure: 64ch;
+
+  /* Espacio: escala de 4 px multiplicada por la densidad de la marca. */
+  --kit-space-1: calc(0.25rem * var(--density));
+  --kit-space-2: calc(0.5rem * var(--density));
+  --kit-space-3: calc(0.75rem * var(--density));
+  --kit-space-4: calc(1rem * var(--density));
+  --kit-space-5: calc(1.5rem * var(--density));
+  --kit-space-6: calc(2rem * var(--density));
+  --kit-space-7: calc(3rem * var(--density));
+  --kit-space-8: calc(4.5rem * var(--density));
+  --kit-space-9: calc(7rem * var(--density));
+  --kit-container: 72rem;
+  --kit-gutter: clamp(1rem, 0.5rem + 2.2vw, 2rem);
+
+  /* Radio: derivado de --radius del tema. */
+  --kit-radius-sm: calc(var(--radius) * 0.6);
+  --kit-radius-md: calc(var(--radius) * 0.9);
+  --kit-radius-lg: calc(var(--radius) * 1.4);
+  --kit-radius-xl: calc(var(--radius) * 2);
+  --kit-radius-full: 9999px;
+
+  /* Sombras: mezcla del color de texto con transparente, sirven en claro y oscuro. */
+  --kit-shadow-sm: 0 1px 2px
+    color-mix(in oklab, var(--foreground) 8%, transparent);
+  --kit-shadow-md:
+    0 4px 12px -2px color-mix(in oklab, var(--foreground) 10%, transparent),
+    0 2px 4px -2px color-mix(in oklab, var(--foreground) 8%, transparent);
+  --kit-shadow-lg:
+    0 18px 40px -12px color-mix(in oklab, var(--foreground) 22%, transparent),
+    0 4px 10px -4px color-mix(in oklab, var(--foreground) 10%, transparent);
+
+  --kit-ease: cubic-bezier(0.2, 0, 0, 1);
+  --kit-dur: 160ms;
+
+  /* Matices fijos de los tonos de estado (no salen de la marca). */
+  --kit-success-h: 155;
+  --kit-warning-h: 75;
+}
+
+/* ── Color, modo claro: todo derivado de --brand-h / --brand-c ───────────────
+ * `.kit-theme` repite estos tokens (y los del tema que dependen de la marca)
+ * para que una sección pueda llevar OTRA marca: una custom property con var()
+ * se resuelve donde se declara, así que cambiar --brand-h en un hijo no basta.
+ * Sirve para la galería y para mostrar un kit con dos marcas lado a lado; la
+ * marca real de la app sigue siendo la de app/globals.css. */
+:root,
+.kit-theme {
+  --kit-tint: oklch(0.97 calc(var(--brand-c) * 0.22) var(--brand-h));
+  --kit-tint-strong: oklch(0.93 calc(var(--brand-c) * 0.4) var(--brand-h));
+  --kit-tint-fg: oklch(0.34 calc(var(--brand-c) * 0.7) var(--brand-h));
+
+  --kit-info-bg: var(--kit-tint);
+  --kit-info-fg: var(--kit-tint-fg);
+  --kit-info-border: oklch(0.85 calc(var(--brand-c) * 0.5) var(--brand-h));
+
+  --kit-success-bg: oklch(0.96 0.04 var(--kit-success-h));
+  --kit-success-fg: oklch(0.36 0.09 var(--kit-success-h));
+  --kit-success-border: oklch(0.84 0.08 var(--kit-success-h));
+
+  --kit-warning-bg: oklch(0.96 0.06 var(--kit-warning-h));
+  --kit-warning-fg: oklch(0.38 0.08 var(--kit-warning-h));
+  --kit-warning-border: oklch(0.85 0.1 var(--kit-warning-h));
+
+  --kit-danger-bg: color-mix(
+    in oklab,
+    var(--destructive) 9%,
+    var(--background)
+  );
+  --kit-danger-fg: var(--destructive);
+  --kit-danger-border: color-mix(
+    in oklab,
+    var(--destructive) 35%,
+    var(--background)
+  );
+}
+
+/* En oscuro se sube L del texto y se baja L del fondo. */
+.dark,
+.dark .kit-theme {
+  --kit-tint: oklch(0.25 calc(var(--brand-c) * 0.3) var(--brand-h));
+  --kit-tint-strong: oklch(0.31 calc(var(--brand-c) * 0.5) var(--brand-h));
+  --kit-tint-fg: oklch(0.86 calc(var(--brand-c) * 0.6) var(--brand-h));
+
+  --kit-info-border: oklch(0.4 calc(var(--brand-c) * 0.6) var(--brand-h));
+
+  --kit-success-bg: oklch(0.26 0.05 var(--kit-success-h));
+  --kit-success-fg: oklch(0.86 0.1 var(--kit-success-h));
+  --kit-success-border: oklch(0.42 0.08 var(--kit-success-h));
+
+  --kit-warning-bg: oklch(0.27 0.05 var(--kit-warning-h));
+  --kit-warning-fg: oklch(0.87 0.1 var(--kit-warning-h));
+  --kit-warning-border: oklch(0.44 0.08 var(--kit-warning-h));
+}
+
+/* ── Utilidades de tipografía y composición para kits ──────────────────────── */
+.kit-container {
+  width: 100%;
+  max-width: var(--kit-container);
+  margin-inline: auto;
+  padding-inline: var(--kit-gutter);
+}
+.kit-eyebrow {
+  font-size: var(--kit-text-xs);
+  font-weight: var(--kit-weight-semibold);
+  letter-spacing: var(--kit-tracking-wide);
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.kit-display {
+  font-family: var(--font-heading);
+  font-size: var(--kit-text-4xl);
+  line-height: var(--kit-leading-tight);
+  letter-spacing: var(--kit-tracking-tight);
+  font-weight: var(--kit-weight-bold);
+  text-wrap: balance;
+}
+.kit-h1 {
+  font-family: var(--font-heading);
+  font-size: var(--kit-text-3xl);
+  line-height: var(--kit-leading-tight);
+  letter-spacing: var(--kit-tracking-tight);
+  font-weight: var(--kit-weight-bold);
+  text-wrap: balance;
+}
+.kit-h2 {
+  font-family: var(--font-heading);
+  font-size: var(--kit-text-2xl);
+  line-height: var(--kit-leading-snug);
+  letter-spacing: var(--kit-tracking-tight);
+  font-weight: var(--kit-weight-semibold);
+  text-wrap: balance;
+}
+.kit-h3 {
+  font-family: var(--font-heading);
+  font-size: var(--kit-text-lg);
+  line-height: var(--kit-leading-snug);
+  font-weight: var(--kit-weight-semibold);
+}
+.kit-lead {
+  font-size: var(--kit-text-lg);
+  line-height: var(--kit-leading-normal);
+  color: var(--muted-foreground);
+  max-width: var(--kit-measure);
+  text-wrap: pretty;
+}
+.kit-body {
+  font-size: var(--kit-text-base);
+  line-height: var(--kit-leading-normal);
+  max-width: var(--kit-measure);
+}
+.kit-small {
+  font-size: var(--kit-text-sm);
+  line-height: var(--kit-leading-normal);
+  color: var(--muted-foreground);
+}
+.kit-card {
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--kit-radius-lg);
+  box-shadow: var(--kit-shadow-sm);
+}
+.kit-section {
+  padding-block: var(--kit-space-8);
+}
+.kit-tint {
+  background: var(--kit-tint);
+  color: var(--kit-tint-fg);
+}
+
+/* ── Bloque de estado (los 8 componentes) ──────────────────────────────────── */
+.kit-state {
+  --_bg: var(--card);
+  --_fg: var(--card-foreground);
+  --_border: var(--border);
+  --_icon-bg: var(--muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--kit-space-3);
+  padding: var(--kit-space-6) var(--kit-space-5);
+  text-align: center;
+  background: var(--_bg);
+  color: var(--_fg);
+  border: 1px solid var(--_border);
+  border-radius: var(--kit-radius-lg);
+}
+.kit-state[data-compact="true"] {
+  padding: var(--kit-space-4);
+}
+.kit-state[data-tone="info"] {
+  --_bg: var(--kit-info-bg);
+  --_fg: var(--kit-info-fg);
+  --_border: var(--kit-info-border);
+  --_icon-bg: var(--kit-tint-strong);
+}
+.kit-state[data-tone="success"] {
+  --_bg: var(--kit-success-bg);
+  --_fg: var(--kit-success-fg);
+  --_border: var(--kit-success-border);
+  --_icon-bg: var(--kit-success-border);
+}
+.kit-state[data-tone="warning"] {
+  --_bg: var(--kit-warning-bg);
+  --_fg: var(--kit-warning-fg);
+  --_border: var(--kit-warning-border);
+  --_icon-bg: var(--kit-warning-border);
+}
+.kit-state[data-tone="danger"] {
+  --_bg: var(--kit-danger-bg);
+  --_fg: var(--kit-danger-fg);
+  --_border: var(--kit-danger-border);
+  --_icon-bg: var(--kit-danger-border);
+}
+.kit-state__icon {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--kit-radius-full);
+  background: var(--_icon-bg);
+  color: var(--_fg);
+}
+.kit-state__title {
+  font-family: var(--font-heading);
+  font-size: var(--kit-text-lg);
+  line-height: var(--kit-leading-snug);
+  font-weight: var(--kit-weight-semibold);
+}
+.kit-state__text {
+  max-width: 44ch;
+  font-size: var(--kit-text-sm);
+  line-height: var(--kit-leading-normal);
+  text-wrap: pretty;
+}
+.kit-state__list {
+  max-width: 44ch;
+  text-align: left;
+  font-size: var(--kit-text-sm);
+  line-height: var(--kit-leading-normal);
+  list-style: disc;
+  padding-left: var(--kit-space-5);
+}
+.kit-state__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--kit-space-2);
+  margin-top: var(--kit-space-2);
+}
+
+/* Skeleton: sin animación si la persona pide menos movimiento. */
+.kit-skeleton {
+  display: block;
+  height: 0.875rem;
+  border-radius: var(--kit-radius-sm);
+  background: var(--muted);
+  animation: kit-pulse 1.6s var(--kit-ease) infinite;
+}
+.kit-skeleton[data-shape="title"] {
+  height: 1.25rem;
+  width: 55%;
+}
+.kit-skeleton[data-shape="block"] {
+  height: 6rem;
+  border-radius: var(--kit-radius-md);
+}
+@keyframes kit-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kit-skeleton {
+    animation: none;
+  }
+}
+
+/* ── Encabezado y pie ──────────────────────────────────────────────────────── */
+.kit-header {
+  border-bottom: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+}
+.kit-header__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kit-space-4);
+  min-height: 4rem;
+}
+.kit-header__brand {
+  font-family: var(--font-heading);
+  font-size: var(--kit-text-lg);
+  font-weight: var(--kit-weight-bold);
+  letter-spacing: var(--kit-tracking-tight);
+  color: var(--foreground);
+  text-decoration: none;
+}
+.kit-header__nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--kit-space-1) var(--kit-space-4);
+  font-size: var(--kit-text-sm);
+}
+.kit-header__nav a,
+.kit-footer a {
+  color: var(--muted-foreground);
+  text-decoration: none;
+  padding-block: var(--kit-space-2);
+  border-radius: var(--kit-radius-sm);
+  transition: color var(--kit-dur) var(--kit-ease);
+}
+.kit-header__nav a:hover,
+.kit-footer a:hover {
+  color: var(--foreground);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+.kit-header__nav a[aria-current="page"] {
+  color: var(--foreground);
+  font-weight: var(--kit-weight-semibold);
+}
+.kit-header a:focus-visible,
+.kit-footer a:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.kit-footer {
+  border-top: 1px solid var(--border);
+  background: var(--muted);
+  color: var(--muted-foreground);
+  font-size: var(--kit-text-sm);
+}
+.kit-footer__grid {
+  display: grid;
+  gap: var(--kit-space-5);
+  padding-block: var(--kit-space-6);
+}
+@media (min-width: 48rem) {
+  .kit-footer__grid {
+    grid-template-columns: 1.4fr repeat(var(--kit-footer-cols, 2), 1fr);
+  }
+}
+.kit-footer__title {
+  font-weight: var(--kit-weight-semibold);
+  color: var(--foreground);
+  margin-bottom: var(--kit-space-2);
+}
+.kit-footer ul {
+  display: grid;
+  gap: var(--kit-space-1);
+}
+.kit-footer__legal {
+  border-top: 1px solid var(--border);
+  padding-block: var(--kit-space-4);
+}
+
+/* Marca local (ver `KitTheme`): los tokens del tema que se derivan de la marca. */
+.kit-theme {
+  --primary: oklch(0.5 var(--brand-c) var(--brand-h));
+  --primary-foreground: oklch(0.99 0.01 var(--brand-h));
+  --muted: oklch(0.97 0.004 var(--brand-h));
+  --muted-foreground: oklch(0.5 0.015 var(--brand-h));
+  --accent: oklch(0.96 0.02 var(--brand-h));
+  --accent-foreground: oklch(0.25 0.04 var(--brand-h));
+  --border: oklch(0.92 0.006 var(--brand-h));
+  --ring: oklch(0.55 var(--brand-c) var(--brand-h));
+  background: var(--background);
+  color: var(--foreground);
+}
+.dark .kit-theme {
+  --primary: oklch(0.7 calc(var(--brand-c) * 0.85) var(--brand-h));
+  --primary-foreground: oklch(0.18 0.02 var(--brand-h));
+  --muted: oklch(0.27 0.008 var(--brand-h));
+  --muted-foreground: oklch(0.71 0.015 var(--brand-h));
+  --accent: oklch(0.28 0.03 var(--brand-h));
+  --accent-foreground: oklch(0.96 0.01 var(--brand-h));
+  --ring: oklch(0.62 calc(var(--brand-c) * 0.85) var(--brand-h));
+}
