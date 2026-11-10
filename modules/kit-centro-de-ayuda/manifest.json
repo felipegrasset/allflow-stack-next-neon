@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "kit-centro-de-ayuda",
+  "feature": "kit-centro-de-ayuda",
+  "version": "0.1.0",
+  "title": "Kit Centro de Ayuda",
+  "description": "Base de conocimiento: buscador, categorías, artículos con pasos y valoración, estado del servicio y formulario de contacto.",
+  "dependsOn": ["kit-core"],
+  "routes": [
+    {
+      "path": "/kits/centro-de-ayuda",
+      "entry": "ui/page.tsx",
+      "group": "marketing"
+    }
+  ]
+}
