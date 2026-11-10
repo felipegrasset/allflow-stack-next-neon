@@ -1,0 +1,24 @@
+{
+  "1280": {
+    "jerarquia": 2,
+    "espacio": 2,
+    "escala_tipografica": 2,
+    "imagen": 1,
+    "estados": 2,
+    "movil_primero": 2,
+    "contraste_aa": 2,
+    "coherencia_tema": 2
+  },
+  "375": {
+    "jerarquia": 2,
+    "espacio": 1,
+    "escala_tipografica": 2,
+    "imagen": 1,
+    "estados": 2,
+    "movil_primero": 2,
+    "contraste_aa": 2,
+    "coherencia_tema": 2
+  },
+  "revisado": "2026-11-10",
+  "notas": "A 375 los días de la semana quedan apretados (el texto de citas se parte). Axe AA claro/oscuro y sin desborde medidos con pnpm test:kits:e2e; el resto, revisado por el agente sobre las capturas de test-results/kit-shots (incluidas las capturas en oscuro; pendiente de la revisión humana de Felipe). Imagen = 1: no lleva fotos, solo composición con tokens e íconos."
+}

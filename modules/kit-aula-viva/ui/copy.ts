@@ -1,0 +1,226 @@
+/** Textos y datos de muestra del kit Aula Viva (literales hasta el módulo i18n, T4). */
+export const copy = {
+  brand: "Aula Viva",
+  links: [
+    { label: "Mis cursos", href: "#continuar" },
+    { label: "Catálogo", href: "#catalogo" },
+    { label: "Ruta", href: "#ruta" },
+    { label: "Foro", href: "#foro" },
+  ],
+  login: "Entrar",
+  eyebrow: "Cursos en línea con acompañamiento",
+  title: "Aprende un oficio nuevo, una lección a la vez",
+  lead: "Clases cortas, práctica de verdad y alguien que te responde. Retoma justo donde quedaste.",
+  continue: {
+    label: "Sigue donde quedaste",
+    course: "Diseño de producto, desde cero",
+    lesson: "Módulo 2 · Lección 3: Entrevistas a usuarios",
+    pct: 42,
+    cta: "Continuar la lección",
+    left: "Te faltan 7 lecciones",
+  },
+  catalog: {
+    title: "Catálogo de cursos",
+    lead: "Elige por nivel. Todos incluyen certificado.",
+    levels: ["Todos", "Inicial", "Intermedio"],
+    courses: [
+      {
+        id: "c1",
+        name: "Diseño de producto, desde cero",
+        level: "Inicial",
+        lessons: 12,
+        hours: 9,
+        teacher: "Paula Mena",
+        tag: "Más elegido",
+      },
+      {
+        id: "c2",
+        name: "Datos para decidir mejor",
+        level: "Intermedio",
+        lessons: 16,
+        hours: 14,
+        teacher: "Rodrigo Pizarro",
+        tag: "",
+      },
+      {
+        id: "c3",
+        name: "Escritura clara para el trabajo",
+        level: "Inicial",
+        lessons: 8,
+        hours: 5,
+        teacher: "Isidora Vega",
+        tag: "Nuevo",
+      },
+      {
+        id: "c4",
+        name: "Liderar equipos pequeños",
+        level: "Intermedio",
+        lessons: 10,
+        hours: 8,
+        teacher: "Andrés Torres",
+        tag: "",
+      },
+    ],
+    noneTitle: "Aún no hay cursos de ese nivel",
+    noneDescription: "Mira todos los cursos o elige otro nivel.",
+    noneAction: "Ver todos",
+    unit: (l: number, h: number) => `${l} lecciones · ${h} h`,
+    by: "Con",
+  },
+  route: {
+    title: "Ruta del curso",
+    lead: "Diseño de producto, desde cero. Cada módulo se abre cuando terminas el anterior.",
+    modules: [
+      {
+        id: "m1",
+        name: "Módulo 1 · Entender el problema",
+        state: "done",
+        lessons: "4 de 4 lecciones",
+      },
+      {
+        id: "m2",
+        name: "Módulo 2 · Hablar con las personas",
+        state: "current",
+        lessons: "2 de 4 lecciones",
+      },
+      {
+        id: "m3",
+        name: "Módulo 3 · Probar una idea",
+        state: "locked",
+        lessons: "0 de 4 lecciones",
+      },
+    ],
+    stateLabel: {
+      done: "Completado",
+      current: "En curso",
+      locked: "Bloqueado",
+    },
+  },
+  lesson: {
+    title: "Entrevistas a usuarios",
+    time: "08:24 de 14:10",
+    play: "Reproducir la lección",
+    captions:
+      "Primero, escucha. Las mejores preguntas son las que no sugieren la respuesta.",
+    notesTitle: "Tus notas",
+    notesLabel: "Escribe una nota sobre esta lección",
+    notesHelp: "Se guardan con el minuto del video.",
+    notesSave: "Guardar nota",
+    saved: "Nota guardada en el minuto 08:24.",
+    emptyNotes: "Todavía no tienes notas en esta lección.",
+  },
+  quiz: {
+    title: "Comprueba lo aprendido",
+    question: "¿Cuál de estas preguntas es mejor para una entrevista?",
+    options: [
+      { id: "a", text: "¿No crees que la aplicación es muy lenta?", ok: false },
+      {
+        id: "b",
+        text: "Cuéntame la última vez que usaste la aplicación.",
+        ok: true,
+      },
+      { id: "c", text: "¿Te gustaría que tuviera modo oscuro?", ok: false },
+    ],
+    check: "Comprobar respuesta",
+    pick: "Elige una respuesta para comprobar.",
+    right: {
+      title: "Correcto",
+      description:
+        "Una pregunta abierta sobre un momento real no sugiere la respuesta.",
+    },
+    wrong: {
+      title: "Casi",
+      description: "Esa pregunta ya trae la respuesta puesta. Prueba otra.",
+    },
+    retry: "Intentar de nuevo",
+  },
+  cert: {
+    title: "Tu certificado",
+    lead: "Se emite al terminar el último módulo.",
+    name: "Diseño de producto, desde cero",
+    owner: "Para Valentina Soto",
+    need: "Completa 7 lecciones más para obtenerlo.",
+    cta: "Ver los requisitos",
+  },
+  forum: {
+    title: "Foro del curso",
+    lead: "Pregunta, comparte y ayuda. Paula responde los martes y jueves.",
+    threads: [
+      {
+        t: "¿Cuántas personas conviene entrevistar?",
+        who: "Camilo R.",
+        n: 6,
+        ago: "hace 2 h",
+        solved: true,
+      },
+      {
+        t: "Cómo transcribir sin perder el tono",
+        who: "Josefa M.",
+        n: 3,
+        ago: "ayer",
+        solved: false,
+      },
+      {
+        t: "Plantilla de guion que me funcionó",
+        who: "Tomás A.",
+        n: 11,
+        ago: "hace 3 días",
+        solved: false,
+      },
+    ],
+    solved: "Resuelto",
+    replies: (n: number) => (n === 1 ? "1 respuesta" : `${n} respuestas`),
+    cta: "Hacer una pregunta",
+  },
+  states: {
+    title: "Hoja de estados",
+    lead: "Lo que ve una alumna cuando la clase no carga o aún no hay nada.",
+    empty: {
+      title: "Aún no tienes cursos",
+      description: "Cuando te inscribas, aparecerán aquí.",
+      action: "Ver el catálogo",
+    },
+    loading: "Cargando la lección",
+    error: {
+      title: "No pudimos cargar el video",
+      description: "Revisa tu conexión; tu progreso está guardado.",
+    },
+    success: {
+      title: "Lección completada",
+      description: "Llevas el 50 % del módulo 2.",
+      action: "Siguiente lección",
+    },
+    forbidden: {
+      title: "Este módulo aún está bloqueado",
+      description: "Termina el módulo 2 para abrirlo.",
+      action: "Volver a la ruta",
+    },
+    noResults: {
+      title: "Sin coincidencias",
+      description: "Ningún curso responde a esa búsqueda.",
+    },
+    offline: {
+      title: "Sin conexión",
+      description: "Puedes seguir con las lecciones que descargaste.",
+    },
+    partial: {
+      issues: [
+        "Los subtítulos aún no están listos",
+        "El material descargable se carga aparte",
+      ],
+    },
+  },
+  footer: {
+    tagline: "Una academia en línea lista para tus cursos.",
+    columns: [
+      {
+        title: "Aprender",
+        links: [
+          { label: "Catálogo", href: "#catalogo" },
+          { label: "Ruta", href: "#ruta" },
+        ],
+      },
+      { title: "Comunidad", links: [{ label: "Foro", href: "#foro" }] },
+    ],
+  },
+}
