@@ -42,9 +42,13 @@ test("ciclo completo del piso mínimo", async ({ page }) => {
   await page.getByRole("button", { name: "Siguiente" }).click()
   await page.getByLabel("Idioma").selectOption("en")
   await page.getByRole("button", { name: "Siguiente" }).click()
-  await expect(page.getByText("Paso 3 de 3")).toBeVisible()
+  // The language chosen in step 2 takes effect at once: the wizard is now in English.
+  await expect(page.getByText("Step 3 of 3")).toBeVisible()
   await expect(page.getByText("English")).toBeVisible()
-  await page.getByRole("button", { name: "Terminar" }).click()
+  // The rest of the cycle is asserted in Spanish: put the visitor's cookie back
+  // (the saved preference stays "en", which /settings/profile checks below).
+  await page.context().addCookies([{ name: "NEXT_LOCALE", value: "es", url: page.url() }])
+  await page.getByRole("button", { name: "Finish" }).click()
   await expect(page.getByTestId("session-email")).toContainText(email)
   await expect(page.getByRole("heading", { name: "Hola, Flor Onboarding" })).toBeVisible()
 
