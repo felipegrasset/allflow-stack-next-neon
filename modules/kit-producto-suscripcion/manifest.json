@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "kit-producto-suscripcion",
+  "feature": "kit-producto-suscripcion",
+  "version": "0.1.0",
+  "title": "Kit Producto Digital y Suscripción",
+  "description": "Ficha de un producto digital con planes mensual y anual: héroe, qué incluye, selector de facturación, planes, garantía, FAQ y estados. Pensado para apps que cobran con un proveedor de pagos como Paddle.",
+  "dependsOn": ["kit-core"],
+  "routes": [
+    {
+      "path": "/kits/producto-suscripcion",
+      "entry": "ui/page.tsx",
+      "group": "marketing"
+    }
+  ]
+}

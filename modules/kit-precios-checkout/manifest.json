@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "kit-precios-checkout",
+  "feature": "kit-precios-checkout",
+  "version": "0.1.0",
+  "title": "Kit Precios y Checkout",
+  "description": "Página de precios con comparativa y checkout simple: resumen del pedido, correo, país, cupón funcional, pago delegado al proveedor y estados de procesando, éxito y error.",
+  "dependsOn": ["kit-core"],
+  "routes": [
+    {
+      "path": "/kits/precios-checkout",
+      "entry": "ui/page.tsx",
+      "group": "marketing"
+    }
+  ]
+}
