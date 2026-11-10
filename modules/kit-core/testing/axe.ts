@@ -47,7 +47,23 @@ export async function expectKitAccessible(
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - window.innerWidth
       )
-      expect(overflow, `desborde horizontal ${where}`).toBeLessThanOrEqual(0)
+      // Si desborda, el mensaje nombra qué elementos se pasan del borde derecho.
+      const culprits =
+        overflow > 0
+          ? await page.evaluate(() =>
+              [...document.querySelectorAll("body *")]
+                .filter((el) => el.getBoundingClientRect().right > window.innerWidth + 0.5)
+                .slice(0, 8)
+                .map((el) => {
+                  const r = el.getBoundingClientRect()
+                  return `${el.tagName.toLowerCase()}.${String(el.className).slice(0, 60)} right=${Math.round(r.right)} w=${Math.round(r.width)}`
+                })
+            )
+          : []
+      expect(
+        overflow,
+        `desborde horizontal ${where}${culprits.length ? ` — ${culprits.join(" | ")}` : ""}`
+      ).toBeLessThanOrEqual(0)
 
       await page.screenshot({
         path: `test-results/kit-shots/${name}-${vp.name}-${scheme}.png`,
