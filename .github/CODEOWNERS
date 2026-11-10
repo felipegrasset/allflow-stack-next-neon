@@ -3,3 +3,8 @@
 # Any change here needs AllFlow's review. Owner: @felipegrasset until the AllFlow org exists.
 /components/ui/     @felipegrasset
 /server/auth/       @felipegrasset
+
+# The module contract (validator, generator, guard). A module PR that edits it
+# may also edit genesis anchors, so it needs review here.
+/modules/contract/  @felipegrasset
+/scripts/modules.ts @felipegrasset

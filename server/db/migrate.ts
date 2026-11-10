@@ -22,13 +22,21 @@ import { authOptions } from "@/server/auth/options"
 import { getKysely } from "./pool"
 import { driverKind } from "./driver"
 import { seed } from "./seed"
+import { moduleMigrations } from "@/modules/_generated/migrations"
 import * as m0001 from "./migrations/0001_auth"
 import * as m0002 from "./migrations/0002_rate_limit"
 
-/** Explicit list, not a directory scan: works the same under tsx, bundlers and CI. */
+/**
+ * Explicit list, not a directory scan: works the same under tsx, bundlers and CI.
+ * 0001–0099 are the core's and the genesis's; modules own 0100+ and register
+ * through modules/_generated/migrations.ts (`pnpm modules:sync`) — they never
+ * edit this file. Keep the two `m0002` lines below as they are: the genesis
+ * appends its own migration after them with an exact-text anchor.
+ */
 const MIGRATIONS: Record<string, Migration> = {
   "0001_auth": m0001,
   "0002_rate_limit": m0002,
+  ...moduleMigrations,
 }
 
 const provider: MigrationProvider = { getMigrations: async () => MIGRATIONS }
@@ -45,7 +53,11 @@ async function main() {
   const db = getKysely()
   console.log(`[db:migrate] driver: ${driverKind()}`)
 
-  const migrator = new Migrator({ db, provider })
+  // Unordered on purpose: a module installed after the app already ran its own
+  // migrations has a lower name than the last applied one (0100 vs 0003+), and
+  // Kysely rejects that by default. Already-applied migrations must still be in
+  // the list: take a module out only after reverting its migrations.
+  const migrator = new Migrator({ db, provider, allowUnorderedMigrations: true })
   const { error, results } = down ? await migrator.migrateDown() : await migrator.migrateToLatest()
   for (const r of results ?? []) {
     console.log(`[db:migrate] ${r.direction} ${r.migrationName}: ${r.status}`)
