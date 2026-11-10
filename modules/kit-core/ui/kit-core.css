@@ -339,6 +339,28 @@
   gap: var(--kit-space-1) var(--kit-space-4);
   font-size: var(--kit-text-sm);
 }
+/* Móvil: la marca y la navegación no se parten en dos filas. La barra pasa a
+   dos líneas (marca arriba, enlaces abajo) y los enlaces se desplazan en una
+   sola fila en vez de envolver. */
+@media (max-width: 47.99rem) {
+  .kit-header__bar {
+    flex-wrap: wrap;
+    row-gap: var(--kit-space-1);
+    padding-block: var(--kit-space-2);
+  }
+  .kit-header__brand {
+    white-space: nowrap;
+  }
+  .kit-header__nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    max-width: 100%;
+    scrollbar-width: thin;
+  }
+  .kit-header__nav a {
+    white-space: nowrap;
+  }
+}
 .kit-header__nav a,
 .kit-footer a {
   color: var(--muted-foreground);
