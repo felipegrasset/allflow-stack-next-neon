@@ -121,6 +121,8 @@ export const PENDING_LITERALS: Record<string, string> = {
     "módulo de ejemplo del contrato: no se instala en las apps",
   "modules/kit-":
     "kits de UI (T17): texto de demostración y valores por defecto que cada app reemplaza por props; el contrato aún no tiene punto de extensión `messages`",
+  "modules/landing":
+    "bloques y plantillas de landing (T9/T10): el texto vive en copy.ts, que la génesis reescribe por app; su catálogo i18n espera el punto de extensión `messages` del contrato",
   "modules/notifications/copy.ts":
     "copy de notificaciones en español: falta el punto de extensión `messages` del contrato (pendiente documentado en el PR de T4)",
 }
