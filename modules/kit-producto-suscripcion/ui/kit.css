@@ -1,0 +1,127 @@
+/* Producto digital y suscripción: claro, tranquilo, pensado para cobrar. Solo tokens. */
+.ps {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), var(--font-sans), sans-serif;
+}
+.ps .kit-display,
+.ps .kit-h1,
+.ps .kit-h2,
+.ps .kit-h3 {
+  font-family: var(--font-lexend), var(--font-sans), sans-serif;
+}
+.ps-band {
+  background: var(--kit-tint);
+  color: var(--foreground);
+}
+.ps-card {
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--kit-radius-lg);
+  padding: var(--kit-space-5);
+}
+.ps-card[data-featured="true"] {
+  border: 2px solid var(--primary);
+  box-shadow: var(--kit-shadow-md);
+}
+.ps-badge {
+  display: inline-block;
+  padding: 0.125rem var(--kit-space-2);
+  border-radius: var(--kit-radius-full);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: var(--kit-text-xs);
+  font-weight: var(--kit-weight-semibold);
+  vertical-align: middle;
+}
+.ps-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0 var(--kit-space-5);
+  border: 1px solid var(--primary);
+  border-radius: var(--kit-radius-md);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font: inherit;
+  font-weight: var(--kit-weight-semibold);
+  text-decoration: none;
+  cursor: pointer;
+}
+.ps-btn[data-variant="ghost"] {
+  background: transparent;
+  color: var(--foreground);
+  border-color: var(--border);
+}
+.ps-btn:focus-visible,
+.ps-toggle button:focus-visible,
+.ps details summary:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.ps-toggle {
+  display: inline-flex;
+  padding: var(--kit-space-1);
+  border: 1px solid var(--border);
+  border-radius: var(--kit-radius-full);
+  background: var(--muted);
+}
+.ps-toggle button {
+  min-height: 2.75rem;
+  padding: 0 var(--kit-space-4);
+  border: 0;
+  border-radius: var(--kit-radius-full);
+  background: transparent;
+  color: var(--muted-foreground);
+  font: inherit;
+  font-size: var(--kit-text-sm);
+  cursor: pointer;
+}
+.ps-toggle button[aria-pressed="true"] {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-weight: var(--kit-weight-semibold);
+}
+.ps-app {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--kit-radius-xl);
+  box-shadow: var(--kit-shadow-lg);
+  padding: var(--kit-space-5);
+}
+.ps-check {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--kit-radius-sm);
+  border: 2px solid var(--border);
+}
+.ps-check[data-done="true"] {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+}
+.ps details {
+  border-bottom: 1px solid var(--border);
+  padding-block: var(--kit-space-3);
+}
+.ps summary {
+  cursor: pointer;
+  font-weight: var(--kit-weight-semibold);
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+}
+.ps-icon {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--kit-radius-md);
+  background: var(--kit-tint-strong);
+  color: var(--kit-tint-fg);
+}
