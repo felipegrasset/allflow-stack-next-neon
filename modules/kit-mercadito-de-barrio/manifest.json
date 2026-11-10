@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "kit-mercadito-de-barrio",
+  "feature": "kit-mercadito-de-barrio",
+  "version": "0.1.0",
+  "title": "Kit Mercadito de Barrio",
+  "description": "Tienda local de alimentos y mascotas: héroe de color, categorías, ofertas, ficha, carrito, checkout simple, seguimiento y reseñas.",
+  "dependsOn": ["kit-core"],
+  "routes": [
+    {
+      "path": "/kits/mercadito-de-barrio",
+      "entry": "ui/page.tsx",
+      "group": "marketing"
+    }
+  ]
+}

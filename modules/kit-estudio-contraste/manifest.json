@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "kit-estudio-contraste",
+  "feature": "kit-estudio-contraste",
+  "version": "0.1.0",
+  "title": "Kit Estudio Contraste",
+  "description": "Landing de agencia o servicios: hero, servicios, casos, proceso de 4 pasos, equipo, precios, testimonios, formulario de lead y CTA final.",
+  "dependsOn": ["kit-core"],
+  "routes": [
+    {
+      "path": "/kits/estudio-contraste",
+      "entry": "ui/page.tsx",
+      "group": "marketing"
+    }
+  ]
+}
