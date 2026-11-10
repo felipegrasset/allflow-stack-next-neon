@@ -23,7 +23,7 @@
     "test:kits": "tsx --test tests/kit-core.test.ts",
     "test:kits:e2e": "playwright test -c playwright.kits.config.ts",
     "test:i18n": "tsx --test tests/i18n.test.ts",
-    "test:landing": "tsx --test tests/landing.test.ts",
+    "test:landing": "tsx --test tests/landing.test.ts tests/landing-templates.test.ts",
     "test:rate-limit": "tsx --env-file-if-exists=.env.local --test tests/rate-limit.test.ts",
     "test:e2e": "playwright test"
   },
