@@ -1,0 +1,145 @@
+/* Segunda Vuelta: azul comunitario, móvil primero, tarjetas claras. Solo tokens. */
+.sv {
+  background: var(--kit-tint);
+  color: var(--foreground);
+  font-family: var(--font-inter), var(--font-sans), sans-serif;
+}
+.sv .kit-display,
+.sv .kit-h1,
+.sv .kit-h2,
+.sv .kit-h3 {
+  font-family: var(--font-manrope), var(--font-sans), sans-serif;
+}
+.sv-card {
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--kit-radius-lg);
+}
+.sv-thumb {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1 / 1;
+  background: var(--kit-tint-strong);
+  color: var(--kit-tint-fg);
+  border-radius: var(--kit-radius-md);
+  overflow: hidden;
+}
+.sv-thumb::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    color-mix(in oklab, var(--kit-tint-fg) 18%, transparent) 1.5px,
+    transparent 1.5px
+  );
+  background-size: 14px 14px;
+}
+.sv-thumb > * {
+  position: relative;
+}
+.sv-chip {
+  min-height: 2.75rem;
+  padding: 0 var(--kit-space-4);
+  border-radius: var(--kit-radius-full);
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--card-foreground);
+  font: inherit;
+  font-size: var(--kit-text-sm);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.sv-chip[aria-pressed="true"] {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+.sv-chip:focus-visible,
+.sv-btn:focus-visible,
+.sv-input:focus-visible,
+.sv-fav:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.sv-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--kit-space-2);
+  min-height: 3rem;
+  padding: 0 var(--kit-space-5);
+  border: 0;
+  border-radius: var(--kit-radius-md);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font: inherit;
+  font-weight: var(--kit-weight-bold);
+  text-decoration: none;
+  cursor: pointer;
+}
+.sv-btn[data-variant="ghost"] {
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+}
+.sv-input {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0 var(--kit-space-4);
+  border: 1px solid var(--input);
+  border-radius: var(--kit-radius-md);
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+}
+.sv-fav {
+  position: absolute;
+  top: var(--kit-space-2);
+  right: var(--kit-space-2);
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  border-radius: var(--kit-radius-full);
+  background: color-mix(in oklab, var(--background) 85%, transparent);
+  color: var(--foreground);
+  cursor: pointer;
+}
+.sv-bubble {
+  max-width: 80%;
+  padding: var(--kit-space-3) var(--kit-space-4);
+  border-radius: var(--kit-radius-lg);
+}
+.sv-bubble[data-who="me"] {
+  align-self: flex-end;
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+.sv-bubble[data-who="seller"] {
+  background: var(--muted);
+  color: var(--foreground);
+}
+.sv-sheet {
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--kit-radius-xl) var(--kit-radius-xl) 0 0;
+  box-shadow: var(--kit-shadow-lg);
+  padding: var(--kit-space-5);
+}
+.sv-grab {
+  width: 3rem;
+  height: 0.25rem;
+  margin: 0 auto var(--kit-space-4);
+  border-radius: var(--kit-radius-full);
+  background: var(--border);
+}
+.sv-scroll {
+  display: flex;
+  gap: var(--kit-space-2);
+  overflow-x: auto;
+  padding-bottom: var(--kit-space-2);
+}

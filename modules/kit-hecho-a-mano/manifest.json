@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "kit-hecho-a-mano",
+  "feature": "kit-hecho-a-mano",
+  "version": "0.1.0",
+  "title": "Kit Hecho a Mano",
+  "description": "Portafolio y tienda de creadores, juguetón y plano: héroe con borde grueso, proyectos, tienda simple, sobre mí, tarifas, contacto, boletín, galería y estados.",
+  "dependsOn": ["kit-core"],
+  "routes": [
+    {
+      "path": "/kits/hecho-a-mano",
+      "entry": "ui/page.tsx",
+      "group": "marketing"
+    }
+  ]
+}

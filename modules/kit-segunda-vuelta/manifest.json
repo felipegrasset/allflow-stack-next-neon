@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "kit-segunda-vuelta",
+  "feature": "kit-segunda-vuelta",
+  "version": "0.1.0",
+  "title": "Kit Segunda Vuelta",
+  "description": "Marketplace móvil de segunda mano: búsqueda, chips, grilla de 2 columnas, ficha, chat con el vendedor, publicar, favoritos, perfil, filtros en hoja y estados.",
+  "dependsOn": ["kit-core"],
+  "routes": [
+    {
+      "path": "/kits/segunda-vuelta",
+      "entry": "ui/page.tsx",
+      "group": "marketing"
+    }
+  ]
+}
