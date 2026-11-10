@@ -119,6 +119,10 @@ export const PENDING_LITERALS: Record<string, string> = {
   "app/dev/": "galería de desarrollo (/dev/home-gallery): no llega al usuario",
   "modules/_examples/":
     "módulo de ejemplo del contrato: no se instala en las apps",
+  "modules/kit-":
+    "kits de UI (T17): texto de demostración y valores por defecto que cada app reemplaza por props; el contrato aún no tiene punto de extensión `messages`",
+  "modules/notifications/copy.ts":
+    "copy de notificaciones en español: falta el punto de extensión `messages` del contrato (pendiente documentado en el PR de T4)",
 }
 
 const TEXT_ATTRS = new Set([
