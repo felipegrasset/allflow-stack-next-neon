@@ -5,13 +5,14 @@ import { useEffect } from "react"
 import { StatusScreen } from "@/components/system/status-screen"
 import { ButtonLink } from "@/components/button-link"
 import { Button } from "@/components/ui/button"
-import { authCopy } from "@/lib/copy/auth"
+import { useCopy } from "@/modules/i18n/ui/use-copy"
 
 /**
  * Error boundary of every route under the root layout. `retry()` (Next 16.3)
  * re-fetches and re-renders the segment; the old `reset()` only re-renders.
  */
 export default function ErrorPage({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
+  const authCopy = useCopy("auth")
   useEffect(() => {
     console.error(error)
   }, [error])

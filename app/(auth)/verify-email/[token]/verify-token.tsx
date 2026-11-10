@@ -7,12 +7,13 @@ import { StatusScreen } from "@/components/system/status-screen"
 import { ButtonLink } from "@/components/button-link"
 import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth-client"
-import { authCopy } from "@/lib/copy/auth"
+import { useCopy } from "@/modules/i18n/ui/use-copy"
 
 type State = { kind: "loading" } | { kind: "ok" } | { kind: "error"; expired: boolean }
 
 /** Verification callback: full-screen spinner → verified + CTA, or expired/invalid + "ask for a new link". */
 export function VerifyToken({ token }: { token: string }) {
+  const authCopy = useCopy("auth")
   const [state, setState] = useState<State>({ kind: "loading" })
   const started = useRef(false)
   const c = authCopy.verifyCallback

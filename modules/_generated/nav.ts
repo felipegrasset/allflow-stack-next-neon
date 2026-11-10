@@ -2,6 +2,7 @@
 
 import type { ModuleHeaderSlot, ModuleNavItem } from "../contract/types"
 import { nav as nav_notifications } from "../notifications/nav"
+import header_i18n from "../i18n/header"
 import header_notifications from "../notifications/header"
 
 export const moduleNavItems: ModuleNavItem[] = [
@@ -9,5 +10,6 @@ export const moduleNavItems: ModuleNavItem[] = [
 ]
 
 export const moduleHeaderSlots: { id: string; Slot: ModuleHeaderSlot }[] = [
+  { id: "i18n", Slot: header_i18n },
   { id: "notifications", Slot: header_notifications },
 ]

@@ -42,8 +42,14 @@ test("ciclo completo del piso mínimo", async ({ page }) => {
   await page.getByRole("button", { name: "Siguiente" }).click()
   await page.getByLabel("Idioma").selectOption("en")
   await page.getByRole("button", { name: "Siguiente" }).click()
-  await expect(page.getByText("Paso 3 de 3")).toBeVisible()
+  // The language chosen in step 2 takes effect at once: the wizard is now in English.
+  await expect(page.getByText("Step 3 of 3")).toBeVisible()
   await expect(page.getByText("English")).toBeVisible()
+  // Back to Spanish (also at once), so the rest of the cycle reads in Spanish.
+  await page.getByRole("button", { name: "Back" }).click()
+  await page.getByLabel("Language").selectOption("es")
+  await page.getByRole("button", { name: "Next" }).click()
+  await expect(page.getByText("Paso 3 de 3")).toBeVisible()
   await page.getByRole("button", { name: "Terminar" }).click()
   await expect(page.getByTestId("session-email")).toContainText(email)
   await expect(page.getByRole("heading", { name: "Hola, Flor Onboarding" })).toBeVisible()
@@ -54,7 +60,7 @@ test("ciclo completo del piso mínimo", async ({ page }) => {
 
   // ── Perfil: estado sucio, guardar, toast ─────────────────────────────────
   await page.goto("/settings/profile")
-  await expect(page.getByLabel("Idioma")).toHaveValue("en")
+  await expect(page.locator("#locale")).toHaveValue("es")
   await page.getByLabel("Nombre").fill("Flor Perfil")
   await expect(page.getByTestId("dirty-hint")).toBeVisible()
   await page.getByRole("link", { name: "Seguridad" }).click()
