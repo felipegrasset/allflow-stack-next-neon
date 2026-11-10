@@ -102,4 +102,4 @@ Un PR de actualización del template que deba tocar `components/ui/**` o
 - **Desinstalar la base:** quitar un módulo con migraciones aplicadas es manual (ver `MODULE.md`).
 - **Choque semántico con la génesis (H6):** si la spec tiene «Producto» y se instala `catalog`, hay dos tablas. El analista tiene que saber qué entidades cubre un módulo.
 - **Forge:** instalar un módulo en una app generada exige que la saga corra `pnpm modules:sync` después de copiar la carpeta (el overlay copia archivos, no genera los shims ni los registros).
-- **Textos por clave (i18n):** hasta que exista el módulo `i18n` (T4), el texto de `nav.ts` va literal.
+- **Textos por clave (i18n):** el módulo `i18n` ya existe, pero el contrato no tiene un punto de extensión para que un módulo aporte su propio catálogo: hoy se suma a mano a `modules/i18n/messages/`. El `label` de `nav.ts` puede ser una clave (`"ping.nav"`); `AppShell` la traduce, y lo que no es clave se muestra tal cual.

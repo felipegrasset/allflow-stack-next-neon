@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useMemo, useState, useTransition } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 
@@ -8,13 +8,15 @@ import { FormAlert } from "@/components/form-alert"
 import { SubmitButton } from "@/components/submit-button"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { authCopy } from "@/lib/copy/auth"
 import { describedBy } from "@/lib/forms"
-import { emailOnlySchema, type EmailOnlyInput } from "@/lib/schemas/auth"
+import { authSchemas, type EmailOnlyInput } from "@/lib/schemas/auth"
 import { forgotPasswordAction } from "../actions"
+import { useCopy } from "@/modules/i18n/ui/use-copy"
 
 /** Success is the SAME message for every email: it never reveals whether an account exists. */
 export function ForgotPasswordForm() {
+  const authCopy = useCopy("auth")
+  const { emailOnlySchema } = useMemo(() => authSchemas(authCopy.validation), [authCopy])
   const [isPending, startTransition] = useTransition()
   const [sent, setSent] = useState<string | null>(null)
   const {

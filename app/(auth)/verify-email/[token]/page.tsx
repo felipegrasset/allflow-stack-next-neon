@@ -1,9 +1,12 @@
 import type { Metadata } from "next"
 
-import { authCopy } from "@/lib/copy/auth"
 import { VerifyToken } from "./verify-token"
+import { getCopy } from "@/modules/i18n/server/copy"
 
-export const metadata: Metadata = { title: authCopy.verifyCallback.title }
+export async function generateMetadata(): Promise<Metadata> {
+  const authCopy = await getCopy("auth")
+  return { title: authCopy.verifyCallback.title }
+}
 
 /**
  * Where the verification email points (server/email/templates.ts rewrites

@@ -63,7 +63,7 @@ jobs:
         run: pnpm test:sentinels
 
       - name: Module contract (manifests, generated registries, install in a copy)
-        run: pnpm modules:check && pnpm test:modules && pnpm test:landing
+        run: pnpm modules:check && pnpm test:modules && pnpm test:i18n && pnpm test:landing
 
       # Fails when the branch edits components/ui/** or server/auth/**, or a
       # genesis anchor while adding a module. An AllFlow template update PR

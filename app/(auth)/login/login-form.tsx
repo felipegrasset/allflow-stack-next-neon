@@ -1,6 +1,6 @@
 "use client"
 
-import { useTransition } from "react"
+import { useMemo, useTransition } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Controller, useForm } from "react-hook-form"
@@ -10,12 +10,14 @@ import { FormAlert } from "@/components/form-alert"
 import { SubmitButton } from "@/components/submit-button"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { authCopy } from "@/lib/copy/auth"
 import { describedBy } from "@/lib/forms"
-import { loginSchema, type LoginInput } from "@/lib/schemas/auth"
+import { authSchemas, type LoginInput } from "@/lib/schemas/auth"
 import { loginAction } from "../actions"
+import { useCopy } from "@/modules/i18n/ui/use-copy"
 
 export function LoginForm({ next }: { next: string }) {
+  const authCopy = useCopy("auth")
+  const { loginSchema } = useMemo(() => authSchemas(authCopy.validation), [authCopy])
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const {

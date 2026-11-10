@@ -3,20 +3,17 @@
 import { headers } from "next/headers"
 import { APIError } from "better-auth/api"
 
-import { authCopy } from "@/lib/copy/auth"
 import { sql } from "@/lib/db"
 import {
-  emailOnlySchema,
-  loginSchema,
-  resetPasswordSchema,
+  authSchemas,
   safeNext,
-  signUpSchema,
   type EmailOnlyInput,
   type FormResult,
   type LoginInput,
   type ResetPasswordInput,
   type SignUpInput,
 } from "@/lib/schemas/auth"
+import { getCopy } from "@/modules/i18n/server/copy"
 import { auth } from "@/server/auth"
 import { limit } from "@/server/rate-limit"
 import { emailVerificationRequired } from "@/server/email/send"
@@ -28,8 +25,6 @@ import { emailVerificationRequired } from "@/server/email/send"
  * Better Auth's own HTTP rate limiter.
  */
 
-const c = authCopy
-
 function codeOf(err: unknown): string | undefined {
   if (err instanceof APIError) return (err.body as { code?: string } | undefined)?.code
   return undefined
@@ -38,6 +33,8 @@ function codeOf(err: unknown): string | undefined {
 const tooMany = (err: unknown) => err instanceof APIError && err.status === "TOO_MANY_REQUESTS"
 
 export async function signUpAction(input: unknown): Promise<FormResult<keyof SignUpInput>> {
+  const c = await getCopy("auth")
+  const { signUpSchema } = authSchemas(c.validation)
   const parsed = signUpSchema.safeParse(input)
   if (!parsed.success) return { ok: false, formError: c.errors.invalidForm }
 
@@ -74,6 +71,8 @@ export async function signUpAction(input: unknown): Promise<FormResult<keyof Sig
 }
 
 export async function loginAction(input: unknown, next?: string): Promise<FormResult<keyof LoginInput>> {
+  const c = await getCopy("auth")
+  const { loginSchema } = authSchemas(c.validation)
   const parsed = loginSchema.safeParse(input)
   if (!parsed.success) return { ok: false, formError: c.errors.invalidForm }
 
@@ -98,6 +97,8 @@ export async function loginAction(input: unknown, next?: string): Promise<FormRe
 
 /** Magic link. Always the same answer, whether or not the account exists. */
 export async function magicLinkAction(input: unknown, next?: string): Promise<FormResult<keyof EmailOnlyInput>> {
+  const c = await getCopy("auth")
+  const { emailOnlySchema } = authSchemas(c.validation)
   const parsed = emailOnlySchema.safeParse(input)
   if (!parsed.success) return { ok: false, formError: c.errors.invalidForm }
 
@@ -122,6 +123,8 @@ export async function magicLinkAction(input: unknown, next?: string): Promise<Fo
  * the rate limit can say no, and it says the same for every email.
  */
 export async function forgotPasswordAction(input: unknown): Promise<FormResult<keyof EmailOnlyInput>> {
+  const c = await getCopy("auth")
+  const { emailOnlySchema } = authSchemas(c.validation)
   const parsed = emailOnlySchema.safeParse(input)
   if (!parsed.success) return { ok: false, formError: c.errors.invalidForm }
 
@@ -141,6 +144,8 @@ export async function forgotPasswordAction(input: unknown): Promise<FormResult<k
 }
 
 export async function resetPasswordAction(input: unknown): Promise<FormResult<keyof ResetPasswordInput>> {
+  const c = await getCopy("auth")
+  const { resetPasswordSchema } = authSchemas(c.validation)
   const parsed = resetPasswordSchema.safeParse(input)
   if (!parsed.success) return { ok: false, formError: c.errors.invalidForm }
 
@@ -166,6 +171,8 @@ export async function resetPasswordAction(input: unknown): Promise<FormResult<ke
 export async function resendVerificationAction(
   input: unknown
 ): Promise<FormResult<keyof EmailOnlyInput> & { retryAfter?: number }> {
+  const c = await getCopy("auth")
+  const { emailOnlySchema } = authSchemas(c.validation)
   const parsed = emailOnlySchema.safeParse(input)
   if (!parsed.success) return { ok: false, formError: c.errors.invalidForm }
 
