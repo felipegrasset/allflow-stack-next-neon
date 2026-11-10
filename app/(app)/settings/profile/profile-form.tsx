@@ -1,6 +1,6 @@
 "use client"
 
-import { useTransition } from "react"
+import { useMemo, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -13,12 +13,14 @@ import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/c
 import { Input } from "@/components/ui/input"
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { toast } from "@/components/ui/toast"
-import { profileCopy } from "@/lib/copy/profile"
 import { describedBy } from "@/lib/forms"
-import { LOCALES, profileSchema, type ProfileInput } from "@/lib/schemas/profile"
+import { LOCALES, profileSchemas, type ProfileInput } from "@/lib/schemas/profile"
 import { updateProfileAction } from "../actions"
+import { useCopy } from "@/modules/i18n/ui/use-copy"
 
 export function ProfileForm({ email, initial }: { email: string; initial: ProfileInput }) {
+  const profileCopy = useCopy("profile")
+  const { profileSchema } = useMemo(() => profileSchemas(profileCopy.validation), [profileCopy])
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const c = profileCopy.profile

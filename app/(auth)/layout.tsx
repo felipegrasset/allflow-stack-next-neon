@@ -2,6 +2,7 @@ import Link from "next/link"
 
 import { BrandMark } from "@/components/brand-mark"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { LanguageSwitcher } from "@/modules/i18n/ui/language-switcher"
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -10,7 +11,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <Link href="/" className="text-sm font-medium">
           <BrandMark />
         </Link>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher />
+          <ThemeToggle />
+        </div>
       </header>
       <main id="contenido" className="flex flex-1 items-center justify-center p-6">
         <div className="w-full max-w-sm">{children}</div>

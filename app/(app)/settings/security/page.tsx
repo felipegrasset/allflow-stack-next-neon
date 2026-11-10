@@ -1,15 +1,19 @@
 import type { Metadata } from "next"
 import { headers } from "next/headers"
 
-import { profileCopy } from "@/lib/copy/profile"
 import { auth } from "@/server/auth"
 import { requireOnboardedUser } from "@/server/session"
 import { ChangePasswordForm } from "./change-password-form"
 import { SessionsCard } from "./sessions-card"
+import { getCopy } from "@/modules/i18n/server/copy"
 
-export const metadata: Metadata = { title: profileCopy.security.metaTitle }
+export async function generateMetadata(): Promise<Metadata> {
+  const profileCopy = await getCopy("profile")
+  return { title: profileCopy.security.metaTitle }
+}
 
 export default async function SecurityPage() {
+  const profileCopy = await getCopy("profile")
   await requireOnboardedUser("/settings/security")
   const sessions = await auth.api.listSessions({ headers: await headers() })
   return (

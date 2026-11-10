@@ -3,10 +3,10 @@
 import { headers } from "next/headers"
 import { revalidatePath } from "next/cache"
 
-import { profileCopy } from "@/lib/copy/profile"
 import { sql } from "@/lib/db"
 import type { FormResult } from "@/lib/schemas/auth"
 import { removeMemberSchema, updateRoleSchema } from "@/lib/schemas/profile"
+import { getCopy } from "@/modules/i18n/server/copy"
 import { auth } from "@/server/auth"
 import { getDefaultOrganizationId, requireAdmin } from "@/server/session"
 
@@ -25,6 +25,7 @@ async function isSelf(memberId: string, userId: string): Promise<boolean> {
 
 export async function updateMemberRoleAction(input: unknown): Promise<FormResult<never>> {
   const { session } = await requireAdmin("/admin/users")
+  const profileCopy = await getCopy("profile")
   const parsed = updateRoleSchema.safeParse(input)
   const organizationId = await getDefaultOrganizationId()
   if (!parsed.success || !organizationId) return { ok: false, formError: profileCopy.adminUsers.failed }
@@ -44,6 +45,7 @@ export async function updateMemberRoleAction(input: unknown): Promise<FormResult
 
 export async function removeMemberAction(input: unknown): Promise<FormResult<never>> {
   const { session } = await requireAdmin("/admin/users")
+  const profileCopy = await getCopy("profile")
   const parsed = removeMemberSchema.safeParse(input)
   const organizationId = await getDefaultOrganizationId()
   if (!parsed.success || !organizationId) return { ok: false, formError: profileCopy.adminUsers.failed }

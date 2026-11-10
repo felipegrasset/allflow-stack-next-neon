@@ -1,8 +1,9 @@
 import { BrandMark } from "@/components/brand-mark"
 import { ButtonLink } from "@/components/button-link"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { authCopy } from "@/lib/copy/auth"
 import { APP_TITLE } from "@/lib/site"
+import { LanguageSwitcher } from "@/modules/i18n/ui/language-switcher"
+import { getCopy } from "@/modules/i18n/server/copy"
 
 /**
  * The public landing (signed out). Rendered by app/page.tsx — a route group
@@ -10,13 +11,17 @@ import { APP_TITLE } from "@/lib/site"
  * which of the two to show. The genesis replaces this file with the app's
  * headline, value proposition and bullets.
  */
-export function Landing() {
+export async function Landing() {
+  const authCopy = await getCopy("auth")
   const c = authCopy.shell
   return (
     <div className="flex min-h-svh flex-col">
       <header className="flex items-center justify-between border-b p-4">
         <BrandMark className="text-sm font-medium" />
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher />
+          <ThemeToggle />
+        </div>
       </header>
       <main
         id="contenido"
