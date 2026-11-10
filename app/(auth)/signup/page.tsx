@@ -2,12 +2,16 @@ import type { Metadata } from "next"
 import Link from "next/link"
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { authCopy } from "@/lib/copy/auth"
 import { SignUpForm } from "./signup-form"
+import { getCopy } from "@/modules/i18n/server/copy"
 
-export const metadata: Metadata = { title: authCopy.signup.title }
+export async function generateMetadata(): Promise<Metadata> {
+  const authCopy = await getCopy("auth")
+  return { title: authCopy.signup.title }
+}
 
-export default function SignUpPage() {
+export default async function SignUpPage() {
+  const authCopy = await getCopy("auth")
   const c = authCopy.signup
   return (
     <Card>

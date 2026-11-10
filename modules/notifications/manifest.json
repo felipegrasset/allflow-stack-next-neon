@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "id": "notifications",
+  "feature": "notifications",
+  "version": "0.1.0",
+  "title": "Notificaciones",
+  "description": "Notificaciones internas por persona: tabla, página /notifications, contador de no leídas en la cabecera y notify() para que otros módulos avisen. Sin popover y sin correo.",
+  "tables": ["notifications"],
+  "migrations": ["0100_notifications_init"],
+  "routes": [{ "path": "/notifications", "entry": "ui/page.tsx" }],
+  "entrypoints": {
+    "nav": "nav.ts",
+    "permissions": "permissions.ts",
+    "header": "header.tsx",
+    "seed": "seed.ts"
+  }
+}

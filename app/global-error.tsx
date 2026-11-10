@@ -1,7 +1,7 @@
 "use client"
 
-import { authCopy } from "@/lib/copy/auth"
 import { APP_TITLE } from "@/lib/site"
+import { useDocumentCopy } from "@/modules/i18n/ui/use-document-copy"
 import "./globals.css"
 
 /**
@@ -13,8 +13,9 @@ import "./globals.css"
 const THEME = `try{document.documentElement.classList.toggle("dark",localStorage.theme==="dark"||(localStorage.theme!=="light"&&matchMedia("(prefers-color-scheme: dark)").matches))}catch(e){}`
 
 export default function GlobalError({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
+  const { copy: authCopy, locale } = useDocumentCopy("auth")
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME }} />
         <title>{`${authCopy.globalError.title} · ${APP_TITLE}`}</title>

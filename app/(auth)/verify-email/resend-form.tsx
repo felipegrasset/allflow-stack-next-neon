@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useTransition } from "react"
+import { useEffect, useMemo, useState, useTransition } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 
@@ -9,10 +9,10 @@ import { SubmitButton } from "@/components/submit-button"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/components/ui/toast"
-import { authCopy } from "@/lib/copy/auth"
 import { describedBy } from "@/lib/forms"
-import { emailOnlySchema, type EmailOnlyInput } from "@/lib/schemas/auth"
+import { authSchemas, type EmailOnlyInput } from "@/lib/schemas/auth"
 import { resendVerificationAction } from "../actions"
+import { useCopy } from "@/modules/i18n/ui/use-copy"
 
 export const RESEND_COOLDOWN_S = 60
 
@@ -23,6 +23,8 @@ export const RESEND_COOLDOWN_S = 60
  * server enforces the same 60 s (server/rate-limit.ts).
  */
 export function ResendVerificationForm({ initialEmail }: { initialEmail: string | null }) {
+  const authCopy = useCopy("auth")
+  const { emailOnlySchema } = useMemo(() => authSchemas(authCopy.validation), [authCopy])
   const [isPending, startTransition] = useTransition()
   const [remaining, setRemaining] = useState(initialEmail ? RESEND_COOLDOWN_S : 0)
   const c = authCopy.verifyEmail

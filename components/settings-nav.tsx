@@ -3,17 +3,17 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
-import { profileCopy } from "@/lib/copy/profile"
 import { cn } from "@/lib/utils"
-
-const LINKS = [
-  { href: "/settings/profile", label: profileCopy.settings.profile },
-  { href: "/settings/security", label: profileCopy.settings.security },
-]
+import { useCopy } from "@/modules/i18n/ui/use-copy"
 
 /** Tabs-looking links (real navigation, so aria-current, not role="tab"). */
 export function SettingsNav() {
   const pathname = usePathname()
+  const profileCopy = useCopy("profile")
+  const LINKS = [
+    { href: "/settings/profile", label: profileCopy.settings.profile },
+    { href: "/settings/security", label: profileCopy.settings.security },
+  ]
   return (
     <nav aria-label={profileCopy.settings.nav} className="flex gap-1 border-b">
       {LINKS.map((l) => {
