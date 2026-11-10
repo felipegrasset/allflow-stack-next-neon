@@ -20,6 +20,8 @@
     "modules:guard": "tsx scripts/modules.ts guard",
     "test:sentinels": "tsx --test tests/sentinels.test.ts",
     "test:modules": "tsx --test tests/modules-contract.test.ts",
+    "test:kits": "tsx --test tests/kit-core.test.ts",
+    "test:kits:e2e": "playwright test -c playwright.kits.config.ts",
     "test:rate-limit": "tsx --env-file-if-exists=.env.local --test tests/rate-limit.test.ts",
     "test:e2e": "playwright test"
   },
