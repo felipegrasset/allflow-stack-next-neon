@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "kit-tienda-un-enlace",
+  "feature": "kit-tienda-un-enlace",
+  "version": "0.1.0",
+  "title": "Kit Tienda de un Enlace",
+  "description": "Tienda móvil para creadores y servicios: perfil, productos digitales, reserva, cupón, pago, descargas, estadísticas, clientes y editor del enlace.",
+  "dependsOn": ["kit-core"],
+  "routes": [
+    {
+      "path": "/kits/tienda-un-enlace",
+      "entry": "ui/page.tsx",
+      "group": "marketing"
+    }
+  ]
+}

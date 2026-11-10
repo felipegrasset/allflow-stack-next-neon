@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "kit-landing-ia-nocturna",
+  "feature": "kit-landing-ia-nocturna",
+  "version": "0.1.0",
+  "title": "Kit Landing de IA Nocturna",
+  "description": "Landing oscura de producto de IA: hero con maqueta, banda de logos, bento de funciones, cómo funciona, precios, FAQ, prueba social y CTA.",
+  "dependsOn": ["kit-core"],
+  "routes": [
+    {
+      "path": "/kits/landing-ia-nocturna",
+      "entry": "ui/page.tsx",
+      "group": "marketing"
+    }
+  ]
+}

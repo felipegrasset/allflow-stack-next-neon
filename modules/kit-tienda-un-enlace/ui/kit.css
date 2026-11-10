@@ -1,0 +1,139 @@
+/* Tienda de un Enlace: móvil primero, columna de teléfono + panel. Solo tokens. */
+.ue {
+  background: var(--kit-tint);
+  color: var(--foreground);
+  font-family: var(--font-jakarta), var(--font-sans), sans-serif;
+  min-height: 100vh;
+}
+.ue .kit-display,
+.ue .kit-h1,
+.ue .kit-h2,
+.ue .kit-h3 {
+  font-family: var(--font-jakarta), var(--font-sans), sans-serif;
+}
+.ue-phone {
+  width: 100%;
+  max-width: 26rem;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--kit-space-4);
+}
+@media (min-width: 64rem) {
+  .ue-phone {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--kit-radius-xl);
+    padding: var(--kit-space-5);
+    box-shadow: var(--kit-shadow-lg);
+  }
+}
+.ue-link {
+  display: flex;
+  align-items: center;
+  gap: var(--kit-space-3);
+  padding: var(--kit-space-4);
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 2px solid var(--border);
+  border-radius: var(--kit-radius-lg);
+  text-decoration: none;
+  transition: border-color var(--kit-dur) var(--kit-ease);
+}
+.ue-link:hover {
+  border-color: var(--primary);
+}
+.ue-link:focus-visible,
+.ue-slot:focus-visible,
+.ue-btn:focus-visible,
+.ue-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.ue-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--kit-radius-md);
+  background: var(--kit-tint-strong);
+  color: var(--kit-tint-fg);
+}
+.ue-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--kit-space-2);
+  min-height: 3rem;
+  padding: 0 var(--kit-space-5);
+  border: 0;
+  border-radius: var(--kit-radius-full);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font: inherit;
+  font-weight: var(--kit-weight-bold);
+  cursor: pointer;
+  text-decoration: none;
+}
+.ue-slot {
+  min-height: 2.75rem;
+  padding: 0 var(--kit-space-4);
+  border-radius: var(--kit-radius-full);
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--card-foreground);
+  font: inherit;
+  cursor: pointer;
+}
+.ue-slot[aria-pressed="true"] {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+.ue-card {
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--kit-radius-lg);
+  padding: var(--kit-space-5);
+}
+.ue-coupon {
+  border: 2px dashed var(--primary);
+  border-radius: var(--kit-radius-lg);
+  padding: var(--kit-space-4);
+  background: var(--card);
+  color: var(--card-foreground);
+}
+.ue-avatar {
+  display: grid;
+  place-items: center;
+  width: 5rem;
+  height: 5rem;
+  border-radius: var(--kit-radius-full);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: var(--kit-text-2xl);
+  font-weight: var(--kit-weight-bold);
+}
+.ue-input {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0 var(--kit-space-4);
+  border: 1px solid var(--input);
+  border-radius: var(--kit-radius-md);
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+}
+.ue-bar {
+  height: 0.5rem;
+  border-radius: var(--kit-radius-full);
+  background: var(--muted);
+  overflow: hidden;
+}
+.ue-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--primary);
+}
