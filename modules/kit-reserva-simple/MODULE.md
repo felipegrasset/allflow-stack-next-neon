@@ -31,6 +31,10 @@ Código propio de AllFlow. Íconos de `lucide-react` (ISC). Sin imágenes ni fue
 4. Re-temático: solo `--brand-h` y `--brand-c` (la vista previa los fija con `<KitTheme h={40} c={0.16}>`; en tu app quita el envoltorio).
 5. Desinstalar: borrar la carpeta y `pnpm modules:sync`.
 
+## Encabezado en móvil
+
+A menos de 48 rem el kit oculta la navegación del `KitHeader` con su propio CSS (no cabe junto a la marca y la acción). No depende de ningún cambio del núcleo.
+
 ## Variables de entorno
 
 Ninguna.

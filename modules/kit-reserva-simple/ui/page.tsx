@@ -32,7 +32,7 @@ export default function ReservaSimple() {
         actions={
           <a className="rs-call" href="#reservar">
             <Phone className="mr-2 size-4" aria-hidden="true" />
-            {copy.callLabel}
+            <span>{copy.callLabel}</span>
           </a>
         }
       />

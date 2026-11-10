@@ -456,3 +456,10 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+
+/* En 375 px el encabezado del núcleo no cabe con 4 enlaces: la navegación ya vive en la página. */
+@media (max-width: 47.99rem) {
+  .pc .kit-header__nav {
+    display: none;
+  }
+}

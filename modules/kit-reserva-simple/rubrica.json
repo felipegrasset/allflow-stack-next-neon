@@ -15,10 +15,10 @@
     "escala_tipografica": 2,
     "imagen": 1,
     "estados": 2,
-    "movil_primero": 1,
+    "movil_primero": 2,
     "contraste_aa": 2,
     "coherencia_tema": 2
   },
   "revisado": "2026-11-10",
-  "notas": "Móvil: la marca del encabezado se parte en dos líneas. Axe AA claro/oscuro y sin desborde medidos con pnpm test:kits:e2e; el resto, revisado por el agente sobre las capturas de test-results/kit-shots (pendiente de la revisión humana de Felipe). Imagen = 1: no lleva fotos, solo composición con tokens e íconos."
+  "notas": "Móvil: encabezado resuelto ocultando la navegación a menos de 48 rem. Axe AA claro/oscuro y sin desborde medidos con pnpm test:kits:e2e; el resto, revisado por el agente sobre las capturas de test-results/kit-shots (incluidas las capturas en oscuro; pendiente de la revisión humana de Felipe). Imagen = 1: no lleva fotos, solo composición con tokens e íconos."
 }

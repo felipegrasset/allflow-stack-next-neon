@@ -322,3 +322,10 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+
+/* En 375 px el encabezado del núcleo no cabe con marca, enlaces y acción: se oculta la navegación (la página ya tiene sus anclas). */
+@media (max-width: 47.99rem) {
+  .tc .kit-header__nav {
+    display: none;
+  }
+}
