@@ -5,11 +5,12 @@ import { CircleAlertIcon } from "lucide-react"
 
 import { StatusScreen } from "@/components/system/status-screen"
 import { Button } from "@/components/ui/button"
-import { authCopy } from "@/lib/copy/auth"
-import { profileCopy } from "@/lib/copy/profile"
+import { useCopy } from "@/modules/i18n/ui/use-copy"
 
 /** The users list failed to load: say so, and offer to retry (re-fetches the segment). */
 export default function AdminUsersError({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
+  const authCopy = useCopy("auth")
+  const profileCopy = useCopy("profile")
   useEffect(() => {
     console.error(error)
   }, [error])

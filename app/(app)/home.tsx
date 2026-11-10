@@ -1,11 +1,12 @@
-import { authCopy } from "@/lib/copy/auth"
 
+import { getCopy } from "@/modules/i18n/server/copy"
 /**
  * The signed-in home, rendered inside the AppShell by app/page.tsx (after the
  * session and onboarding checks). Outside the read-only zones: the genesis
  * replaces this file with the domain's dashboard.
  */
-export function AppHome({ name, email, role }: { name: string; email: string; role: string | null }) {
+export async function AppHome({ name, email, role }: { name: string; email: string; role: string | null }) {
+  const authCopy = await getCopy("auth")
   const c = authCopy.shell
   return (
     <div className="flex flex-col gap-2">
