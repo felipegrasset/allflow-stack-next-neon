@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "locale": "es",
+  "blocks": [
+    { "id": "hero", "type": "hero", "variant": "split", "copy": "hero" },
+    { "id": "social", "type": "social", "variant": "stats", "copy": "social" },
+    {
+      "id": "features",
+      "type": "features",
+      "variant": "columns",
+      "copy": "features"
+    },
+    { "id": "steps", "type": "steps", "variant": "numbered", "copy": "steps" },
+    {
+      "id": "pricing",
+      "type": "pricing",
+      "variant": "cards",
+      "copy": "pricing"
+    },
+    { "id": "faq", "type": "faq", "variant": "accordion", "copy": "faq" },
+    { "id": "lead", "type": "lead", "variant": "card", "copy": "lead" },
+    { "id": "cta", "type": "cta", "variant": "band", "copy": "cta" },
+    { "id": "footer", "type": "footer", "variant": "simple", "copy": "footer" }
+  ]
+}

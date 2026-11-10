@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "id": "landing",
+  "feature": "landing",
+  "version": "0.1.0",
+  "title": "Landing (bloques)",
+  "description": "Una landing como datos: landing.json (validado con Zod) ordena 9 bloques de 2 variantes cada uno; los textos viven en copy.ts y el color sale de los tokens del tema.",
+  "routes": [
+    { "path": "/landing", "entry": "ui/page.tsx", "group": "marketing" }
+  ],
+  "env": [
+    {
+      "key": "ALLFLOW_INGEST_URL",
+      "description": "Base de la ingesta del CRM de Fulvia; el bloque de captura de lead hace POST a <base>/contacts. La fija la saga de la génesis.",
+      "example": "https://fulvia.app/api/ingest/v1"
+    },
+    {
+      "key": "ALLFLOW_INGEST_KEY",
+      "description": "Llave de ingesta de la app (Bearer afk_…). Sin ella el formulario responde con error en vez de fingir éxito."
+    },
+    {
+      "key": "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
+      "description": "Opcional. Con ella el formulario muestra Cloudflare Turnstile; sin ella queda el honeypot solo."
+    },
+    {
+      "key": "TURNSTILE_SECRET_KEY",
+      "description": "Opcional. Con ella el servidor exige y verifica el token de Turnstile."
+    }
+  ]
+}
