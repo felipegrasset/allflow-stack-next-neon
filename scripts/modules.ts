@@ -207,7 +207,7 @@ function guard(args: string[]): number {
   })
   if (!violations.length) {
     console.log(
-      `[modules:guard] ok: ${files.length} archivo(s) cambiado(s) respecto de ${base}, ninguno en zona protegida ni ancla`
+      `[modules:guard] ok: ${files.length} archivo(s) cambiado(s) respecto de ${base}, sin violaciones`
     )
     return 0
   }
