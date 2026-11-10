@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "kit-directorio-claro",
+  "feature": "kit-directorio-claro",
+  "version": "0.1.0",
+  "title": "Kit Directorio Claro",
+  "description": "Directorio de fichas (inmuebles, profesionales, empleos): buscador con filtros, lista y mapa de maqueta, ficha, contacto, favoritos, comparador y panel del anunciante.",
+  "dependsOn": ["kit-core"],
+  "routes": [
+    {
+      "path": "/kits/directorio-claro",
+      "entry": "ui/page.tsx",
+      "group": "marketing"
+    }
+  ]
+}

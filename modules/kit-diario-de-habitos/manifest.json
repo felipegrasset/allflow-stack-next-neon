@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "kit-diario-de-habitos",
+  "feature": "kit-diario-de-habitos",
+  "version": "0.1.0",
+  "title": "Kit Diario de Hábitos",
+  "description": "Seguimiento personal de salud, comida y ejercicio: anillos de progreso, registro rápido, historial, gráfico semanal, metas, recordatorios y plan.",
+  "dependsOn": ["kit-core"],
+  "routes": [
+    {
+      "path": "/kits/diario-de-habitos",
+      "entry": "ui/page.tsx",
+      "group": "marketing"
+    }
+  ]
+}
