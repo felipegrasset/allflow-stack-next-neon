@@ -22,6 +22,24 @@ Por qué: AllFlow actualiza estas dos carpetas desde el template (una rama
 `allflow/baseline` que se mergea sobre `main`). Si las editas, cada
 actualización es un conflicto. `CODEOWNERS` exige revisión de AllFlow en ambas.
 
+## 1b · Módulos (`modules/`)
+
+Una funcionalidad reutilizable (notificaciones, i18n, un bloque de landing, un
+kit de UI) va como **módulo**, no editando la app: una carpeta `modules/<id>/`
+con `MODULE.md` y `manifest.json`. Contrato completo y ejemplo vivo:
+`modules/README.md` y `modules/_examples/ping/`.
+
+- Instalar = copiar la carpeta + `pnpm modules:sync`. Quitar = revertir sus
+  migraciones, borrar la carpeta + `pnpm modules:sync`.
+- **Un módulo nunca edita** `server/db/migrate.ts`, `server/db/schema/index.ts`,
+  `server/db/seed.ts`, `config/nav.ts` ni `lib/permissions.ts`: son anclas que la
+  génesis edita por texto exacto. Se registra con su manifiesto; lo generado
+  (`modules/_generated/**`, un shim por ruta en `app/`) no se edita a mano.
+- Migraciones `0100+` (`NNNN_<id>_<algo>.ts`). Tablas con el prefijo del módulo.
+- De otro módulo solo se importa su `contracts/`. Colores por tokens, nunca
+  literales.
+- `pnpm modules:check`, `pnpm modules:guard` y `pnpm test:modules` van en el CI.
+
 ## 2 · Formularios
 
 - Familia **`Field`** de shadcn (`Field`, `FieldLabel`, `FieldDescription`,
@@ -263,6 +281,7 @@ no repitas esos textos en otros archivos. `allflow.sentinels.json` lista los
 
 ```bash
 pnpm build && pnpm tsc --noEmit && pnpm lint && pnpm test:sentinels
+pnpm modules:check && pnpm test:modules   # si tocaste modules/ (siempre es barato)
 pnpm db:migrate && pnpm test:rate-limit && pnpm test:e2e   # con DATABASE_URL apuntando a un Postgres
 ```
 

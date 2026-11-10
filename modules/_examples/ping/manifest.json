@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "id": "ping",
+  "feature": "ping",
+  "version": "0.1.0",
+  "title": "Ping (módulo de ejemplo)",
+  "description": "Una tabla, una página, un enlace en la navegación y un contador en la cabecera. Sirve de modelo y de prueba del contrato; no se instala en las apps.",
+  "tables": ["ping_pings"],
+  "migrations": ["9000_ping_init"],
+  "routes": [{ "path": "/ping", "entry": "ui/page.tsx" }],
+  "entrypoints": {
+    "nav": "nav.ts",
+    "permissions": "permissions.ts",
+    "header": "header.tsx",
+    "seed": "seed.ts"
+  }
+}

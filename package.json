@@ -15,7 +15,11 @@
     "db:migrate": "tsx --env-file-if-exists=.env.local server/db/migrate.ts",
     "db:migrate:down": "tsx --env-file-if-exists=.env.local server/db/migrate.ts --down",
     "db:seed": "tsx --env-file-if-exists=.env.local server/db/seed.ts",
+    "modules:sync": "tsx scripts/modules.ts sync",
+    "modules:check": "tsx scripts/modules.ts check",
+    "modules:guard": "tsx scripts/modules.ts guard",
     "test:sentinels": "tsx --test tests/sentinels.test.ts",
+    "test:modules": "tsx --test tests/modules-contract.test.ts",
     "test:rate-limit": "tsx --env-file-if-exists=.env.local --test tests/rate-limit.test.ts",
     "test:e2e": "playwright test"
   },

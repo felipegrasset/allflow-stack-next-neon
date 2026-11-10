@@ -9,6 +9,7 @@ import type { Kysely } from "kysely"
 
 import { backfillMembers, ensureDefaultOrganization, promoteFirstAdmin } from "@/server/auth/bootstrap"
 import type { Database } from "./schema"
+import { moduleSeeds } from "@/modules/_generated/seeds"
 
 export async function seed(db: Kysely<Database>): Promise<void> {
   const orgId = await ensureDefaultOrganization(db)
@@ -21,6 +22,11 @@ export async function seed(db: Kysely<Database>): Promise<void> {
   )
   const added = await backfillMembers(db)
   if (added) console.log(`[db:seed] ${added} usuario(s) sin membresía quedaron como member`)
+  // Modules seed after the core and the genesis (modules/_generated/seeds.ts).
+  for (const m of moduleSeeds) {
+    await m.seed(db)
+    console.log(`[db:seed] módulo ${m.id}: listo`)
+  }
 }
 
 // `tsx server/db/seed.ts` runs it standalone.

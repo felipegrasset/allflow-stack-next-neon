@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "id": "mi-modulo",
+  "feature": "mi-modulo",
+  "version": "0.1.0",
+  "title": "Mi módulo",
+  "description": "Una frase.",
+  "tables": ["mi_modulo_items"],
+  "migrations": ["0100_mi_modulo_init"],
+  "routes": [{ "path": "/mi-modulo", "entry": "ui/page.tsx" }],
+  "entrypoints": {
+    "nav": "nav.ts",
+    "permissions": "permissions.ts",
+    "header": "header.tsx",
+    "seed": "seed.ts"
+  }
+}

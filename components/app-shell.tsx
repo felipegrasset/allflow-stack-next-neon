@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { UserAvatar } from "@/components/user-avatar"
 import { BrandMark } from "@/components/brand-mark"
 import { navItems } from "@/config/nav"
+import { moduleHeaderSlots, moduleNavItems } from "@/config/nav.modules"
 import { authCopy } from "@/lib/copy/auth"
 import type { Session } from "@/server/auth"
 
@@ -33,7 +34,7 @@ export function AppShell({
             <BrandMark />
           </Link>
           <nav aria-label={c.mainNav} className="flex items-center gap-1 text-sm">
-            {navItems
+            {[...navItems, ...moduleNavItems]
               .filter((item) => !item.adminOnly || isAdmin)
               .map((item) => (
                 <ButtonLink key={item.href} href={item.href} variant="ghost" size="sm">
@@ -42,6 +43,10 @@ export function AppShell({
               ))}
           </nav>
           <div className="ml-auto flex items-center gap-2">
+            {/* Header slots of installed modules (config/nav.modules.ts). */}
+            {moduleHeaderSlots.map(({ id, Slot }) => (
+              <Slot key={id} user={user} />
+            ))}
             <ThemeToggle />
             <span className="flex items-center gap-2 text-sm">
               <UserAvatar name={user.name} image={user.image} size="sm" />
