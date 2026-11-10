@@ -20,8 +20,8 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Spinner } from "@/components/ui/spinner"
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { toast } from "@/components/ui/toast"
-import { profileCopy } from "@/lib/copy/profile"
 import { ASSIGNABLE_ROLES, type AssignableRole } from "@/lib/schemas/profile"
+import { useCopy } from "@/modules/i18n/ui/use-copy"
 import { removeMemberAction, updateMemberRoleAction } from "./actions"
 
 export type MemberRow = {
@@ -35,10 +35,10 @@ export type MemberRow = {
 
 type Confirm = { kind: "demote"; row: MemberRow; role: AssignableRole } | { kind: "remove"; row: MemberRow }
 
-const c = profileCopy.adminUsers
-const roleLabel = (role: string) => c.roles[role] ?? role
-
 export function UsersTable({ rows, currentUserId }: { rows: MemberRow[]; currentUserId: string }) {
+  const profileCopy = useCopy("profile")
+  const c = profileCopy.adminUsers
+  const roleLabel = (role: string) => (c.roles as Record<string, string>)[role] ?? role
   const [isPending, startTransition] = useTransition()
   const [busyId, setBusyId] = useState<string | null>(null)
   const [confirm, setConfirm] = useState<Confirm | null>(null)
@@ -59,7 +59,7 @@ export function UsersTable({ rows, currentUserId }: { rows: MemberRow[]; current
     if (role === row.role) return
     // Demoting an admin is destructive: confirm first. Promoting isn't.
     if (row.role === "admin" && role !== "admin") return setConfirm({ kind: "demote", row, role })
-    apply(row, () => updateMemberRoleAction({ memberId: row.id, role }), c.roleChanged(row.name, roleLabel(role)))
+    apply(row, () => updateMemberRoleAction({ memberId: row.id, role }), c.roleChanged(row.name, roleLabel(role).toLowerCase()))
   }
 
   const onConfirm = () => {

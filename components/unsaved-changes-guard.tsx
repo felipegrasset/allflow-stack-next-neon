@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
-import { profileCopy } from "@/lib/copy/profile"
+import { useCopy } from "@/modules/i18n/ui/use-copy"
 
 /**
  * Warns before leaving a form with unsaved changes ("estado sucio"):
@@ -23,6 +23,7 @@ import { profileCopy } from "@/lib/copy/profile"
  * the capture phase, before next/link handles them.
  */
 export function UnsavedChangesGuard({ dirty }: { dirty: boolean }) {
+  const profileCopy = useCopy("profile")
   const router = useRouter()
   const [pendingHref, setPendingHref] = useState<string | null>(null)
   const c = profileCopy.profile
