@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "kit-taller-claro",
+  "feature": "kit-taller-claro",
+  "version": "0.1.0",
+  "title": "Kit Taller Claro",
+  "description": "CRM liviano para pymes: pipeline kanban, contactos, ficha, tareas, actividad, semana y carga de CSV.",
+  "dependsOn": ["kit-core"],
+  "routes": [
+    {
+      "path": "/kits/taller-claro",
+      "entry": "ui/page.tsx",
+      "group": "marketing"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "kit-reserva-simple",
+  "feature": "kit-reserva-simple",
+  "version": "0.1.0",
+  "title": "Kit Reserva Simple",
+  "description": "Agenda de servicios (peluquería, taller): servicio, profesional, día y hora, datos, confirmación, recordatorio y panel de agenda.",
+  "dependsOn": ["kit-core"],
+  "routes": [
+    {
+      "path": "/kits/reserva-simple",
+      "entry": "ui/page.tsx",
+      "group": "marketing"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "kit-aula-viva",
+  "feature": "kit-aula-viva",
+  "version": "0.1.0",
+  "title": "Kit Aula Viva",
+  "description": "Academia de cursos en línea: catálogo, ruta de módulos, lección con notas, quiz, progreso, certificado y foro.",
+  "dependsOn": ["kit-core"],
+  "routes": [
+    {
+      "path": "/kits/aula-viva",
+      "entry": "ui/page.tsx",
+      "group": "marketing"
+    }
+  ]
+}
