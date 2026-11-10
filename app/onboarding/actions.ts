@@ -2,10 +2,12 @@
 
 import { headers } from "next/headers"
 
-import { profileCopy } from "@/lib/copy/profile"
 import { sql } from "@/lib/db"
 import type { FormResult } from "@/lib/schemas/auth"
-import { onboardingSchema, onboardingSteps, type OnboardingInput } from "@/lib/schemas/profile"
+import { onboardingSteps, profileSchemas, type OnboardingInput } from "@/lib/schemas/profile"
+import { isLocale } from "@/modules/i18n/contracts"
+import { getCopy } from "@/modules/i18n/server/copy"
+import { setLocaleCookie } from "@/modules/i18n/server/cookie"
 import { auth } from "@/server/auth"
 import { requireUser } from "@/server/session"
 
@@ -19,6 +21,8 @@ export async function saveOnboardingStepAction(
   input: unknown
 ): Promise<FormResult<keyof OnboardingInput>> {
   await requireUser("/onboarding")
+  const profileCopy = await getCopy("profile")
+  const { onboardingSchema } = profileSchemas(profileCopy.validation)
   const step = onboardingSteps[stepIndex]
   if (!step) return { ok: false, formError: profileCopy.common.serverError }
   if (step.fields.length === 0) return { ok: true }
@@ -37,12 +41,15 @@ export async function saveOnboardingStepAction(
     console.error("[onboarding:step]", err)
     return { ok: false, formError: profileCopy.common.serverError }
   }
+  // The language chosen in this step takes effect right away.
+  if ("locale" in parsed.data && isLocale(parsed.data.locale)) await setLocaleCookie(parsed.data.locale)
   return { ok: true }
 }
 
 /** Finish or skip: sets "onboardedAt" (input: false in Better Auth — written here, not via updateUser). */
 export async function completeOnboardingAction(): Promise<FormResult<never>> {
   const session = await requireUser("/onboarding")
+  const profileCopy = await getCopy("profile")
   try {
     await sql`update "user" set "onboardedAt" = now(), "updatedAt" = now() where id = ${session.user.id} and "onboardedAt" is null`
   } catch (err) {

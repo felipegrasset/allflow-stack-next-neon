@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "id": "i18n",
+  "feature": "i18n",
+  "version": "0.1.0",
+  "title": "Idiomas (es/en)",
+  "description": "Todo texto por clave en español e inglés, idioma elegible (selector en la cabecera, cookie, Accept-Language), lang dinámico y formato de fecha, número y moneda con Intl.",
+  "dependencies": { "next-intl": "4.13.2" },
+  "entrypoints": {
+    "header": "header.tsx"
+  }
+}

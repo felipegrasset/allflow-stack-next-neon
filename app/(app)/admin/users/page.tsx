@@ -1,13 +1,16 @@
 import type { Metadata } from "next"
 import { headers } from "next/headers"
 
-import { profileCopy } from "@/lib/copy/profile"
 import { auth } from "@/server/auth"
 import { fault, slowIfFault, throwIfFault } from "@/server/e2e-faults"
 import { getDefaultOrganizationId, requireAdmin } from "@/server/session"
 import { UsersTable, type MemberRow } from "./users-table"
+import { getCopy } from "@/modules/i18n/server/copy"
 
-export const metadata: Metadata = { title: profileCopy.adminUsers.metaTitle }
+export async function generateMetadata(): Promise<Metadata> {
+  const profileCopy = await getCopy("profile")
+  return { title: profileCopy.adminUsers.metaTitle }
+}
 
 /**
  * Admin of users: the members of the app's organization (every account joins
@@ -15,6 +18,7 @@ export const metadata: Metadata = { title: profileCopy.adminUsers.metaTitle }
  * skeleton); failure → error.tsx (retry).
  */
 export default async function AdminUsersPage() {
+  const profileCopy = await getCopy("profile")
   const { session } = await requireAdmin("/admin/users")
   await slowIfFault()
   await throwIfFault("admin-users-error")

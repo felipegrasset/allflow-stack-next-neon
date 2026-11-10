@@ -1,6 +1,6 @@
 "use client"
 
-import { useTransition } from "react"
+import { useMemo, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -12,14 +12,16 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/components/ui/toast"
-import { profileCopy } from "@/lib/copy/profile"
 import { describedBy } from "@/lib/forms"
-import { changePasswordSchema, type ChangePasswordInput } from "@/lib/schemas/profile"
+import { profileSchemas, type ChangePasswordInput } from "@/lib/schemas/profile"
 import { changePasswordAction } from "../actions"
+import { useCopy } from "@/modules/i18n/ui/use-copy"
 
 const EMPTY: ChangePasswordInput = { currentPassword: "", newPassword: "", confirm: "", revokeOtherSessions: true }
 
 export function ChangePasswordForm() {
+  const profileCopy = useCopy("profile")
+  const { changePasswordSchema } = useMemo(() => profileSchemas(profileCopy.validation), [profileCopy])
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const c = profileCopy.security

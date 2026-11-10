@@ -2,12 +2,16 @@ import type { Metadata } from "next"
 import Link from "next/link"
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { authCopy } from "@/lib/copy/auth"
 import { ForgotPasswordForm } from "./forgot-form"
+import { getCopy } from "@/modules/i18n/server/copy"
 
-export const metadata: Metadata = { title: authCopy.forgot.title }
+export async function generateMetadata(): Promise<Metadata> {
+  const authCopy = await getCopy("auth")
+  return { title: authCopy.forgot.title }
+}
 
-export default function ForgotPasswordPage() {
+export default async function ForgotPasswordPage() {
+  const authCopy = await getCopy("auth")
   const c = authCopy.forgot
   return (
     <Card>
