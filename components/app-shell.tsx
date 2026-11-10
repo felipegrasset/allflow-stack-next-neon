@@ -8,7 +8,10 @@ import { UserAvatar } from "@/components/user-avatar"
 import { BrandMark } from "@/components/brand-mark"
 import { navItems } from "@/config/nav"
 import { moduleHeaderSlots, moduleNavItems } from "@/config/nav.modules"
-import { authCopy } from "@/lib/copy/auth"
+import { getTranslations } from "next-intl/server"
+
+import { labelKey } from "@/modules/i18n/ui/labels"
+import { getCopy } from "@/modules/i18n/server/copy"
 import type { Session } from "@/server/auth"
 
 /**
@@ -16,7 +19,7 @@ import type { Session } from "@/server/auth"
  * user's avatar and logout, and the <main id="contenido"> the skip link
  * targets. Used by app/(app)/layout.tsx and the signed-in home.
  */
-export function AppShell({
+export async function AppShell({
   user,
   isAdmin,
   children,
@@ -25,7 +28,13 @@ export function AppShell({
   isAdmin: boolean
   children: React.ReactNode
 }) {
+  const authCopy = await getCopy("auth")
   const c = authCopy.shell
+  const t = await getTranslations()
+  const navLabel = (label: string) => {
+    const key = labelKey(label, (k) => t.has(k))
+    return key ? t(key) : label
+  }
   return (
     <div className="flex min-h-svh flex-col">
       <header className="border-b">
@@ -38,7 +47,7 @@ export function AppShell({
               .filter((item) => !item.adminOnly || isAdmin)
               .map((item) => (
                 <ButtonLink key={item.href} href={item.href} variant="ghost" size="sm">
-                  {item.label}
+                  {navLabel(item.label)}
                 </ButtonLink>
               ))}
           </nav>

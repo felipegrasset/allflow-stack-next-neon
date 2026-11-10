@@ -77,14 +77,32 @@ Detalles que ya resolvieron los kits (no los re-inventes):
   nunca `<Button render={<Link/>} nativeButton={false}>`: eso le da
   `role="button"` a un link.
 
-## 2b · Textos: un archivo por kit
+## 2b · Textos: un catálogo por idioma (módulo `i18n`)
 
-Todo texto visible de las pantallas vive en **`lib/copy/auth.ts`** (login,
-registro, verificación, recuperación, shell, 404/403/error) y
-**`lib/copy/profile.ts`** (onboarding, perfil, avatar, seguridad, admin de
-usuarios, loading). Las pantallas y los mensajes de los esquemas Zod importan
-de ahí; no escribas literales en los componentes. Es lo que i18n (T5) va a
-levantar entero. Los textos de los correos siguen en `server/email/templates.ts`.
+Todo texto visible vive en **`modules/i18n/messages/es.ts`** y **`en.ts`**
+(español es el idioma fuente; un espacio de nombres por kit: `auth`, `profile`,
+`i18n`). Las pantallas no escriben literales:
+
+```ts
+const copy = await getCopy("auth")   // servidor: páginas, layouts, Server Actions
+const copy = useCopy("auth")         // cliente
+copy.login.title                     // «Iniciar sesión» | «Sign in»
+copy.shell.welcome(name)             // un argumento ICU ({name}) = un parámetro
+```
+
+- **Metadatos:** `generateMetadata()` con `getCopy`; no `export const metadata` con texto.
+- **Mensajes de Zod:** dependen del idioma, así que los esquemas de `lib/schemas/auth.ts` y
+  `profile.ts` son fábricas: `authSchemas(copy.validation)`, `profileSchemas(copy.validation)`.
+- **Texto nuevo:** la clave en `es.ts` **y** en `en.ts` (el tipo y `pnpm test:i18n` fallan si falta
+  una o si cambian los argumentos). `pnpm test:i18n` también falla ante un literal visible en
+  `app/` o `modules/` (salvo lo declarado pendiente en el propio test).
+- **Fechas, números y moneda:** `formatDate`, `formatNumber`, `formatCurrency`… de
+  `@/modules/i18n/contracts`; nunca `toLocaleString` suelto.
+- **`lib/copy/auth.ts` (`authCopy`)** queda solo como texto fuente en español para lo que la
+  génesis escribe como constante (`config/nav.ts`, la landing generada). No lo uses en una pantalla.
+- El idioma lo decide la cookie `NEXT_LOCALE` (selector, perfil, onboarding) → `Accept-Language`
+  → `es`. No hay prefijo de idioma en la URL (razones en `modules/i18n/MODULE.md`).
+- Los textos de los correos siguen en `server/email/templates.ts` (español; pendiente).
 
 ## 2c · Pantallas del piso mínimo (auth-kit y profile-kit)
 
@@ -281,7 +299,7 @@ no repitas esos textos en otros archivos. `allflow.sentinels.json` lista los
 
 ```bash
 pnpm build && pnpm tsc --noEmit && pnpm lint && pnpm test:sentinels
-pnpm modules:check && pnpm test:modules   # si tocaste modules/ (siempre es barato)
+pnpm modules:check && pnpm test:modules && pnpm test:i18n   # si tocaste modules/ o textos (siempre es barato)
 pnpm db:migrate && pnpm test:rate-limit && pnpm test:e2e   # con DATABASE_URL apuntando a un Postgres
 ```
 

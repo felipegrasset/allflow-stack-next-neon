@@ -1,12 +1,14 @@
 import { Skeleton } from "@/components/ui/skeleton"
-import { profileCopy } from "@/lib/copy/profile"
+import { getCopy } from "@/modules/i18n/server/copy"
 
 /**
  * Generic page skeleton (loading.tsx). Skeletons, not spinners: they reserve
  * the layout, so nothing jumps when the content arrives. The status text is
  * for screen readers; the blocks are decorative.
  */
-export function PageSkeleton({ label = profileCopy.loading.page }: { label?: string }) {
+export async function PageSkeleton({ label }: { label?: string }) {
+  const profileCopy = await getCopy("profile")
+  label ??= profileCopy.loading.page
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6" data-testid="page-skeleton">
       <span role="status" className="sr-only">
@@ -28,7 +30,9 @@ export function PageSkeleton({ label = profileCopy.loading.page }: { label?: str
 }
 
 /** Skeleton for a form card (settings pages). */
-export function FormSkeleton({ fields = 2, label = profileCopy.loading.form }: { fields?: number; label?: string }) {
+export async function FormSkeleton({ fields = 2, label }: { fields?: number; label?: string }) {
+  const profileCopy = await getCopy("profile")
+  label ??= profileCopy.loading.form
   return (
     <div className="flex flex-col gap-4 rounded-xl border p-6" data-testid="form-skeleton">
       <span role="status" className="sr-only">
@@ -50,7 +54,9 @@ export function FormSkeleton({ fields = 2, label = profileCopy.loading.form }: {
 }
 
 /** Table skeleton (admin/users): rows of the same height as the real table. */
-export function TableSkeleton({ rows = 5, label = profileCopy.loading.table }: { rows?: number; label?: string }) {
+export async function TableSkeleton({ rows = 5, label }: { rows?: number; label?: string }) {
+  const profileCopy = await getCopy("profile")
+  label ??= profileCopy.loading.table
   return (
     <div className="rounded-xl border" data-testid="table-skeleton">
       <span role="status" className="sr-only">

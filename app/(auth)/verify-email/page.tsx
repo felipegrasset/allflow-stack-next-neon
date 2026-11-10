@@ -2,11 +2,14 @@ import type { Metadata } from "next"
 import Link from "next/link"
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { authCopy } from "@/lib/copy/auth"
-import { emailOnlySchema } from "@/lib/schemas/auth"
+import { authSchemas } from "@/lib/schemas/auth"
 import { ResendVerificationForm } from "./resend-form"
+import { getCopy } from "@/modules/i18n/server/copy"
 
-export const metadata: Metadata = { title: authCopy.verifyEmail.title }
+export async function generateMetadata(): Promise<Metadata> {
+  const authCopy = await getCopy("auth")
+  return { title: authCopy.verifyEmail.title }
+}
 
 /**
  * "Check your email" — where sign-up lands (?email=…), and where the
@@ -14,7 +17,9 @@ export const metadata: Metadata = { title: authCopy.verifyEmail.title }
  * asks for it).
  */
 export default async function VerifyEmailPage({ searchParams }: { searchParams: Promise<{ email?: string }> }) {
+  const authCopy = await getCopy("auth")
   const { email: raw } = await searchParams
+  const { emailOnlySchema } = authSchemas(authCopy.validation)
   const parsed = emailOnlySchema.safeParse({ email: raw ?? "" })
   const email = parsed.success ? parsed.data.email : null
   const c = authCopy.verifyEmail

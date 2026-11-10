@@ -1,7 +1,8 @@
 import { SettingsNav } from "@/components/settings-nav"
-import { profileCopy } from "@/lib/copy/profile"
+import { getCopy } from "@/modules/i18n/server/copy"
 
-export default function SettingsLayout({ children }: { children: React.ReactNode }) {
+export default async function SettingsLayout({ children }: { children: React.ReactNode }) {
+  const profileCopy = await getCopy("profile")
   return (
     <div className="flex flex-col gap-6">
       <p className="text-sm font-medium text-muted-foreground">{profileCopy.settings.title}</p>
