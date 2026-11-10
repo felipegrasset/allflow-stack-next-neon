@@ -60,7 +60,7 @@ test("ciclo completo del piso mínimo", async ({ page }) => {
 
   // ── Perfil: estado sucio, guardar, toast ─────────────────────────────────
   await page.goto("/settings/profile")
-  await expect(page.getByLabel("Idioma")).toHaveValue("es")
+  await expect(page.locator("#locale")).toHaveValue("es")
   await page.getByLabel("Nombre").fill("Flor Perfil")
   await expect(page.getByTestId("dirty-hint")).toBeVisible()
   await page.getByRole("link", { name: "Seguridad" }).click()
