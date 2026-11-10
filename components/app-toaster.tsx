@@ -14,19 +14,20 @@ import {
   toast,
   useToastManager,
 } from "@/components/ui/toast"
-import { authCopy } from "@/lib/copy/auth"
+import { useCopy } from "@/modules/i18n/ui/use-copy"
 
 /**
  * The app's <Toaster />, rendered once in app/layout.tsx. Without it
  * `toast.add()` does nothing and nobody notices.
  *
  * It composes components/ui/toast.tsx (read-only zone) instead of using its
- * <Toaster>, only to put the close button's label in Spanish.
+ * <Toaster>, only to put the close button's label in the active language.
  *
  *   import { toast } from "@/components/ui/toast"
- *   toast.add({ title: "Perfil actualizado", type: "success" })
+ *   toast.add({ title: copy.saved, type: "success" })
  */
 function ToastList() {
+  const authCopy = useCopy("auth")
   const { toasts } = useToastManager()
   return toasts.map((t) => (
     <Toast key={t.id} toast={t} data-testid="toast">
@@ -44,6 +45,7 @@ function ToastList() {
 }
 
 export function AppToaster() {
+  const authCopy = useCopy("auth")
   return (
     <ToastProvider toastManager={toast}>
       <ToastPortal>

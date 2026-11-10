@@ -3,17 +3,21 @@ import Link from "next/link"
 
 import { FormAlert } from "@/components/form-alert"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { authCopy } from "@/lib/copy/auth"
 import { safeNext } from "@/lib/schemas/auth"
 import { LoginPanel } from "./login-panel"
+import { getCopy } from "@/modules/i18n/server/copy"
 
-export const metadata: Metadata = { title: authCopy.login.title }
+export async function generateMetadata(): Promise<Metadata> {
+  const authCopy = await getCopy("auth")
+  return { title: authCopy.login.title }
+}
 
 export default async function LoginPage({
   searchParams,
 }: {
   searchParams: Promise<{ next?: string; reset?: string }>
 }) {
+  const authCopy = await getCopy("auth")
   const { next, reset } = await searchParams
   const c = authCopy.login
   return (

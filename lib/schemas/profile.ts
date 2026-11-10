@@ -1,41 +1,46 @@
 import { z } from "zod"
 
-import { profileCopy } from "@/lib/copy/profile"
+import type { ProfileCopy } from "@/lib/copy/profile"
+import { LOCALES } from "@/modules/i18n/contracts"
+
+export { LOCALES, type Locale } from "@/modules/i18n/contracts"
 
 /**
  * Shared by the profile kit's forms (client) and its Server Actions (server).
- * Messages come from lib/copy/profile.ts.
+ * The messages depend on the language, so the schemas are built from the
+ * `validation` group of the profile copy (see lib/schemas/auth.ts for the
+ * pattern). `LOCALES` is the i18n module's.
  */
-const v = profileCopy.validation
+export function profileSchemas(v: ProfileCopy["validation"]) {
+  const name = z.string().trim().min(1, v.nameRequired).max(100, v.nameMax)
+  const locale = z.enum(LOCALES, { error: v.localeInvalid })
 
-export const LOCALES = ["es", "en"] as const
-export type Locale = (typeof LOCALES)[number]
+  const profileSchema = z.object({ name, locale })
+  /** Onboarding: the same fields as the profile, saved one step at a time. */
+  const onboardingSchema = profileSchema
 
-const name = z.string().trim().min(1, v.nameRequired).max(100, v.nameMax)
-const locale = z.enum(LOCALES, { error: v.localeInvalid })
+  const changePasswordSchema = z
+    .object({
+      currentPassword: z.string().min(1, v.currentPasswordRequired),
+      newPassword: z.string().min(8, v.newPasswordMin).max(128, v.newPasswordMax),
+      confirm: z.string().min(1, v.confirmRequired),
+      revokeOtherSessions: z.boolean(),
+    })
+    .refine((d) => d.newPassword === d.confirm, { path: ["confirm"], message: v.passwordsDontMatch })
+    .refine((d) => d.newPassword !== d.currentPassword, { path: ["newPassword"], message: v.newPasswordSame })
 
-export const profileSchema = z.object({ name, locale })
-export type ProfileInput = z.infer<typeof profileSchema>
-
-/** Onboarding: the same fields as the profile, saved one step at a time. */
-export const onboardingSchema = profileSchema
+  return { profileSchema, onboardingSchema, changePasswordSchema }
+}
+type ProfileSchemas = ReturnType<typeof profileSchemas>
+export type ProfileInput = z.infer<ProfileSchemas["profileSchema"]>
 export type OnboardingInput = ProfileInput
+export type ChangePasswordInput = z.infer<ProfileSchemas["changePasswordSchema"]>
+
 export const onboardingSteps = [
   { id: "profile", fields: ["name"] },
   { id: "preferences", fields: ["locale"] },
   { id: "done", fields: [] },
 ] as const satisfies ReadonlyArray<{ id: string; fields: ReadonlyArray<keyof OnboardingInput> }>
-
-export const changePasswordSchema = z
-  .object({
-    currentPassword: z.string().min(1, v.currentPasswordRequired),
-    newPassword: z.string().min(8, v.newPasswordMin).max(128, v.newPasswordMax),
-    confirm: z.string().min(1, v.confirmRequired),
-    revokeOtherSessions: z.boolean(),
-  })
-  .refine((d) => d.newPassword === d.confirm, { path: ["confirm"], message: v.passwordsDontMatch })
-  .refine((d) => d.newPassword !== d.currentPassword, { path: ["newPassword"], message: v.newPasswordSame })
-export type ChangePasswordInput = z.infer<typeof changePasswordSchema>
 
 /**
  * The avatar: no storage overlay in the floor, so it lives in "user".image as

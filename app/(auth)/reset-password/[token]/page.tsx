@@ -4,11 +4,14 @@ import { CircleAlertIcon } from "lucide-react"
 import { StatusScreen } from "@/components/system/status-screen"
 import { ButtonLink } from "@/components/button-link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { authCopy } from "@/lib/copy/auth"
 import { sql } from "@/lib/db"
 import { ResetPasswordForm } from "./reset-form"
+import { getCopy } from "@/modules/i18n/server/copy"
 
-export const metadata: Metadata = { title: authCopy.reset.title }
+export async function generateMetadata(): Promise<Metadata> {
+  const authCopy = await getCopy("auth")
+  return { title: authCopy.reset.title }
+}
 
 /**
  * The token is checked BEFORE showing the form (loading.tsx covers the wait):
@@ -26,6 +29,7 @@ async function tokenIsValid(token: string): Promise<boolean> {
 }
 
 export default async function ResetPasswordPage({ params }: { params: Promise<{ token: string }> }) {
+  const authCopy = await getCopy("auth")
   const { token } = await params
   const c = authCopy.reset
 

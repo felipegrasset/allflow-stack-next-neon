@@ -1,6 +1,6 @@
 "use client"
 
-import { useTransition } from "react"
+import { useMemo, useTransition } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Controller, useForm } from "react-hook-form"
@@ -11,12 +11,14 @@ import { SubmitButton } from "@/components/submit-button"
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/components/ui/toast"
-import { authCopy } from "@/lib/copy/auth"
 import { describedBy } from "@/lib/forms"
-import { resetPasswordSchema, type ResetPasswordInput } from "@/lib/schemas/auth"
+import { authSchemas, type ResetPasswordInput } from "@/lib/schemas/auth"
 import { resetPasswordAction } from "../../actions"
+import { useCopy } from "@/modules/i18n/ui/use-copy"
 
 export function ResetPasswordForm({ token }: { token: string }) {
+  const authCopy = useCopy("auth")
+  const { resetPasswordSchema } = useMemo(() => authSchemas(authCopy.validation), [authCopy])
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const c = authCopy.reset

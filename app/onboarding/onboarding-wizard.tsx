@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState, useTransition } from "react"
+import { useEffect, useMemo, useRef, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -14,12 +14,10 @@ import { Input } from "@/components/ui/input"
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Progress, ProgressLabel } from "@/components/ui/progress"
 import { toast } from "@/components/ui/toast"
-import { profileCopy } from "@/lib/copy/profile"
 import { describedBy } from "@/lib/forms"
-import { LOCALES, onboardingSchema, onboardingSteps, type OnboardingInput } from "@/lib/schemas/profile"
+import { LOCALES, onboardingSteps, profileSchemas, type OnboardingInput } from "@/lib/schemas/profile"
+import { useCopy } from "@/modules/i18n/ui/use-copy"
 import { completeOnboardingAction, saveOnboardingStepAction } from "./actions"
-
-const c = profileCopy.onboarding
 
 /**
  * Multi-step onboarding. One react-hook-form for all steps, so going back
@@ -28,6 +26,9 @@ const c = profileCopy.onboarding
  * then advances. "Skip" marks the user onboarded without saving.
  */
 export function OnboardingWizard({ initial, initialStep = 0 }: { initial: OnboardingInput; initialStep?: number }) {
+  const profileCopy = useCopy("profile")
+  const c = profileCopy.onboarding
+  const { onboardingSchema } = useMemo(() => profileSchemas(profileCopy.validation), [profileCopy])
   const router = useRouter()
   const [step, setStep] = useState(Math.min(Math.max(initialStep, 0), onboardingSteps.length - 1))
   const [isSaving, startSaving] = useTransition()
