@@ -31,6 +31,7 @@
 }
 .tc-main {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--kit-space-8);
   padding-bottom: var(--kit-space-8);
 }
