@@ -9,7 +9,7 @@ const BASE_URL = `http://localhost:${PORT}`
 
 export default defineConfig({
   testDir: "./e2e",
-  testMatch: /kits\.spec\.ts/,
+  testMatch: /kits(-interacciones)?\.spec\.ts/,
   fullyParallel: true,
   reporter: process.env.CI ? [["github"], ["list"]] : "list",
   use: { baseURL: BASE_URL, locale: "es-CL" },

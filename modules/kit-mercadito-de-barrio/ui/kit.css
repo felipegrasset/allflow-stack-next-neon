@@ -1,0 +1,124 @@
+/* Mercadito de Barrio: capa propia del kit. Solo tokens del tema y del núcleo. */
+.mb {
+  background: var(--kit-tint);
+  color: var(--foreground);
+  font-family: var(--font-outfit), var(--font-sans), sans-serif;
+}
+.mb .kit-display,
+.mb .kit-h1,
+.mb .kit-h2,
+.mb .kit-h3 {
+  font-family: var(--font-outfit), var(--font-sans), sans-serif;
+}
+.mb-hero {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-radius: var(--kit-radius-xl);
+  position: relative;
+  overflow: hidden;
+}
+/* Formas decorativas: círculos del color de la marca, sin imagen. */
+.mb-hero::before,
+.mb-hero::after {
+  content: "";
+  position: absolute;
+  border-radius: var(--kit-radius-full);
+  background: color-mix(in oklab, var(--primary-foreground) 12%, transparent);
+  pointer-events: none;
+}
+.mb-hero::before {
+  width: 22rem;
+  height: 22rem;
+  right: -6rem;
+  top: -8rem;
+}
+.mb-hero::after {
+  width: 12rem;
+  height: 12rem;
+  right: 8rem;
+  bottom: -7rem;
+}
+.mb-surface {
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--kit-radius-lg);
+}
+.mb-thumb {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  background: var(--kit-tint-strong);
+  color: var(--kit-tint-fg);
+  border-radius: var(--kit-radius-md);
+}
+.mb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kit-space-2);
+  padding: var(--kit-space-2) var(--kit-space-4);
+  border-radius: var(--kit-radius-full);
+  background: var(--card);
+  border: 1px solid var(--border);
+  font-weight: var(--kit-weight-medium);
+  font-size: var(--kit-text-sm);
+  color: var(--foreground);
+  min-height: 2.75rem;
+}
+.mb-badge {
+  display: inline-block;
+  padding: 0.125rem var(--kit-space-2);
+  border-radius: var(--kit-radius-full);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: var(--kit-text-xs);
+  font-weight: var(--kit-weight-semibold);
+}
+.mb-add {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--kit-radius-full);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: 0;
+  cursor: pointer;
+}
+.mb-add:focus-visible,
+.mb-chip:focus-visible,
+.mb-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.mb-input {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0 var(--kit-space-4);
+  border-radius: var(--kit-radius-md);
+  border: 1px solid var(--input);
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+}
+.mb-step {
+  display: grid;
+  grid-template-columns: 1.75rem 1fr;
+  gap: var(--kit-space-3);
+  position: relative;
+}
+.mb-dot {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--kit-radius-full);
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--border);
+  background: var(--card);
+  color: var(--muted-foreground);
+}
+.mb-dot[data-done="true"] {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+}

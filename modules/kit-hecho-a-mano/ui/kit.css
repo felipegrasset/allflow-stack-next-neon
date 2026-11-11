@@ -1,0 +1,116 @@
+/* Hecho a Mano: plano, juguetón, bordes gruesos y papel punteado. Solo tokens. */
+.hm {
+  --hm-paper: oklch(0.96 0.035 var(--kit-warning-h));
+  background-color: var(--hm-paper);
+  background-image: radial-gradient(
+    color-mix(in oklab, var(--foreground) 16%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 18px 18px;
+  color: var(--foreground);
+  font-family: var(--font-outfit), var(--font-sans), sans-serif;
+}
+.dark .hm {
+  --hm-paper: oklch(0.2 0.02 var(--kit-warning-h));
+}
+.hm .kit-display,
+.hm .kit-h1,
+.hm .kit-h2,
+.hm .kit-h3 {
+  font-family: var(--font-outfit), var(--font-sans), sans-serif;
+  font-weight: var(--kit-weight-bold);
+}
+.hm-mono {
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-size: var(--kit-text-sm);
+}
+.hm .kit-header,
+.hm .kit-footer {
+  background: var(--hm-paper);
+  color: var(--foreground);
+  border-width: 3px;
+  border-color: var(--foreground);
+}
+.hm .kit-header__brand {
+  color: var(--foreground);
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+}
+.hm .kit-header__nav a,
+.hm .kit-footer,
+.hm .kit-footer a {
+  color: var(--foreground);
+}
+.hm .kit-footer__title,
+.hm .kit-footer__legal {
+  color: var(--foreground);
+}
+.hm-card {
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 3px solid var(--foreground);
+  border-radius: var(--kit-radius-lg);
+  box-shadow: 4px 4px 0 var(--foreground);
+  overflow: hidden;
+}
+.hm-hero {
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 3px solid var(--foreground);
+  border-radius: var(--kit-radius-xl);
+  box-shadow: 8px 8px 0 var(--primary);
+}
+.hm-sticker {
+  display: inline-block;
+  padding: var(--kit-space-1) var(--kit-space-3);
+  border: 3px solid var(--foreground);
+  border-radius: var(--kit-radius-full);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  transform: rotate(-2deg);
+}
+.hm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0 var(--kit-space-5);
+  border: 3px solid var(--foreground);
+  border-radius: var(--kit-radius-full);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font: inherit;
+  font-weight: var(--kit-weight-bold);
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform var(--kit-dur) var(--kit-ease);
+}
+.hm-btn:hover {
+  transform: rotate(-1.5deg) scale(1.03);
+}
+.hm-btn[data-variant="ghost"] {
+  background: var(--card);
+  color: var(--card-foreground);
+}
+.hm-btn:focus-visible,
+.hm-input:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 3px;
+}
+.hm-input {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0 var(--kit-space-4);
+  border: 3px solid var(--foreground);
+  border-radius: var(--kit-radius-md);
+  background: var(--card);
+  color: var(--card-foreground);
+  font: inherit;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hm-btn {
+    transition: none;
+  }
+  .hm-btn:hover {
+    transform: none;
+  }
+}

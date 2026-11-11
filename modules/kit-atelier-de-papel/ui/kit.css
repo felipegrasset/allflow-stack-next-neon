@@ -1,0 +1,94 @@
+/* Atelier de Papel: papel cálido, serif editorial, mucho aire. Solo tokens. */
+.ap {
+  background: oklch(0.975 calc(var(--brand-c) * 0.12) var(--brand-h));
+  color: var(--foreground);
+  font-family: var(--font-inter), var(--font-sans), sans-serif;
+}
+.dark .ap {
+  background: oklch(0.2 calc(var(--brand-c) * 0.12) var(--brand-h));
+}
+.ap .kit-display,
+.ap .kit-h1,
+.ap .kit-h2,
+.ap .kit-h3,
+.ap-serif {
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-weight: var(--kit-weight-regular);
+  letter-spacing: -0.015em;
+}
+.ap .kit-header,
+.ap .kit-footer {
+  background: transparent;
+}
+.ap-rule {
+  border-top: 1px solid var(--foreground);
+}
+.ap-link {
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+  text-decoration-thickness: 1px;
+}
+.ap-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0 var(--kit-space-6);
+  background: var(--foreground);
+  color: var(--background);
+  border: 1px solid var(--foreground);
+  font-size: var(--kit-text-sm);
+  letter-spacing: var(--kit-tracking-wide);
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+}
+.ap-btn[data-variant="ghost"] {
+  background: transparent;
+  color: var(--foreground);
+}
+.ap-btn:focus-visible,
+.ap-size:focus-visible,
+.ap-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+.ap-size {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  border: 1px solid var(--foreground);
+  background: transparent;
+  color: var(--foreground);
+  font: inherit;
+  cursor: pointer;
+}
+.ap-size[aria-pressed="true"] {
+  background: var(--foreground);
+  color: var(--background);
+}
+.ap-input {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0 var(--kit-space-4);
+  border: 0;
+  border-bottom: 1px solid var(--foreground);
+  background: transparent;
+  color: var(--foreground);
+  font: inherit;
+}
+.ap-drawer {
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--foreground);
+  padding: var(--kit-space-5);
+}
+.ap-eyebrow {
+  font-size: var(--kit-text-xs);
+  letter-spacing: var(--kit-tracking-wide);
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.ap-plate {
+  overflow: hidden;
+  background: var(--muted);
+}

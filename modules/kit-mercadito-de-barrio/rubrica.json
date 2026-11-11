@@ -1,0 +1,24 @@
+{
+  "1280": {
+    "jerarquia": 2,
+    "espacio": 2,
+    "escala_tipografica": 2,
+    "imagen": 1,
+    "estados": 1,
+    "movil_primero": 2,
+    "contraste_aa": 2,
+    "coherencia_tema": 2
+  },
+  "375": {
+    "jerarquia": 2,
+    "espacio": 2,
+    "escala_tipografica": 2,
+    "imagen": 1,
+    "estados": 1,
+    "movil_primero": 2,
+    "contraste_aa": 2,
+    "coherencia_tema": 2
+  },
+  "revisado": "2026-11-10",
+  "notas": "Axe y desborde OK; capturas revisadas. Imagen: miniaturas con ícono, sin fotos. Estados: incluye carrito vacío; faltan carga y error."
+}

@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "kit-clinica-sereno",
+  "feature": "kit-clinica-sereno",
+  "version": "0.1.0",
+  "title": "Kit Clínica Sereno",
+  "description": "Reserva médica, dental o de bienestar: buscador de profesionales, ficha, horas, formulario en pasos, confirmación, recordatorio e historial.",
+  "dependsOn": ["kit-core"],
+  "routes": [
+    {
+      "path": "/kits/clinica-sereno",
+      "entry": "ui/page.tsx",
+      "group": "marketing"
+    }
+  ]
+}

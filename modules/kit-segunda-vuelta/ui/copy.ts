@@ -1,0 +1,105 @@
+export const clp = (n: number) => `$${n.toLocaleString("es-CL")}`
+
+export const copy = {
+  brand: "Segunda Vuelta",
+  cats: ["Todo", "Tecnología", "Hogar", "Deportes", "Ropa", "Niños", "Libros"],
+  items: [
+    {
+      name: "Bicicleta de paseo aro 26",
+      price: 85000,
+      where: "Ñuñoa",
+      ago: "hace 2 h",
+      cat: "Deportes",
+      fav: true,
+    },
+    {
+      name: 'Notebook 14" 8 GB, buen estado',
+      price: 190000,
+      where: "Providencia",
+      ago: "hace 5 h",
+      cat: "Tecnología",
+      fav: false,
+    },
+    {
+      name: "Sofá de dos cuerpos",
+      price: 60000,
+      where: "La Florida",
+      ago: "ayer",
+      cat: "Hogar",
+      fav: false,
+    },
+    {
+      name: "Coche de paseo plegable",
+      price: 45000,
+      where: "Maipú",
+      ago: "ayer",
+      cat: "Niños",
+      fav: true,
+    },
+    {
+      name: "Colección de novelas (12)",
+      price: 25000,
+      where: "Santiago",
+      ago: "hace 2 días",
+      cat: "Libros",
+      fav: false,
+    },
+    {
+      name: "Chaqueta de cuero M",
+      price: 38000,
+      where: "Las Condes",
+      ago: "hace 3 días",
+      cat: "Ropa",
+      fav: false,
+    },
+    {
+      name: "Parlante bluetooth",
+      price: 22000,
+      where: "Puente Alto",
+      ago: "hace 3 días",
+      cat: "Tecnología",
+      fav: false,
+    },
+    {
+      name: "Mesa de comedor 6 puestos",
+      price: 70000,
+      where: "San Miguel",
+      ago: "hace 4 días",
+      cat: "Hogar",
+      fav: false,
+    },
+  ],
+  detail: {
+    name: "Bicicleta de paseo aro 26",
+    price: 85000,
+    desc: "Usada una temporada, siempre guardada bajo techo. Frenos y cadena recién revisados. Incluye candado y luz trasera.",
+    facts: [
+      ["Estado", "Muy bueno"],
+      ["Retiro", "Ñuñoa, metro Villa Frei"],
+      ["Publicado", "hace 2 horas"],
+    ] as [string, string][],
+    seller: { name: "Pablo M.", note: "42 ventas · responde en 1 h" },
+  },
+  chat: [
+    { who: "me", text: "Hola, ¿sigue disponible? ¿Podría verla mañana?" },
+    {
+      who: "seller",
+      text: "Sí, sigue disponible. Mañana a las 18:00 en el metro, ¿te sirve?",
+    },
+    { who: "me", text: "Perfecto, nos vemos ahí." },
+  ],
+  filters: {
+    title: "Filtros",
+    range: "Precio hasta $200.000",
+    options: ["Solo con fotos", "Cerca de mí", "Envío disponible"],
+  },
+  profile: {
+    name: "Pablo M.",
+    since: "Miembro desde 2023",
+    stats: [
+      ["42", "ventas"],
+      ["4,9", "valoración"],
+      ["1 h", "responde en"],
+    ] as [string, string][],
+  },
+}

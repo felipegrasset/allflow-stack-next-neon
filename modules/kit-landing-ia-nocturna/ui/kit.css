@@ -1,0 +1,130 @@
+/* Landing de IA Nocturna: siempre oscura por diseño. Solo tokens. */
+.ia {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), var(--font-sans), sans-serif;
+}
+.ia .kit-display,
+.ia .kit-h1,
+.ia .kit-h2,
+.ia .kit-h3 {
+  font-family: var(--font-heading-face), var(--font-sans), sans-serif;
+}
+/* Resplandor del héroe: un degradado radial de la marca. */
+.ia-glow {
+  background:
+    radial-gradient(
+      60rem 28rem at 50% -8rem,
+      color-mix(in oklab, var(--primary) 32%, transparent),
+      transparent 70%
+    ),
+    var(--background);
+}
+.ia-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--kit-radius-lg);
+  padding: var(--kit-space-5);
+}
+.ia-card[data-featured="true"] {
+  border-color: var(--primary);
+  box-shadow:
+    0 0 0 1px var(--primary),
+    var(--kit-shadow-lg);
+}
+.ia-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kit-space-2);
+  padding: var(--kit-space-1) var(--kit-space-3);
+  border-radius: var(--kit-radius-full);
+  border: 1px solid var(--border);
+  background: color-mix(in oklab, var(--primary) 12%, var(--background));
+  color: var(--kit-tint-fg);
+  font-size: var(--kit-text-sm);
+}
+.ia-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--kit-space-2);
+  min-height: 2.75rem;
+  padding: 0 var(--kit-space-5);
+  border-radius: var(--kit-radius-md);
+  font-weight: var(--kit-weight-semibold);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  text-decoration: none;
+}
+.ia-btn[data-variant="ghost"] {
+  background: transparent;
+  color: var(--foreground);
+  border: 1px solid var(--border);
+}
+.ia-btn:focus-visible,
+.ia details summary:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.ia-window {
+  border: 1px solid var(--border);
+  border-radius: var(--kit-radius-xl);
+  background: var(--card);
+  box-shadow: var(--kit-shadow-lg);
+  overflow: hidden;
+}
+.ia-window__bar {
+  display: flex;
+  gap: var(--kit-space-2);
+  padding: var(--kit-space-3) var(--kit-space-4);
+  border-bottom: 1px solid var(--border);
+}
+.ia-window__bar span {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: var(--kit-radius-full);
+  background: var(--muted);
+}
+.ia-bubble {
+  max-width: 85%;
+  padding: var(--kit-space-3) var(--kit-space-4);
+  border-radius: var(--kit-radius-lg);
+  font-size: var(--kit-text-sm);
+  line-height: var(--kit-leading-normal);
+}
+.ia-bubble[data-who="me"] {
+  align-self: flex-end;
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+.ia-bubble[data-who="ai"] {
+  background: var(--muted);
+  color: var(--foreground);
+}
+.ia details {
+  border-bottom: 1px solid var(--border);
+  padding-block: var(--kit-space-4);
+}
+.ia summary {
+  cursor: pointer;
+  font-weight: var(--kit-weight-semibold);
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  gap: var(--kit-space-4);
+  min-height: 2.75rem;
+  align-items: center;
+}
+.ia summary::-webkit-details-marker {
+  display: none;
+}
+.ia-num {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--kit-radius-full);
+  background: var(--kit-tint-strong);
+  color: var(--kit-tint-fg);
+  font-weight: var(--kit-weight-bold);
+}

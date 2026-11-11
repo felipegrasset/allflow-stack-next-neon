@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "kit-atelier-de-papel",
+  "feature": "kit-atelier-de-papel",
+  "version": "0.1.0",
+  "title": "Kit Atelier de Papel",
+  "description": "Tienda editorial de moda y objetos: héroe con serif, colecciones, grilla, ficha con galería, cajón de carrito, lookbook, newsletter y estados.",
+  "dependsOn": ["kit-core"],
+  "routes": [
+    {
+      "path": "/kits/atelier-de-papel",
+      "entry": "ui/page.tsx",
+      "group": "marketing"
+    }
+  ]
+}
