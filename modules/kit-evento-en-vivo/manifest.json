@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "kit-evento-en-vivo",
+  "feature": "kit-evento-en-vivo",
+  "version": "0.1.0",
+  "title": "Kit Evento en Vivo",
+  "description": "Webinar, evento o comunidad: cuenta regresiva, agenda por día, ponentes, registro, sala de espera con chat, material, encuesta y directorio de miembros.",
+  "dependsOn": ["kit-core"],
+  "routes": [
+    {
+      "path": "/kits/evento-en-vivo",
+      "entry": "ui/page.tsx",
+      "group": "marketing"
+    }
+  ]
+}
