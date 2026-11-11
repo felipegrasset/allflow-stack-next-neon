@@ -44,6 +44,7 @@
 /* Cabecera con cuenta regresiva */
 .ev-hero {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--kit-space-6);
   padding-block: var(--kit-space-7);
 }
@@ -56,6 +57,7 @@
 }
 .ev-count {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--kit-space-4);
   padding: var(--kit-space-5);
   border-radius: var(--kit-radius-xl);
@@ -70,6 +72,7 @@
 }
 .ev-count__part {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   justify-items: center;
   padding: var(--kit-space-3) 0;
   border-radius: var(--kit-radius-md);
@@ -117,6 +120,7 @@
 }
 .ev-agenda {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
 }
 .ev-session {
   display: grid;
@@ -132,6 +136,7 @@
 }
 .ev-session__body {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   min-width: 0;
 }
 .ev-session__name {
@@ -170,11 +175,13 @@
 }
 .ev-speaker {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--kit-space-2);
   padding: var(--kit-space-4);
 }
 .ev-portrait {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   place-items: center;
   aspect-ratio: 4 / 3;
   border-radius: var(--kit-radius-md);
@@ -191,6 +198,7 @@
 /* Registro y sala */
 .ev-two {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--kit-space-6);
 }
 @media (min-width: 64rem) {
@@ -201,15 +209,18 @@
 }
 .ev-panel {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--kit-space-4);
   padding: var(--kit-space-5);
 }
 .ev-form {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--kit-space-4);
 }
 .ev-field {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--kit-space-2);
   font-size: var(--kit-text-sm);
   font-weight: var(--kit-weight-medium);
@@ -229,6 +240,7 @@
 }
 .ev-radios {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--kit-space-2);
   border: 0;
   padding: 0;
@@ -271,15 +283,18 @@
 }
 .ev-chat {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--kit-space-3);
 }
 .ev-msgs {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--kit-space-2);
   font-size: var(--kit-text-sm);
 }
 .ev-msgs li {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   padding: var(--kit-space-3);
   border-radius: var(--kit-radius-md);
   background: var(--muted);
@@ -311,6 +326,7 @@
 /* Material, encuesta, comunidad */
 .ev-materials {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
 }
 .ev-materials li {
   display: flex;
@@ -325,11 +341,13 @@
 }
 .ev-results {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--kit-space-3);
   font-size: var(--kit-text-sm);
 }
 .ev-results li {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--kit-space-1);
 }
 .ev-bar {
@@ -367,6 +385,7 @@
 }
 .ev-people {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--kit-space-3);
 }
 @media (min-width: 48rem) {
@@ -383,6 +402,7 @@
 .ev-avatar {
   flex: none;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   place-items: center;
   width: 2.5rem;
   height: 2.5rem;
@@ -394,6 +414,7 @@
 }
 .ev-states {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--kit-space-4);
 }
 @media (min-width: 48rem) {
