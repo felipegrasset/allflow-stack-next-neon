@@ -1,0 +1,353 @@
+/* Kit Taller Claro: ordenado, neutro y ágil. Todo por tokens del núcleo. */
+.tc {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+.tc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding-inline: var(--kit-space-4);
+  border-radius: var(--kit-radius-md);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: var(--kit-text-sm);
+  font-weight: var(--kit-weight-medium);
+  text-decoration: none;
+}
+.tc-btn:focus-visible,
+.tc-select:focus-visible,
+.tc-contact:focus-visible,
+.tc-add input:focus-visible,
+.tc-task input:focus-visible,
+.tc-drop:has(input:focus-visible) {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.tc-head {
+  padding-block: var(--kit-space-7) var(--kit-space-5);
+}
+.tc-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--kit-space-8);
+  padding-bottom: var(--kit-space-8);
+}
+
+/* Tablero */
+.tc-board {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--kit-space-4);
+}
+@media (min-width: 48rem) {
+  .tc-board {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 64rem) {
+  .tc-board {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+.tc-col {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--kit-space-3);
+  padding: var(--kit-space-3);
+  border-radius: var(--kit-radius-lg);
+  background: var(--muted);
+  min-width: 0;
+}
+.tc-col header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  padding: var(--kit-space-1) var(--kit-space-2);
+}
+.tc-col__title {
+  font-size: var(--kit-text-sm);
+  font-weight: var(--kit-weight-semibold);
+}
+.tc-cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--kit-space-3);
+}
+.tc-deal {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--kit-space-1);
+  padding: var(--kit-space-4);
+}
+.tc-deal[data-won="true"] {
+  border-color: var(--kit-success-border);
+  background: var(--kit-success-bg);
+  color: var(--kit-success-fg);
+}
+.tc-deal[data-won="true"] .kit-small {
+  color: var(--kit-success-fg);
+}
+.tc-deal__name {
+  font-weight: var(--kit-weight-semibold);
+}
+.tc-deal__value {
+  font-family: var(--font-mono);
+  font-size: var(--kit-text-sm);
+}
+.tc-select {
+  margin-top: var(--kit-space-2);
+  min-height: 2.75rem;
+  padding-inline: var(--kit-space-2);
+  border: 1px solid var(--input);
+  border-radius: var(--kit-radius-md);
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+  font-size: var(--kit-text-sm);
+}
+.tc-empty {
+  padding: var(--kit-space-5) var(--kit-space-3);
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: var(--kit-radius-md);
+}
+
+/* Contactos */
+.tc-contacts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--kit-space-5);
+}
+@media (min-width: 48rem) {
+  .tc-contacts {
+    grid-template-columns: 20rem minmax(0, 1fr);
+    align-items: start;
+  }
+}
+.tc-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--kit-space-2);
+}
+.tc-contact {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: var(--kit-space-3);
+  min-height: 3.5rem;
+  padding: var(--kit-space-2) var(--kit-space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--kit-radius-md);
+  background: var(--card);
+  color: var(--card-foreground);
+  text-align: left;
+}
+.tc-contact[aria-pressed="true"] {
+  border-color: var(--primary);
+  background: var(--kit-tint);
+  color: var(--kit-tint-fg);
+}
+.tc-contact[aria-pressed="true"] .kit-small {
+  color: var(--kit-tint-fg);
+}
+.tc-contact__text {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
+.tc-avatar {
+  flex: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--kit-radius-full);
+  background: var(--kit-tint-strong);
+  color: var(--kit-tint-fg);
+  font-size: var(--kit-text-xs);
+  font-weight: var(--kit-weight-bold);
+}
+.tc-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--kit-space-3);
+  padding: var(--kit-space-5);
+}
+.tc-dl {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--kit-space-3);
+  font-size: var(--kit-text-sm);
+}
+.tc-dl > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--kit-space-1);
+  padding-top: var(--kit-space-3);
+  border-top: 1px solid var(--border);
+}
+.tc-dl dt {
+  display: flex;
+  align-items: center;
+  gap: var(--kit-space-2);
+  color: var(--muted-foreground);
+}
+@media (min-width: 64rem) {
+  .tc-dl > div {
+    grid-template-columns: 9rem 1fr;
+  }
+}
+
+/* Tareas, actividad, semana */
+.tc-trio {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--kit-space-5);
+}
+@media (min-width: 64rem) {
+  .tc-trio {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+.tc-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--kit-space-4);
+  padding: var(--kit-space-5);
+}
+.tc-tasks {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+.tc-task {
+  display: flex;
+  align-items: center;
+  gap: var(--kit-space-3);
+  min-height: 2.75rem;
+  font-size: var(--kit-text-sm);
+}
+.tc-task input {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--primary);
+}
+.tc-task [data-done="true"] {
+  color: var(--muted-foreground);
+  text-decoration: line-through;
+}
+.tc-add {
+  display: flex;
+  gap: var(--kit-space-2);
+}
+.tc-add input {
+  flex: 1;
+  min-width: 0;
+  min-height: 2.75rem;
+  padding-inline: var(--kit-space-3);
+  border: 1px solid var(--input);
+  border-radius: var(--kit-radius-md);
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+  font-size: var(--kit-text-sm);
+}
+.tc-feed {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+.tc-feed li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--kit-space-1);
+  padding-block: var(--kit-space-3);
+  border-top: 1px solid var(--border);
+  font-size: var(--kit-text-sm);
+}
+.tc-week {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--kit-space-2);
+}
+.tc-day {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  gap: var(--kit-space-1);
+  padding: var(--kit-space-3) var(--kit-space-1);
+  border: 1px solid var(--border);
+  border-radius: var(--kit-radius-md);
+  text-align: center;
+}
+.tc-day[data-today="true"] {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+}
+.tc-day[data-today="true"] .kit-small {
+  color: var(--primary-foreground);
+}
+.tc-day__n {
+  font-family: var(--font-heading);
+  font-size: var(--kit-text-xl);
+  font-weight: var(--kit-weight-bold);
+}
+
+/* Importar */
+.tc-import {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--kit-space-4);
+  max-width: 40rem;
+}
+.tc-drop {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  gap: var(--kit-space-2);
+  padding: var(--kit-space-6);
+  text-align: center;
+  border: 2px dashed var(--border);
+  border-radius: var(--kit-radius-lg);
+  background: var(--card);
+  cursor: pointer;
+}
+.tc-drop:hover {
+  border-color: var(--primary);
+  background: var(--kit-tint);
+}
+.tc-drop input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.tc-states {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--kit-space-4);
+}
+@media (min-width: 48rem) {
+  .tc-states {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 80rem) {
+  .tc-states {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* En 375 px el encabezado del núcleo no cabe con marca, enlaces y acción: se oculta la navegación (la página ya tiene sus anclas). */
+@media (max-width: 47.99rem) {
+  .tc .kit-header__nav {
+    display: none;
+  }
+}

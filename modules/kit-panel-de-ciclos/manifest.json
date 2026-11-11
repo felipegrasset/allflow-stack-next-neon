@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "kit-panel-de-ciclos",
+  "feature": "kit-panel-de-ciclos",
+  "version": "0.1.0",
+  "title": "Kit Panel de Ciclos",
+  "description": "SaaS con panel de administración: resumen del ciclo, cuentas, equipo y roles, facturación, notificaciones y la hoja de estados.",
+  "dependsOn": ["kit-core"],
+  "routes": [
+    {
+      "path": "/kits/panel-de-ciclos",
+      "entry": "ui/page.tsx",
+      "group": "marketing"
+    }
+  ]
+}
