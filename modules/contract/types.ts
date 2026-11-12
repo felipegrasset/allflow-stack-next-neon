@@ -67,7 +67,12 @@ export type ModuleManifest = {
 export type ModuleRoute = {
   /** URL path, e.g. "/notifications" or "/orders/[id]". */
   path: string
-  /** Page file inside the module, default-exporting the page. e.g. "ui/page.tsx". */
+  /**
+   * Page file inside the module, default-exporting the page (e.g. "ui/page.tsx"),
+   * or — when the file is named `route.ts` — a Next route handler exporting its
+   * HTTP verbs (e.g. "server/webhook/route.ts"). A handler's shim lands at
+   * `app/<path>/route.ts`, with no route group (webhooks, provider callbacks).
+   */
   entry: string
   /** Route group the shim lands in. `app` = signed-in shell (default), `marketing` = public. */
   group?: "app" | "marketing"

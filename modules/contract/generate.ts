@@ -6,7 +6,7 @@
  * imported by `server/auth/options.ts`, so the permissions registry must not
  * pull in a module's UI or server code (it would loop back into auth).
  */
-import { shimPath } from "./validate"
+import { isHandlerEntry, shimPath } from "./validate"
 import type { ModuleManifest } from "./types"
 
 export const GENERATED_DIR = "modules/_generated"
@@ -163,9 +163,13 @@ export function buildRegistryFiles(
   // ── route shims (the only files a module puts under app/) ─────────────────
   for (const m of mods) {
     for (const r of m.routes ?? []) {
+      // A page re-exports its default; a route handler re-exports its HTTP verbs.
+      const reExport = isHandlerEntry(r.entry)
+        ? "export *"
+        : "export { default }"
       out.set(
         shimPath(r),
-        `${SHIM_MARKER} modules/${m.id}/manifest.json. Do not edit.\nexport { default } from "@/modules/${m.id}/${noExt(r.entry)}"\n`
+        `${SHIM_MARKER} modules/${m.id}/manifest.json. Do not edit.\n${reExport} from "@/modules/${m.id}/${noExt(r.entry)}"\n`
       )
     }
   }

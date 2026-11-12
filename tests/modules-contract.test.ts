@@ -24,12 +24,15 @@ import { dirname, join, relative } from "node:path"
 import test from "node:test"
 
 import { plan, readModules } from "../scripts/modules"
+import { buildRegistryFiles, SHIM_MARKER } from "../modules/contract/generate"
+import type { ModuleManifest } from "../modules/contract/types"
 import {
   ANCHOR_FILES,
   PROTECTED_ZONES,
   findViolations,
 } from "../modules/contract/zones"
 import {
+  shimPath,
   validateModules,
   type ModuleIssueCode,
   type ModuleSource,
@@ -71,6 +74,37 @@ test("modules/_generated and the route shims match the manifests (run `pnpm modu
 
 test("the example module is valid", () => {
   assert.deepEqual(validateModules([ping()]), [])
+})
+
+// ── 1b · route handlers (webhooks) get a `route.ts` shim, pages a `page.tsx` ──
+
+test("a route whose entry is route.ts gets a handler shim under app/, with no route group", () => {
+  const m = ping()
+  manifestOf(m).routes = [{ path: "/api/hooks/[kind]", entry: "ui/page.tsx" }]
+  assert.equal(
+    shimPath({ path: "/api/hooks/[kind]", entry: "server/hook/route.ts" }),
+    "app/api/hooks/[kind]/route.ts"
+  )
+  assert.equal(
+    shimPath({ path: "/ping", entry: "ui/page.tsx" }),
+    "app/(app)/ping/page.tsx"
+  )
+  assert.equal(
+    shimPath({ path: "/x", entry: "ui/page.tsx", group: "marketing" }),
+    "app/(marketing)/x/page.tsx"
+  )
+  const files = buildRegistryFiles([
+    {
+      manifest: {
+        ...(m.manifest as ModuleManifest),
+        routes: [{ path: "/api/hooks/[kind]", entry: "server/hook/route.ts" }],
+      },
+    },
+  ])
+  assert.equal(
+    files.get("app/api/hooks/[kind]/route.ts"),
+    `${SHIM_MARKER} modules/ping/manifest.json. Do not edit.\nexport * from "@/modules/ping/server/hook/route"\n`
+  )
 })
 
 // ── 2 · the validator rejects what the contract forbids ─────────────────────

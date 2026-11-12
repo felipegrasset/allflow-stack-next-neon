@@ -109,7 +109,7 @@ function existingShims(root: string): string[] {
       const p = join(abs, name)
       if (statSync(p).isDirectory()) walk(p)
       else if (
-        name === "page.tsx" &&
+        (name === "page.tsx" || name === "route.ts") &&
         readFileSync(p, "utf8").startsWith(SHIM_MARKER)
       ) {
         out.push(relative(root, p).split("\\").join("/"))

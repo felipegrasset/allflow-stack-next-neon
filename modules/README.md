@@ -46,7 +46,7 @@ no existe: un módulo instalado es su carpeta entera.
 | `version` | semver |
 | `tables` | `<id_con_guion_bajo>` o `<id_con_guion_bajo>_…` |
 | `migrations` | `NNNN_<id_con_guion_bajo>[_…]`, NNNN >= 0100, archivo en `db/migrations/`, sin repetir número con otro módulo, numeradas después de las de sus `dependsOn` |
-| `routes[]` | `{ path, entry, group? }`; `group` = `app` (por defecto, con sesión) o `marketing` (pública) |
+| `routes[]` | `{ path, entry, group? }`; `group` = `app` (por defecto, con sesión) o `marketing` (pública). Si `entry` se llama `route.ts` es un *route handler* (webhooks, callbacks): su shim va en `app/<path>/route.ts`, sin grupo, y re-exporta los verbos HTTP (`export *`). El `proxy.ts` solo protege `/settings`, `/admin` y `/onboarding`: un handler es público y se autentica solo |
 | `entrypoints` | `nav` (exporta `nav`), `permissions` (exporta `permissions`), `header` (export default, componente de servidor), `seed` (exporta `seed(db)`, idempotente) |
 
 El validador también rechaza: importar archivos internos de otro módulo (solo su
