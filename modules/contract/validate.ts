@@ -125,13 +125,23 @@ export function parseManifest(
 
 export const tablePrefix = (id: string) => id.replace(/-/g, "_")
 
-/** Where the shim of a route lands. Shared by the validator and the generator. */
+/** A route whose entry is a Next route handler (`route.ts`), not a page. */
+export const isHandlerEntry = (entry: string) => /(^|\/)route\.ts$/.test(entry)
+
+/**
+ * Where the shim of a route lands. Shared by the validator and the generator.
+ * A page goes under its route group; a route handler (webhooks, callbacks)
+ * goes straight under `app/`, with no group: it has no layout, and the auth
+ * proxy only matches the private prefixes (proxy.ts).
+ */
 export function shimPath(route: {
   path: string
+  entry: string
   group?: "app" | "marketing"
 }): string {
-  const group = route.group === "marketing" ? "(marketing)" : "(app)"
   const segs = route.path.split("/").filter(Boolean)
+  if (isHandlerEntry(route.entry)) return ["app", ...segs, "route.ts"].join("/")
+  const group = route.group === "marketing" ? "(marketing)" : "(app)"
   return ["app", group, ...segs, "page.tsx"].join("/")
 }
 

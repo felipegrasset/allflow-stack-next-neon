@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "id": "payments",
+  "feature": "billing",
+  "version": "0.1.0",
+  "title": "Pagos",
+  "description": "Núcleo de cobro: interfaz de proveedor, pagos, eventos idempotentes y suscripciones, con webhook autenticado en /api/payments/webhook/[provider]. Los adaptadores de Mercado Pago, Flow y Paddle se enchufan en providers/.",
+  "tables": ["payments", "payments_events", "payments_subscriptions"],
+  "migrations": ["0101_payments_init"],
+  "routes": [
+    {
+      "path": "/api/payments/webhook/[provider]",
+      "entry": "server/webhook/route.ts"
+    }
+  ],
+  "env": [
+    {
+      "key": "PAYMENTS_ENV",
+      "description": "sandbox (por defecto) o production. Sin production, no se toca plata real.",
+      "example": "sandbox"
+    },
+    {
+      "key": "PAYMENTS_PROVIDER",
+      "description": "Proveedor por defecto (mercadopago, flow o paddle). Vacío: el primero configurado entre Mercado Pago y Flow. Paddle solo si se nombra.",
+      "example": "mercadopago"
+    },
+    {
+      "key": "PAYMENTS_BASE_URL",
+      "description": "URL pública de la app para las URLs de retorno y de notificación. Vacío: BETTER_AUTH_URL.",
+      "example": "https://mi-app.example"
+    },
+    {
+      "key": "MERCADOPAGO_ACCESS_TOKEN",
+      "description": "Access token de Mercado Pago (de Fulvia, o del cliente con BYOK). Secreto.",
+      "example": "<access token de prueba>"
+    },
+    {
+      "key": "MERCADOPAGO_WEBHOOK_SECRET",
+      "description": "Secreto de firma de los webhooks de Mercado Pago (x-signature). Sin él, el webhook rechaza. Secreto.",
+      "example": "<secreto de firma>"
+    },
+    {
+      "key": "FLOW_API_KEY",
+      "description": "ApiKey de Flow (de Fulvia, o del cliente con BYOK).",
+      "example": "<apikey>"
+    },
+    {
+      "key": "FLOW_SECRET_KEY",
+      "description": "SecretKey de Flow: firma HMAC-SHA256 de cada llamada. Secreto.",
+      "example": "<secretkey>"
+    },
+    {
+      "key": "PADDLE_API_KEY",
+      "description": "API key de Paddle del cliente. Solo apps que venden software o contenido digital propio. Secreto.",
+      "example": "<api key sandbox>"
+    },
+    {
+      "key": "PADDLE_WEBHOOK_SECRET",
+      "description": "Secreto de la notificación de Paddle. Sin él, el webhook rechaza. Secreto.",
+      "example": "<secreto de notificación>"
+    }
+  ]
+}

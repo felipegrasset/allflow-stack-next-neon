@@ -2,8 +2,10 @@
 
 import type { Migration } from "kysely/migration"
 import * as m_notifications_0100_notifications_init from "../notifications/db/migrations/0100_notifications_init"
+import * as m_payments_0101_payments_init from "../payments/db/migrations/0101_payments_init"
 
 /** Numbered 0100+ (the core and the genesis use 0001–0099); server/db/migrate.ts spreads this in. */
 export const moduleMigrations: Record<string, Migration> = {
   "0100_notifications_init": m_notifications_0100_notifications_init,
+  "0101_payments_init": m_payments_0101_payments_init,
 }
