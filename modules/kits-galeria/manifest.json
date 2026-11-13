@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "id": "kits-galeria",
+  "feature": "kits-galeria",
+  "version": "0.1.0",
+  "title": "Galería de kits de UI",
+  "description": "Página /kits con una tarjeta por kit de UI instalado, para recorrerlos y abrirlos.",
+  "dependsOn": ["kit-core"],
+  "routes": [
+    { "path": "/kits", "entry": "ui/page.tsx", "group": "marketing" }
+  ]
+}

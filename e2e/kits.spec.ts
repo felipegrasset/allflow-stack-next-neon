@@ -12,7 +12,7 @@ import { expectKitAccessible } from "../modules/kit-core/testing/axe"
 const MODULES = join(import.meta.dirname, "..", "modules")
 const kits = readdirSync(MODULES).filter(
   (n) =>
-    /^kit-[a-z0-9-]+$/.test(n) && existsSync(join(MODULES, n, "manifest.json"))
+    /^kits?-[a-z0-9-]+$/.test(n) && existsSync(join(MODULES, n, "manifest.json"))
 )
 
 for (const id of kits) {
