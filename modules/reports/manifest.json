@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "reports",
+  "feature": "reports",
+  "version": "0.1.0",
+  "title": "Reportes",
+  "description": "Paneles de KPIs y gráficos definidos como datos (sin SQL libre) sobre una lista blanca de tablas y columnas de la app: conteo, suma, promedio, serie por día/semana/mes y desglose por columna. Gráficos en SVG con tokens del tema. Páginas /reports y /reports/[id].",
+  "tables": ["reports_dashboards"],
+  "migrations": ["0104_reports_init"],
+  "routes": [
+    { "path": "/reports", "entry": "ui/page.tsx" },
+    { "path": "/reports/[id]", "entry": "ui/dashboard-page.tsx" }
+  ],
+  "covers": ["tablero", "dashboard", "reporte", "report", "informe"],
+  "entrypoints": {
+    "nav": "nav.ts",
+    "permissions": "permissions.ts",
+    "seed": "seed.ts",
+    "messages": "messages.ts"
+  }
+}

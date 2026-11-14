@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "id": "storage",
+  "feature": "storage",
+  "version": "0.1.0",
+  "title": "Archivos",
+  "description": "Subir, guardar y servir archivos (fotos, boletas, adjuntos) para cualquier módulo: tabla storage_files, POST /api/storage/upload, GET /api/storage/[id] con permisos, saveFile/getFile/deleteFile/listFilesFor/attachFile y el componente FileInput. Proveedor Vercel Blob (con fetch) y uno en memoria para pruebas y desarrollo.",
+  "tables": ["storage_files"],
+  "migrations": ["0102_storage_init"],
+  "routes": [
+    { "path": "/api/storage/upload", "entry": "server/upload/route.ts" },
+    { "path": "/api/storage/[id]", "entry": "server/file/route.ts" }
+  ],
+  "env": [
+    {
+      "key": "BLOB_READ_WRITE_TOKEN",
+      "description": "Token de lectura y escritura del store de Vercel Blob (Vercel → Storage → Blob). Sin él, en producción las subidas responden 503; en desarrollo se usa un proveedor en memoria que se pierde al reiniciar. Secreto.",
+      "example": "vercel_blob_rw_<storeId>_<secreto>"
+    },
+    {
+      "key": "STORAGE_BLOB_ACCESS",
+      "description": "Acceso del store de Vercel Blob: private (por defecto) o public. Debe coincidir con cómo se creó el store. En un store public, los archivos privados siguen pasando por /api/storage/[id] y su URL nunca se entrega.",
+      "example": "private"
+    }
+  ],
+  "covers": ["archivo", "file", "adjunto", "attachment"],
+  "entrypoints": {
+    "permissions": "permissions.ts",
+    "messages": "messages.ts"
+  }
+}

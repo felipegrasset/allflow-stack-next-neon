@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "id": "approvals",
+  "feature": "approvals",
+  "version": "0.1.0",
+  "title": "Aprobaciones",
+  "description": "Flujos de estados y aprobación sobre cualquier registro de la app (entidad + id, sin llave foránea), con transiciones por rol definidas como datos, historial con autor y bandeja /approvals. Avisa con notify().",
+  "dependsOn": ["notifications"],
+  "tables": ["approvals_flows", "approvals_requests", "approvals_events"],
+  "migrations": ["0107_approvals_init"],
+  "routes": [
+    { "path": "/approvals", "entry": "ui/page.tsx" },
+    { "path": "/approvals/[id]", "entry": "ui/detail-page.tsx" }
+  ],
+  "covers": ["aprobación", "approval", "solicitud de aprobación", "approval request"],
+  "entrypoints": {
+    "nav": "nav.ts",
+    "permissions": "permissions.ts",
+    "seed": "seed.ts",
+    "messages": "messages.ts"
+  }
+}

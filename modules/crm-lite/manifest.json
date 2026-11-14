@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "id": "crm-lite",
+  "feature": "crm-lite",
+  "version": "0.1.0",
+  "title": "CRM liviano",
+  "description": "Contactos (prospectos y clientes), oportunidades en un pipeline por etapas con arrastrar y soltar, y actividades por contacto. Montos en unidad menor + moneda.",
+  "tables": ["crm_lite_contacts", "crm_lite_deals", "crm_lite_activities"],
+  "migrations": ["0105_crm_lite_init"],
+  "routes": [
+    { "path": "/crm", "entry": "ui/pipeline-page.tsx" },
+    { "path": "/crm/contacts", "entry": "ui/contacts-page.tsx" },
+    { "path": "/crm/contacts/[id]", "entry": "ui/contact-page.tsx" }
+  ],
+  "covers": [
+    "contacto",
+    "contact",
+    "cliente",
+    "customer",
+    "client",
+    "prospecto",
+    "lead",
+    "prospect",
+    "oportunidad",
+    "opportunity",
+    "negocio",
+    "deal",
+    "actividad",
+    "activity"
+  ],
+  "entrypoints": {
+    "nav": "nav.ts",
+    "permissions": "permissions.ts",
+    "seed": "seed.ts",
+    "messages": "messages.ts"
+  }
+}
