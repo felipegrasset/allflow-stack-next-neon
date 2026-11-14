@@ -4,6 +4,8 @@
  * render estático de los componentes reciclables.
  */
 import assert from "node:assert/strict"
+import { readFileSync } from "node:fs"
+import { join } from "node:path"
 import test from "node:test"
 
 import { createElement } from "react"
@@ -11,6 +13,7 @@ import { renderToStaticMarkup } from "react-dom/server"
 
 import { INTERNAL_HREF, notifyInputSchema } from "../contracts/input"
 import { copy } from "../copy"
+import { permissions } from "../permissions"
 import { CountBadge, formatCount } from "../ui/count-badge"
 import { ItemList } from "../ui/item-list"
 
@@ -105,4 +108,43 @@ test("ItemList: vacío muestra el estado vacío; con datos, una lista con nombre
   )
   assert.match(llena, new RegExp(`<ul[^>]*aria-label="${copy.page.listLabel}"`))
   assert.equal((llena.match(/<li/g) ?? []).length, 2)
+})
+
+// ── Acceso: lo que se puede comprobar sin base (lectura del código) ─────────
+
+const MOD = join(process.cwd(), "modules", "notifications")
+const src = (f: string) => readFileSync(join(MOD, f), "utf8")
+
+test("permisos: solo `read`, y todos los roles lo tienen (no hay permiso declarado sin uso)", () => {
+  assert.deepEqual(permissions.statement, { notifications: ["read"] })
+  assert.deepEqual(permissions.grants.member, { notifications: ["read"] })
+})
+
+test("acciones: cada Server Action exportada pasa por la guarda de sesión antes de tocar datos", () => {
+  const actions = src("server/actions.ts")
+  const bodies = actions.split(/export async function /).slice(1)
+  assert.ok(bodies.length >= 2)
+  for (const body of bodies) {
+    const name = body.slice(0, body.indexOf("("))
+    const guard = body.indexOf("requireOnboardedUser(")
+    assert.ok(guard > 0, `${name} no llama a requireOnboardedUser`)
+    for (const call of ["markRead(", "markAllRead("]) {
+      const at = body.indexOf(call)
+      if (at >= 0) assert.ok(guard < at, `${name}: ${call} antes de la guarda`)
+    }
+    assert.match(body, /session\.user\.id/, `${name} no usa el usuario de la sesión`)
+  }
+})
+
+test("consultas y mutaciones: toda lectura o escritura filtra por user_id", () => {
+  for (const f of ["server/queries.ts", "server/mutations.ts"]) {
+    const fns = src(f).split(/export async function /).slice(1)
+    assert.ok(fns.length >= 2, f)
+    for (const fn of fns)
+      assert.match(
+        fn,
+        /\.where\("user_id", "=", userId\)/,
+        `${f}: ${fn.slice(0, fn.indexOf("("))} no filtra por user_id`
+      )
+  }
 })

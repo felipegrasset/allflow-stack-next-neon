@@ -6,6 +6,8 @@
  *  3. No visible literal text in app/ or modules/ (JSX text and text-bearing
  *     attributes/properties), except the files declared pending below.
  *  4. The locale negotiation and the Intl formatters behave.
+ *  5. Module catalogs (`entrypoints.messages`): same rules as the core's, no
+ *     clash with a core namespace, and the contract's locales are i18n's.
  *
  * Each of these can fail: the scanner and the comparators are exported pure
  * functions that the last tests feed deliberately broken input.
@@ -29,6 +31,10 @@ import {
   negotiateLocale,
 } from "../modules/i18n/contracts"
 import { messages } from "../modules/i18n/messages"
+import { moduleMessages } from "../modules/_generated/messages"
+import { MODULE_MESSAGE_LOCALES } from "../modules/contract/types"
+import * as pingMessages from "../modules/_examples/ping/messages"
+import * as templateMessages from "../modules/_template/messages"
 
 const ROOT = join(import.meta.dirname, "..")
 
@@ -117,16 +123,16 @@ test("every message formats (valid ICU) in every locale", () => {
  */
 export const PENDING_LITERALS: Record<string, string> = {
   "app/dev/": "galería de desarrollo (/dev/home-gallery): no llega al usuario",
-  "modules/_examples/":
-    "módulo de ejemplo del contrato: no se instala en las apps",
+  "modules/_examples/ping/seed.ts":
+    "dato de ejemplo que se guarda en la base, no texto de interfaz",
   "modules/kits-galeria":
-    "galería de kits: catálogo de demostración, igual que los kits (espera el punto de extensión `messages`)",
+    "galería de kits: catálogo de demostración, igual que los kits (falta migrarla al punto de extensión `messages`)",
   "modules/kit-":
-    "kits de UI (T17): texto de demostración y valores por defecto que cada app reemplaza por props; el contrato aún no tiene punto de extensión `messages`",
+    "kits de UI (T17): texto de demostración y valores por defecto que cada app reemplaza por props; falta migrarlos al punto de extensión `messages`",
   "modules/landing":
-    "bloques y plantillas de landing (T9/T10): el texto vive en copy.ts, que la génesis reescribe por app; su catálogo i18n espera el punto de extensión `messages` del contrato",
+    "bloques y plantillas de landing (T9/T10): el texto vive en copy.ts, que la génesis reescribe por app; falta migrarlo al punto de extensión `messages`",
   "modules/notifications/copy.ts":
-    "copy de notificaciones en español: falta el punto de extensión `messages` del contrato (pendiente documentado en el PR de T4)",
+    "copy de notificaciones en español: falta migrarlo al punto de extensión `messages` del contrato",
 }
 
 const TEXT_ATTRS = new Set([
@@ -201,10 +207,32 @@ function walk(dir: string, out: string[] = []): string[] {
   return out
 }
 
+/** Every module's `messages` entrypoint (installed and examples): catalogs, not UI. */
+function messageEntrypoints(): Set<string> {
+  const out = new Set<string>()
+  for (const base of ["modules", "modules/_examples"]) {
+    for (const dir of readdirSync(join(ROOT, base))) {
+      const manifest = join(ROOT, base, dir, "manifest.json")
+      try {
+        const m = JSON.parse(readFileSync(manifest, "utf8")) as {
+          entrypoints?: { messages?: string }
+        }
+        if (m.entrypoints?.messages)
+          out.add(`${base}/${dir}/${m.entrypoints.messages}`)
+      } catch {
+        // not a module folder
+      }
+    }
+  }
+  return out
+}
+const CATALOG_FILES = messageEntrypoints()
+
 const SCANNED = [...walk(join(ROOT, "app")), ...walk(join(ROOT, "modules"))]
   .map((p) => relative(ROOT, p).replace(/\\/g, "/"))
   .filter((p) => !/^modules\/(contract|_generated|_template)\//.test(p))
   .filter((p) => !p.startsWith("modules/i18n/messages/"))
+  .filter((p) => !CATALOG_FILES.has(p))
   .filter((p) => !/\/db\/(migrations|types)/.test(p))
   .filter(
     (p) => !Object.keys(PENDING_LITERALS).some((prefix) => p.startsWith(prefix))
@@ -221,6 +249,49 @@ test("no visible literal text in app/ or modules/ (outside the declared pending)
     findLiterals(p, readFileSync(join(ROOT, p), "utf8"))
   )
   assert.deepEqual(hits, [])
+})
+
+// ── 5 · module catalogs (entrypoints.messages) ───────────────────────────────
+
+test("the contract's message locales are i18n's LOCALES", () => {
+  assert.deepEqual([...MODULE_MESSAGE_LOCALES], [...LOCALES])
+})
+
+/** The installed modules' catalogs plus the example's and the template's. */
+const MODULE_CATALOGS: [string, Record<string, Tree>][] = [
+  ["_generated (instalados)", moduleMessages as Record<string, Tree>],
+  ["_examples/ping", pingMessages as unknown as Record<string, Tree>],
+  ["_template", templateMessages as unknown as Record<string, Tree>],
+]
+
+test("module catalogs: every locale has the keys and arguments of es, none empty, valid ICU", () => {
+  for (const [name, cat] of MODULE_CATALOGS) {
+    for (const locale of LOCALES) {
+      const r = compareCatalogs(cat.es, cat[locale])
+      assert.deepEqual(r, { missing: [], extra: [], empty: [], argMismatch: [] }, `${name} ${locale}`)
+      const t = createTranslator({
+        locale,
+        messages: cat[locale] as never,
+      }) as unknown as (key: string, values?: Record<string, string | number>) => string
+      for (const [key, text] of flatten(cat[locale])) {
+        const out = t(key, Object.fromEntries(argNames(text).map((n) => [n, 2])))
+        assert.ok(out.length > 0 && !/[{}]/.test(out), `${name} ${locale}:${key} → ${out}`)
+      }
+    }
+  }
+})
+
+test("no module namespace clashes with a core namespace (the core would win and hide it)", () => {
+  const core = new Set(Object.keys(messages.es))
+  for (const [name, cat] of MODULE_CATALOGS)
+    for (const ns of Object.keys(cat.es))
+      assert.ok(!core.has(ns), `${name}: "${ns}" ya es un espacio de nombres del núcleo`)
+})
+
+test("the scan skips module catalogs but still covers the example module's UI", () => {
+  assert.ok(CATALOG_FILES.has("modules/_examples/ping/messages.ts"))
+  assert.ok(!SCANNED.includes("modules/_examples/ping/messages.ts"))
+  assert.ok(SCANNED.includes("modules/_examples/ping/ui/page.tsx"))
 })
 
 // ── the checks can fail ──────────────────────────────────────────────────────

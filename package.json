@@ -18,6 +18,7 @@
     "modules:sync": "tsx scripts/modules.ts sync",
     "modules:check": "tsx scripts/modules.ts check",
     "modules:guard": "tsx scripts/modules.ts guard",
+    "modules:can-remove": "tsx scripts/modules.ts can-remove",
     "test:sentinels": "tsx --test tests/sentinels.test.ts",
     "test:modules": "tsx --test tests/modules-contract.test.ts \"modules/*/tests/*.test.ts\"",
     "test:kits": "tsx --test tests/kit-core.test.ts tests/kits-galeria.test.ts",

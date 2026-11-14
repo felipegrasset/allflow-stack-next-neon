@@ -5,6 +5,7 @@
  */
 import { z } from "zod"
 
+import { checkMessagesFile } from "./messages"
 import { ANCHOR_FILES, PROTECTED_ZONES } from "./zones"
 import { MODULE_MIGRATION_MIN, type ModuleManifest } from "./types"
 
@@ -35,6 +36,9 @@ export type ModuleIssueCode =
   | "import_generated"
   | "literal_color"
   | "missing_module_md"
+  | "messages_invalid"
+  | "covers_invalid"
+  | "covers_conflict"
 
 export type ModuleIssue = {
   code: ModuleIssueCode
@@ -45,6 +49,22 @@ export type ModuleIssue = {
 const KEBAB = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/
 const SEMVER = /^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/
 const MIGRATION_NAME = /^(\d{4})_([a-z0-9_]+)$/
+/** Lower case words (accents allowed), single spaces or hyphens between them. */
+const COVERED_ENTITY = /^[\p{Ll}\p{N}]+(?:[ -][\p{Ll}\p{N}]+)*$/u
+
+/**
+ * The one module allowed to import a generated registry, and the one registry
+ * it may import: i18n serves `_generated/messages` (next-intl's request config
+ * lives in it). No cycle is possible: the validator keeps every `messages`
+ * entrypoint data-only (no runtime imports), so that registry imports nothing
+ * that could lead back to i18n.
+ */
+export const MESSAGES_HOST = "i18n"
+export const MESSAGES_REGISTRY = "_generated/messages"
+
+/** Entity names compare without case or accents: "categoría" and "categoria" are one entity. */
+export const normalizeEntity = (e: string) =>
+  e.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim()
 
 const relPath = z
   .string()
@@ -78,6 +98,7 @@ const manifestSchema = z
     description: z.string().min(1),
     tables: z.array(z.string().regex(/^[a-z][a-z0-9_]*$/)).optional(),
     migrations: z.array(z.string()).optional(),
+    covers: z.array(z.string()).optional(),
     routes: z
       .array(
         z
@@ -97,6 +118,7 @@ const manifestSchema = z
         permissions: relPath.optional(),
         header: relPath.optional(),
         seed: relPath.optional(),
+        messages: relPath.optional(),
       })
       .strict()
       .optional(),
@@ -149,6 +171,34 @@ const IMPORT_RE = /(?:from|import)\s*\(?\s*["']([^"']+)["']/g
 
 function importsOf(text: string): string[] {
   return [...text.matchAll(IMPORT_RE)].map((m) => m[1])
+}
+
+/** Where an import of a module file points, as `<folder under modules/>/<rest>`. */
+export type ModuleImport = {
+  /** File of the importing module, relative to its folder. */
+  file: string
+  spec: string
+  /** Path relative to modules/ (e.g. "orders/contracts", "_generated/nav"). */
+  target: string
+}
+
+/** Every import of a module that lands inside modules/ (app code and packages are left out). */
+export function moduleImports(
+  id: string,
+  files: ReadonlyMap<string, string>
+): ModuleImport[] {
+  const out: ModuleImport[] = []
+  for (const [rel, text] of files) {
+    if (!/\.(ts|tsx)$/.test(rel)) continue
+    for (const spec of importsOf(text)) {
+      let target: string | null = null
+      if (spec.startsWith("@/modules/"))
+        target = spec.slice("@/modules/".length)
+      else if (spec.startsWith(".")) target = resolveRelative(id, rel, spec)
+      if (target !== null) out.push({ file: rel, spec, target })
+    }
+  }
+  return out
 }
 
 /**
@@ -260,32 +310,60 @@ export function validateModules(mods: readonly ModuleSource[]): ModuleIssue[] {
       }
     }
 
-    for (const [rel, text] of src.files) {
-      if (!/\.(ts|tsx)$/.test(rel)) continue
-      for (const spec of importsOf(text)) {
-        let target: string | null = null
-        if (spec.startsWith("@/modules/"))
-          target = spec.slice("@/modules/".length)
-        else if (spec.startsWith(".")) target = resolveRelative(m.id, rel, spec)
-        if (target === null) continue
-        const [first, second] = target.split("/")
-        if (first === "_generated") {
+    for (const { file: rel, spec, target } of moduleImports(m.id, src.files)) {
+      const [first, second] = target.split("/")
+      if (first === "_generated") {
+        const servesMessages =
+          m.id === MESSAGES_HOST &&
+          target.replace(/\.(ts|tsx)$/, "") === MESSAGES_REGISTRY
+        if (!servesMessages)
           push(
             "import_generated",
-            `${rel} importa ${spec}: el registro generado lo lee la app, nunca un módulo (ciclo)`
+            `${rel} importa ${spec}: el registro generado lo lee la app, nunca un módulo (ciclo). Única excepción: ${MESSAGES_HOST} lee ${MESSAGES_REGISTRY}`
           )
-        } else if (first && first !== m.id && first !== "contract") {
-          if (
-            second !== "contracts" &&
-            !/^contracts(\.|$)/.test(second ?? "")
-          ) {
-            push(
-              "import_internal",
-              `${rel} importa ${spec}: de otro módulo solo se importa su carpeta contracts/`
-            )
-          }
+      } else if (first && first !== m.id && first !== "contract") {
+        if (
+          second !== "contracts" &&
+          !/^contracts(\.|$)/.test(second ?? "")
+        ) {
+          push(
+            "import_internal",
+            `${rel} importa ${spec}: de otro módulo solo se importa su carpeta contracts/`
+          )
         }
       }
+    }
+
+    const messagesFile = m.entrypoints?.messages
+    if (messagesFile && src.files.has(messagesFile)) {
+      for (const problem of checkMessagesFile(
+        m.id,
+        src.files.get(messagesFile)!
+      ))
+        push("messages_invalid", `${messagesFile}: ${problem}`)
+    }
+
+    const seenEntities = new Map<string, string>()
+    for (const entity of m.covers ?? []) {
+      if (!COVERED_ENTITY.test(entity)) {
+        push(
+          "covers_invalid",
+          `covers: "${entity}" debe ser un nombre de entidad en minúsculas, sin espacios al borde ni vacío (p. ej. "producto", "product")`
+        )
+        continue
+      }
+      const key = normalizeEntity(entity)
+      const prev = seenEntities.get(key)
+      if (prev)
+        push(
+          "covers_invalid",
+          `covers: "${entity}" repite "${prev}" (se comparan sin mayúsculas ni tildes)`
+        )
+      seenEntities.set(key, entity)
+    }
+
+    for (const [rel, text] of src.files) {
+      if (!/\.(ts|tsx)$/.test(rel)) continue
       if (
         /\.(tsx|css)$/.test(rel) &&
         /#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b/.test(text)
@@ -300,6 +378,21 @@ export function validateModules(mods: readonly ModuleSource[]): ModuleIssue[] {
 
   // Cross-module rules.
   const byId = new Map(parsed.map((p) => [p.m.id, p]))
+  const coveredBy = new Map<string, { module: string; entity: string }>()
+  for (const { m } of parsed) {
+    for (const entity of new Set(m.covers ?? [])) {
+      if (!COVERED_ENTITY.test(entity)) continue // already reported as covers_invalid
+      const key = normalizeEntity(entity)
+      const other = coveredBy.get(key)
+      if (other && other.module !== m.id) {
+        issues.push({
+          code: "covers_conflict",
+          module: m.id,
+          message: `covers: "${entity}" ya lo cubre "${other.module}" ("${other.entity}"): dos módulos instalados no pueden cubrir la misma entidad`,
+        })
+      } else if (!other) coveredBy.set(key, { module: m.id, entity })
+    }
+  }
   const seenMigration = new Map<string, string>()
   for (const { m } of parsed) {
     for (const name of m.migrations ?? []) {

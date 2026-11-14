@@ -8,10 +8,12 @@
   "tables": ["ping_pings"],
   "migrations": ["9000_ping_init"],
   "routes": [{ "path": "/ping", "entry": "ui/page.tsx" }],
+  "covers": ["ping"],
   "entrypoints": {
     "nav": "nav.ts",
     "permissions": "permissions.ts",
     "header": "header.tsx",
-    "seed": "seed.ts"
+    "seed": "seed.ts",
+    "messages": "messages.ts"
   }
 }

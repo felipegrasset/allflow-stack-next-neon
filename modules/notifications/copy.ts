@@ -1,7 +1,7 @@
 /**
- * Todo texto visible del módulo, en un solo archivo. Cuando exista el módulo
- * `i18n` (T4) levanta este archivo entero a claves; hasta entonces los
- * componentes importan de acá y no llevan literales.
+ * Every visible string of the module, in one file (Spanish only). The i18n
+ * module exists, but a module cannot ship its own catalog until the contract
+ * gets its `messages` extension point; then this file moves to keys whole.
  */
 export const LOCALE = "es-CL"
 

@@ -25,6 +25,8 @@ import test from "node:test"
 
 import { plan, readModules } from "../scripts/modules"
 import { buildRegistryFiles, SHIM_MARKER } from "../modules/contract/generate"
+import { checkMessagesFile, icuArgs } from "../modules/contract/messages"
+import { planRemoval } from "../modules/contract/remove"
 import type { ModuleManifest } from "../modules/contract/types"
 import {
   ANCHOR_FILES,
@@ -198,6 +200,58 @@ const cases: [string, (m: Editable) => void, ModuleIssueCode][] = [
     (m) => (manifestOf(m).dependsOn = ["orders"]),
     "depends_on_missing",
   ],
+  [
+    "messages entrypoint missing",
+    (m) => m.files.delete("messages.ts"),
+    "entrypoint_missing",
+  ],
+  [
+    "messages: en lacks a key of es",
+    (m) =>
+      m.files.set(
+        "messages.ts",
+        m.files.get("messages.ts")!.replace(`    empty: "No pings yet.",\n`, "")
+      ),
+    "messages_invalid",
+  ],
+  [
+    "messages: an ICU argument renamed in en",
+    (m) =>
+      m.files.set(
+        "messages.ts",
+        m.files.get("messages.ts")!.replace("seen by {name}", "seen by {nombre}")
+      ),
+    "messages_invalid",
+  ],
+  [
+    "messages: top-level key is not the module id",
+    (m) =>
+      m.files.set(
+        "messages.ts",
+        `export const es = { pong: { a: "x" } } as const\nexport const en = { pong: { a: "y" } }\n`
+      ),
+    "messages_invalid",
+  ],
+  [
+    "messages: not plain data (a concatenation, a runtime import)",
+    (m) =>
+      m.files.set(
+        "messages.ts",
+        `import { x } from "./server/queries"\nexport const es = { ping: { a: "x" + "y" } } as const\nexport const en = { ping: { a: "y" } }\n`
+      ),
+    "messages_invalid",
+  ],
+  [
+    "covers: upper case",
+    (m) => (manifestOf(m).covers = ["Producto"]),
+    "covers_invalid",
+  ],
+  ["covers: empty name", (m) => (manifestOf(m).covers = [""]), "covers_invalid"],
+  [
+    "covers: repeated (case and accents ignored)",
+    (m) => (manifestOf(m).covers = ["categoría", "categoria"]),
+    "covers_invalid",
+  ],
 ]
 for (const [name, mutate, code] of cases) {
   test(`validator: ${name} → ${code}`, () => {
@@ -223,6 +277,120 @@ test("validator: allowed imports stay allowed (own files, contract/, another mod
     ].join("\n")
   )
   assert.deepEqual(codes([m]), [])
+})
+
+test("validator: two modules cannot cover the same entity", () => {
+  const a = ping()
+  const b = ping()
+  manifestOf(a).covers = ["producto", "product"]
+  manifestOf(b).id = "pang"
+  manifestOf(b).tables = ["pang_pings"]
+  manifestOf(b).migrations = ["9100_pang_init"]
+  manifestOf(b).covers = ["product"]
+  b.files.set("db/migrations/9100_pang_init.ts", "export {}")
+  b.files.delete("db/migrations/9000_ping_init.ts")
+  b.files.delete("messages.ts")
+  delete (manifestOf(b).entrypoints as Record<string, unknown>).messages
+  assert.ok(codes([a, { ...b, dir: "pang" }]).includes("covers_conflict"))
+  manifestOf(b).covers = ["pedido", "order"]
+  assert.ok(!codes([a, { ...b, dir: "pang" }]).includes("covers_conflict"))
+})
+
+test("validator: only i18n may import a generated registry, and only _generated/messages", () => {
+  const generatedImport = (spec: string) =>
+    `import { moduleMessages } from "${spec}"`
+  const m = ping()
+  m.files.set("server/x.ts", generatedImport("@/modules/_generated/messages"))
+  assert.ok(codes([m]).includes("import_generated"), "ping no puede")
+
+  const i18n = ping()
+  manifestOf(i18n).id = "i18n"
+  manifestOf(i18n).tables = []
+  manifestOf(i18n).migrations = []
+  manifestOf(i18n).covers = []
+  i18n.files.delete("db/migrations/9000_ping_init.ts")
+  i18n.files.set(
+    "messages.ts",
+    i18n.files.get("messages.ts")!.replace(/\bping: \{/g, "i18n: {")
+  )
+  const asI18n = { ...i18n, dir: "i18n" }
+  i18n.files.set("request.ts", generatedImport("../_generated/messages"))
+  assert.deepEqual(codes([asI18n]), [])
+  i18n.files.set("request.ts", generatedImport("../_generated/nav"))
+  assert.ok(codes([asI18n]).includes("import_generated"), "nav no")
+})
+
+test("messages: the static reader agrees with the contract", () => {
+  const ok = readFileSync(join(EXAMPLE, "messages.ts"), "utf8")
+  assert.deepEqual(checkMessagesFile("ping", ok), [])
+  assert.deepEqual(
+    checkMessagesFile(
+      "mi-modulo",
+      readFileSync(join(ROOT, "modules/_template/messages.ts"), "utf8")
+    ),
+    [],
+    "el messages.ts de _template debe ser válido tal cual"
+  )
+  assert.deepEqual(icuArgs("{n, plural, one {# x} other {# xs}} de {name}"), [
+    "n",
+    "name",
+  ])
+  // Comments, quoted keys and trailing commas are fine; a spread is not.
+  const quoted = `export const es = {\n  // c\n  "a-b": { k: 'x', },\n} as const\nexport const en = { "a-b": { k: \`y\` } }\n`
+  assert.deepEqual(checkMessagesFile("a-b", quoted), [])
+  assert.ok(
+    checkMessagesFile(
+      "a-b",
+      quoted.replace(`k: 'x', `, `...base, k: 'x', `)
+    ).length > 0
+  )
+})
+
+test("the messages registry imports every catalog, checks it against the contract and is empty without modules", () => {
+  const m = ping().manifest as ModuleManifest
+  const one = buildRegistryFiles([{ manifest: m }]).get(
+    "modules/_generated/messages.ts"
+  )!
+  assert.match(one, /import \* as raw_ping from "\.\.\/ping\/messages"/)
+  assert.match(one, /ModuleMessagesFile<"ping", typeof raw_ping\.es>/)
+  assert.match(one, /es: \{ \.\.\.msg_ping\.es \}/)
+  assert.match(one, /en: \{ \.\.\.msg_ping\.en \}/)
+  const none = buildRegistryFiles([
+    { manifest: { ...m, entrypoints: { nav: "nav.ts" } } },
+  ]).get("modules/_generated/messages.ts")!
+  assert.match(none, /es: \{\},\n {2}en: \{\},/)
+  assert.doesNotMatch(none, /raw_/)
+})
+
+test("can-remove: blocked by a dependsOn or an import, plans the revert newest first, never for a missing module", () => {
+  const a = ping()
+  manifestOf(a).migrations = ["9000_ping_init", "9001_ping_more"]
+  a.files.set("db/migrations/9001_ping_more.ts", "export {}")
+  const b = ping()
+  manifestOf(b).id = "pang"
+  b.files.delete("messages.ts")
+  const free = planRemoval([a], "ping")
+  assert.equal(free.installed, true)
+  assert.deepEqual(free.blockers, [])
+  assert.deepEqual(free.revert, ["9001_ping_more", "9000_ping_init"])
+  assert.deepEqual(free.tables, ["ping_pings"])
+  assert.deepEqual(free.shims, ["app/(app)/ping/page.tsx"])
+  assert.deepEqual(free.covers, ["ping"])
+
+  manifestOf(b).dependsOn = ["ping"]
+  assert.deepEqual(
+    planRemoval([a, { ...b, dir: "pang" }], "ping").blockers.map(
+      (x) => x.module
+    ),
+    ["pang"]
+  )
+  manifestOf(b).dependsOn = []
+  b.files.set("server/use.ts", `import type { Ping } from "@/modules/ping/contracts"`)
+  const viaImport = planRemoval([a, { ...b, dir: "pang" }], "ping")
+  assert.equal(viaImport.blockers.length, 1)
+  assert.match(viaImport.blockers[0].reason, /server\/use\.ts/)
+
+  assert.equal(planRemoval([a], "orders").installed, false)
 })
 
 test("validator: two modules cannot share a migration number", () => {
@@ -437,6 +605,10 @@ test(
         readFileSync(join(tmp, "modules/_generated/nav.ts"), "utf8"),
         /nav_ping/
       )
+      assert.match(
+        readFileSync(join(tmp, "modules/_generated/messages.ts"), "utf8"),
+        /raw_ping/
+      )
       assert.ok(existsSync(join(tmp, "app/(app)/ping/page.tsx")))
 
       // `Database` gains ping_pings by interface merging; owner/admin get the module's permissions, member only reads.
@@ -484,7 +656,7 @@ test(
         !existsSync(join(tmp, "app/(app)/ping")),
         "el shim de la ruta quedó huérfano"
       )
-      for (const f of ["migrations", "nav", "permissions", "seeds"]) {
+      for (const f of ["migrations", "nav", "permissions", "seeds", "messages"]) {
         assert.equal(
           readFileSync(join(tmp, `modules/_generated/${f}.ts`), "utf8"),
           readFileSync(join(ROOT, `modules/_generated/${f}.ts`), "utf8")

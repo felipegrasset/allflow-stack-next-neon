@@ -1,8 +1,9 @@
 /**
  * Las cinco plantillas por arquetipo (T10). Cada una es una combinación de
- * bloques (`landing`) y un copy base en español (`copy`) que la spec de la app
- * reescribe. La génesis elige una por el arquetipo de la app y escribe su
- * `landing` en `landing.json` y su `copy` en `copy.ts` (pendiente, ver MODULE.md).
+ * bloques (`landing`) y un copy base en español e inglés (`copy.es`, `copy.en`)
+ * que la spec de la app reescribe. La génesis elegirá una por el arquetipo de la
+ * app y escribirá su `landing` en `landing.json` y su `copy` como `copySets` de
+ * `copy.ts` (pendiente, ver MODULE.md).
  */
 import { bookingsServices } from "./bookings-services"
 import { community } from "./community"

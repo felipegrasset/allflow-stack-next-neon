@@ -51,6 +51,14 @@ export type ModuleManifest = {
   migrations?: string[]
   /** Pages the module adds. Sync writes a one-line shim under `app/` for each. */
   routes?: ModuleRoute[]
+  /**
+   * Entities of the app's domain this module already models (hole H6). Lower
+   * case, singular, with the Spanish and English synonyms the analyst may see
+   * in a spec: `["producto", "product", "categoría", "category"]`. The
+   * platform reads it: an entity a module covers is NOT generated again by the
+   * genesis. Two installed modules may not cover the same entity.
+   */
+  covers?: string[]
   /** Files (relative to the module folder) the app imports, by role. */
   entrypoints?: {
     /** exports `nav: ModuleNavItem[]` */
@@ -61,6 +69,13 @@ export type ModuleManifest = {
     header?: string
     /** exports `seed(db)` — idempotent */
     seed?: string
+    /**
+     * Exports `es` (the source catalog, `as const`) and `en`
+     * (`WidenMessages<typeof es>`): plain object literals whose only top-level
+     * key is the module id. Data only — no runtime imports. Sync merges them
+     * into `modules/_generated/messages.ts`; the i18n module serves them.
+     */
+    messages?: string
   }
 }
 
@@ -107,3 +122,45 @@ export type ModuleSeed = (db: Kysely<Database>) => Promise<void>
 
 /** Numbering reserved for modules; the core (and the genesis) use 0001–0099. */
 export const MODULE_MIGRATION_MIN = 100
+
+// ── Messages (i18n extension point) ─────────────────────────────────────────
+
+/**
+ * The locales a module's `messages` file must export, source first. Same list
+ * as `LOCALES` of modules/i18n/contracts (tests/i18n.test.ts checks it): the
+ * contract does not import a module, so it is repeated here.
+ */
+export const MODULE_MESSAGE_LOCALES = ["es", "en"] as const
+export type ModuleLocale = (typeof MODULE_MESSAGE_LOCALES)[number]
+/** The locale whose catalog defines the keys (and the ICU arguments). */
+export const MODULE_MESSAGE_SOURCE_LOCALE = "es" satisfies ModuleLocale
+
+/** A catalog: nested keys, string leaves (ICU messages). */
+export type MessageTree = { readonly [key: string]: string | MessageTree }
+
+/**
+ * The type of every non-source catalog: the keys of `es`, plain `string`
+ * leaves. `export const en: WidenMessages<typeof es> = { … }` makes a missing
+ * key a type error.
+ */
+export type WidenMessages<T> = T extends string
+  ? string
+  : { -readonly [K in keyof T]: WidenMessages<T[K]> }
+
+/** `E` when its only top-level key is `Id` and its leaves are strings; an explanatory type otherwise. */
+export type ModuleCatalog<Id extends string, E> = E extends MessageTree
+  ? [Exclude<keyof E, Id>] extends [never]
+    ? [Id] extends [keyof E]
+      ? E
+      : { "messages: falta la clave de primer nivel (el id del módulo)": Id }
+    : { "messages: la única clave de primer nivel es el id del módulo": Id }
+  : { "messages: las hojas del catálogo son textos": never }
+
+/**
+ * What a module's `messages` entrypoint must export, checked by
+ * `modules/_generated/messages.ts` (so `tsc` fails on a broken catalog even
+ * when the module typed its own file loosely).
+ */
+export type ModuleMessagesFile<Id extends string, E> = {
+  es: ModuleCatalog<Id, E>
+} & { [L in Exclude<ModuleLocale, "es">]: WidenMessages<E> }

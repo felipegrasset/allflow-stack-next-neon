@@ -13,6 +13,7 @@ import test from "node:test"
 import { renderToStaticMarkup } from "react-dom/server"
 
 import { copySets } from "../modules/landing/copy"
+import { LOCALE_COOKIE, pickLandingLocale } from "../modules/landing/locale"
 import landingJson from "../modules/landing/landing.json"
 import {
   LandingError,
@@ -107,6 +108,25 @@ test("el copy por defecto (es y en) resuelve todos los bloques con todas sus var
       }
     }
   }
+})
+
+test("idioma: cookie de i18n → Accept-Language → el locale de landing.json", () => {
+  assert.equal(LOCALE_COOKIE, "NEXT_LOCALE")
+  // the cookie wins, even over the browser
+  assert.equal(pickLandingLocale("en", "es-CL,es;q=0.9", "es"), "en")
+  assert.equal(pickLandingLocale("es", "en-US", "en"), "es")
+  // no (valid) cookie: the browser decides
+  assert.equal(pickLandingLocale(undefined, "en-US,en;q=0.9", "es"), "en")
+  assert.equal(pickLandingLocale("fr", "es-CL", "en"), "es")
+  // nothing usable: landing.json's own locale, not a global default
+  assert.equal(pickLandingLocale(undefined, "fr-FR,de;q=0.5", "en"), "en")
+  assert.equal(pickLandingLocale(null, null, "es"), "es")
+})
+
+test("el copy en inglés es la traducción del español: mismas claves y no un duplicado", () => {
+  assert.deepEqual(Object.keys(copySets.en).sort(), Object.keys(copySets.es).sort())
+  for (const k of Object.keys(copySets.es))
+    assert.notEqual(JSON.stringify(copySets.en[k]), JSON.stringify(copySets.es[k]), k)
 })
 
 test("{app} y {year} se interpolan y no quedan llaves sueltas", () => {
