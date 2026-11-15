@@ -54,7 +54,7 @@ test("redact: nested keys, arrays, dates and bigint; no secret survives", () => 
   const out = redact({
     user: { name: "Ana", password: "hunter2", profile: { apiKey: "sk-1", list: [{ token: "t" }, BigInt(1)] } },
     at: new Date("2026-01-02T03:04:05Z"),
-  }) as Record<string, any>
+  }) as { user: { password: unknown; profile: { apiKey: unknown; list: [{ token: unknown }, unknown] } }; at: unknown }
   const json = JSON.stringify(out)
   assert.ok(!json.includes("hunter2") && !json.includes("sk-1") && !json.includes('"t"'))
   assert.equal(out.user.password, REDACTED)
@@ -67,7 +67,7 @@ test("redact: nested keys, arrays, dates and bigint; no secret survives", () => 
 test("redact: circular, deep and long values are bounded", () => {
   const a: Record<string, unknown> = { name: "x" }
   a.self = a
-  assert.equal((redact(a) as any).self, "[circular]")
+  assert.equal((redact(a) as { self: unknown }).self, "[circular]")
   assert.ok(JSON.stringify(redact("z".repeat(5000))).length < 700)
   let deep: unknown = "end"
   for (let i = 0; i < 20; i++) deep = { n: deep }
@@ -163,7 +163,7 @@ test("recordAuditWith: invalid input and missing actor are errors, nothing is in
 })
 
 test("audited: records after success with before/after and the entity id from the result", async () => {
-  const calls: any[] = []
+  const calls: Record<string, unknown>[] = []
   const audited = createAudited(async (e) => void calls.push(e))
   const fn = audited(
     { action: "deal.update", entity: "deal", entityId: ([id], r) => `${id}:${r.v}`, before: () => ({ stage: "new" }), after: (_a, r) => ({ stage: r.stage }) },

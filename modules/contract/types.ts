@@ -142,7 +142,7 @@ export type ModulePermissions = {
 }
 
 /** `adminAccess` of a permissions literal, `{}` when it declares none. */
-export type AdminAccessOf<P> = P extends { readonly adminAccess: infer A } ? A : {}
+export type AdminAccessOf<P> = P extends { readonly adminAccess: infer A } ? A : Record<never, never>
 
 /**
  * Compiles only when `A` uses resources and actions of `S`. The generated

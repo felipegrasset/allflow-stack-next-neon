@@ -35,6 +35,11 @@ export function signGrant(grant: Grant, secret: string | undefined): string | nu
   return `${payload}.${mac(payload, secret)}`
 }
 
+/** Signs a grant that expires `ttlMs` from now. The clock is read here, not during render. */
+export function issueGrant(grant: Omit<Grant, "x">, ttlMs: number, secret: string | undefined): string | null {
+  return signGrant({ ...grant, x: Date.now() + ttlMs } as Grant, secret)
+}
+
 /** null when the token is malformed, forged, expired or there is no secret. */
 export function verifyGrant(token: unknown, secret: string | undefined, now = Date.now()): Grant | null {
   if (!secret || typeof token !== "string" || token.length > 8000) return null

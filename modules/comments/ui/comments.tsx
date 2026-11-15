@@ -5,7 +5,7 @@ import { getModuleCopy } from "@/modules/i18n/contracts/server"
 import { getSession } from "@/server/session"
 import { getKysely } from "@/server/db/pool"
 
-import { GRANT_TTL_MS, signGrant } from "../server/grant"
+import { GRANT_TTL_MS, issueGrant } from "../server/grant"
 import { MENTION_CANDIDATES_MAX, isEntityId, isEntityKey, isSafeHref } from "../contracts/domain"
 import { es } from "../messages"
 import { can } from "../server/guard"
@@ -68,8 +68,9 @@ export async function Comments({ entity, id, href, canAccess }: CommentsProps) {
     const checks = await Promise.all(pool.map((p) => allowed(canAccess, p.id, entity, id)))
     mentionable = pool.filter((_, i) => checks[i]).slice(0, MENTION_CANDIDATES_MAX)
   }
-  const grant = signGrant(
-    { u: viewerId, e: entity, i: id, h: href, m: mentionable.map((p) => p.id), x: Date.now() + GRANT_TTL_MS },
+  const grant = issueGrant(
+    { u: viewerId, e: entity, i: id, h: href, m: mentionable.map((p) => p.id) },
+    GRANT_TTL_MS,
     process.env.BETTER_AUTH_SECRET
   )
   const headingId = `comments-${entity}-${id}`.replace(/[^a-zA-Z0-9_-]/g, "_")
