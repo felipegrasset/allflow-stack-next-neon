@@ -144,3 +144,10 @@ test("source: actions guard the session; state changes go through planDecision a
   assert.match(store, /insertInto\("approvals_events"\)/)
   assert.doesNotMatch(store, /sql`/)
 })
+
+test("source: deciders are told only if the flow names their role AND they hold approval:decide", () => {
+  const src = readFileSync(join(process.cwd(), "modules", "approvals", "server/notify.ts"), "utf8")
+  assert.match(src, /listUsersWithPermission\(\s*\{ resource: "approval", action: "decide" \}/)
+  assert.match(src, /canDecide\.has\(m\.userId\) && splitRoles\(m\.role\)\.some\(\(r\) => wanted\.has\(r\)\)/)
+  assert.doesNotMatch(src, /notifyPermission\(/)
+})

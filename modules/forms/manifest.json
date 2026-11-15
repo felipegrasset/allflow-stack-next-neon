@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "id": "forms",
+  "feature": "forms",
+  "version": "0.1.0",
+  "title": "Formularios y encuestas",
+  "description": "Formularios y encuestas definidos como datos (nueve tipos de campo, validados con Zod), con página pública /f/[slug] (honeypot y límite de tasa), una respuesta por persona cuando el formulario lo pide, y resultados agregados en /forms/[id].",
+  "tables": ["forms_forms", "forms_responses"],
+  "migrations": ["0115_forms_init"],
+  "routes": [
+    { "path": "/forms", "entry": "ui/page.tsx" },
+    { "path": "/forms/[id]", "entry": "ui/detail-page.tsx" },
+    { "path": "/f/[slug]", "entry": "ui/public-page.tsx", "group": "marketing" }
+  ],
+  "covers": ["formulario", "form", "encuesta", "survey", "respuesta", "response"],
+  "entrypoints": {
+    "nav": "nav.ts",
+    "permissions": "permissions.ts",
+    "seed": "seed.ts",
+    "messages": "messages.ts"
+  }
+}

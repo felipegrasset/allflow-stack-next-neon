@@ -8,9 +8,15 @@ La pantalla de administración del módulo `payments` y la página a la que vuel
 la persona después de pagar. No tiene tablas ni migraciones: todo lo que lee o
 pide pasa por `@/modules/payments/contracts` (nunca por sus tablas).
 
-- **`/admin/payments?order=<id>`** (solo admins, permiso `payment:read`): busca
-  el pago de una orden y muestra su detalle (estado, proveedor, ambiente, monto,
-  reembolsado, disponible, fechas, ids). Si está en `needs_review`, lo destaca y
+- **`/admin/payments`** (permiso `payment:read`): primero la cola
+  de `needs_review` (hasta 10, con enlace a todos); luego la búsqueda por orden
+  (`?order=<id>` lleva al detalle de su pago) y la tabla de todos los pagos, del
+  más nuevo al más antiguo, con filtros por estado, proveedor y ambiente en la
+  URL y paginación por cursor (`listPayments`). Un cursor inválido vuelve a la
+  primera página con un aviso.
+- **`/admin/payments/[id]`** (`payment:read`): el detalle de un pago
+  (`getPayment`, lo que tiene la base): estado, proveedor, ambiente, monto,
+  reembolsado, disponible, fechas e ids. Si está en `needs_review`, lo destaca y
   dice que no se entregue el pedido.
 - **Consultar al proveedor** (`payment:read`): llama `syncPayment`, que pregunta
   al proveedor con la llave del servidor y aplica lo que él responde.
@@ -22,15 +28,18 @@ pide pasa por `@/modules/payments/contracts` (nunca por sus tablas).
   frase cómo salió. No muestra montos, ids ni motivos. No cumple pedidos.
 
 ## Qué expone
-- **Rutas:** `/admin/payments` (grupo `app`, bajo el layout de `/admin`) y
-  `/pago/retorno` (grupo `marketing`, pública).
+- **Rutas:** `/admin/payments` y `/admin/payments/[id]` (grupo `app`, bajo el
+  layout de `/admin`) y `/pago/retorno` (grupo `marketing`, pública).
 - **Permisos:** `payment: ["read", "refund"]`. `owner` y `admin` los tienen
-  por defecto; `member`, ninguno. Cada página y acción revisa sesión de admin
-  (`requireAdmin`) **y** el permiso con `auth.api.hasPermission` (roles
-  estáticos y dinámicos), así un rol propio puede ver sin reembolsar.
-- **Navegación:** «Pagos» → `/admin/payments` (`adminOnly`).
+  por defecto; `member`, ninguno. `payment:read` es además `adminAccess`: abre la
+  puerta de `/admin` a quien lo tenga por un rol propio. Cada página y acción
+  revisa sesión + onboarding **y** su permiso con `auth.api.hasPermission`
+  (roles estáticos y dinámicos); ya no exige ser admin: ver pide `payment:read`
+  y reembolsar pide `payment:refund`, así un rol propio puede ver sin reembolsar.
+- **Navegación:** «Pagos» → `/admin/payments` (`area: "admin"`, visible con `payment:read`).
 - **Textos:** `messages.ts` (`payments-admin.*`, `es` y `en`).
 - **`contracts/`:** `paymentReturnPath(orderId, next?)`, `paymentAdminHref(orderId)`,
+  `paymentDetailHref(paymentId)`,
   `PAYMENTS_ADMIN_PATH`, `PAYMENT_RETURN_PATH`. Puras.
 - **Entidades que cubre:** ninguna (no tiene tablas).
 
@@ -56,9 +65,8 @@ cumple el pedido en su propio servidor cuando
 ## Garantías (y su prueba: `tests/payments-admin.test.ts`)
 - **No hay ruta ni acción para aprobar o «simular» un pago.** El módulo no llama
   `applyEvent` ni toca tablas; la prueba lo revisa en todos sus archivos.
-- **El reembolso se decide con lo que lee el servidor**, no con lo que manda el
-  navegador: el pago vigente de la orden debe ser el mismo `paymentId`, estar
-  `approved`, y su reembolsado debe ser el que vio la persona (si cambió, la
+- **El reembolso se decide con lo que lee el servidor** (`getPayment`), no con
+  lo que manda el navegador: el pago debe existir, estar `approved`, y su reembolsado debe ser el que vio la persona (si cambió, la
   página está vieja y se rechaza). Monto entero en unidad menor, > 0 y ≤ lo
   disponible. `refundPayment` vuelve a revisar todo eso.
 - **Montos sin coma flotante ni adivinanzas:** el monto escrito se parsea con
@@ -74,25 +82,31 @@ cumple el pedido en su propio servidor cuando
   una que no sea de ese pago; entonces se reintenta con la guardada).
 
 ## Límites conocidos
-- **No hay lista de pagos, filtros ni cola de `needs_review`.**
-  `payments/contracts` no expone una función para listar (ni para leer un pago
-  por id sin llamar al proveedor), y este módulo no lee sus tablas. v0.1 busca
-  **por orden** (`getPaymentByOrder`: el pago activo, o el último). La ruta
-  `/admin/payments/[id]` de la especificación tampoco existe por lo mismo: el
-  detalle va en `/admin/payments?order=`. Cuando `payments` agregue
-  `listPayments({ status?, provider?, environment?, cursor, limit })` y
-  `getPayment(paymentId)`, se suman aquí la tabla con filtros, la cola y el
-  detalle por id.
-- **Un reembolso pedido no se ve hasta que el proveedor lo confirma.** En esa
-  ventana, otro admin (u otra pestaña) podría pedir un segundo reembolso: la
-  pantalla bloquea el segundo pedido solo en la misma vista. Flow rechaza un
-  reembolso repetido del mismo monto; Mercado Pago y Paddle, sin verificar. La
-  defensa real necesita una clave de idempotencia o un «reembolso en curso»
-  dentro de `payments`.
-- **`/pago/retorno` es pública** y cada visita a un pago no liquidado consulta al
-  proveedor. No tiene rate limit propio. Muestra solo una frase, pero quien
-  adivine un id de orden ve si está pagada o no: usa ids de orden no
-  correlativos.
+- **Paginación solo hacia adelante** («Siguientes» y «Volver al inicio»): el
+  cursor de `listPayments` no permite volver una página. Sin conteo total.
+- La cola muestra hasta 10 pagos `needs_review` sin aplicar los filtros de la
+  tabla; «Ver todos» filtra la tabla por ese estado.
+- Con muchos pagos, la lista se beneficia del índice que `payments` documenta
+  (`created_at desc, id desc`); no existe todavía.
+- **Un reembolso pedido no se ve hasta que el proveedor lo confirma.** La defensa
+  contra el doble reembolso es `payments` (PAY-7: reserva el monto en la misma
+  transacción que bloquea el pago): un segundo pedido que no quepa en lo libre
+  lanza `RefundInProgressError` y la pantalla muestra «este pago ya tiene un
+  reembolso en curso» (código `in_progress`) sin llamar al proveedor. Esta
+  pantalla además bloquea el segundo pedido en la misma vista. La reserva de un
+  resultado incierto (timeout, 5xx) sigue tomada hasta que el proveedor
+  confirme y **no hay botón para liberarla**: el mensaje manda a «Consultar al
+  proveedor»; si el reembolso nunca ocurrió, se corrige en la base (ver
+  `payments`).
+- **`/pago/retorno` es pública.** Cada visita a un pago no liquidado consulta al
+  proveedor, así que antes se limita con `consume()` de `@/server/rate-limit`
+  (10 por minuto por IP y pago, y 30 por minuto por IP en total). Pasado el
+  límite, o si el limitador falla, la página muestra el estado que ya tiene la
+  base y NO consulta al proveedor (el webhook o la siguiente visita lo
+  concilian). La búsqueda de una orden que no existe solo lee la base y no
+  cuenta. Quien adivine un id de orden aún ve si está pagada o no: usa ids de
+  orden no correlativos. La IP sale de `x-forwarded-for` (sirve detrás de
+  Vercel; con otro proxy, revisar).
 - **Flow vuelve por POST** con el `token` en el cuerpo; la página no lo lee y
   concilia con la referencia guardada (por eso `paymentReturnPath` pone `order`
   en la URL). Que Next 16 sirva la página ante un POST sin Server Action no se
@@ -100,13 +114,14 @@ cumple el pedido en su propio servidor cuando
 - Solo pagos únicos: las suscripciones de `payments` no se muestran.
 - El formulario de reembolso es un campo con estado propio, no React Hook Form;
   cumple las reglas de accesibilidad de `CONVENTIONS.md`.
+- Las suscripciones de `payments` 0.2 (`getActiveSubscription`, cancelar, cambiar de plan) no tienen pantalla aquí.
 - El cuerpo de `hasPermission` se castea: su tipo se infiere de los permisos
   generados y `payment` solo existe ahí después de `pnpm modules:sync`.
 
 ## Sin probar
-Las pruebas de `tests/` son de lógica pura y corren con `node --test` (16
-casos). No se probó: las páginas renderizadas, las Server Actions contra una
-base y un proveedor de prueba, `hasPermission` con roles dinámicos, ni e2e/axe.
+Las pruebas de `tests/` son de lógica pura y corren con `node --test` (lógica pura,
+más las comprobaciones de código). No se probó: las páginas renderizadas, la paginación contra una base, las Server Actions contra una
+base y un proveedor de prueba, `hasPermission` con roles dinámicos, el limitador contra Postgres, ni e2e/axe.
 
 ## Variables de entorno
 Ninguna propia (las de `payments`).
@@ -115,10 +130,11 @@ Ninguna propia (las de `payments`).
 Ninguno (sin `seed`).
 
 ## Instalar
-1. Tener instalado `payments`.
+1. Tener instalado `payments` (0.2 o posterior, con `RefundInProgressError`, migración 0124) y un template con el contrato `adminAccess`.
 2. Copiar la carpeta a `modules/payments-admin/`.
-3. `pnpm modules:sync` (registra permisos, navegación, textos y dos shims:
-   `app/(app)/admin/payments/page.tsx` y `app/(marketing)/pago/retorno/page.tsx`).
+3. `pnpm modules:sync` (registra permisos, navegación, textos y tres shims:
+   `app/(app)/admin/payments/page.tsx`, `app/(app)/admin/payments/[id]/page.tsx`
+   y `app/(marketing)/pago/retorno/page.tsx`).
 4. `pnpm modules:check && pnpm typecheck`.
 
 ## Desinstalar

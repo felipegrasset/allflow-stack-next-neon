@@ -75,7 +75,7 @@ export function PaymentActions({
   const onSync = () => {
     setNotice(null)
     startSync(async () => {
-      const res = await syncPaymentAction({ orderId, paymentId })
+      const res = await syncPaymentAction({ paymentId })
       if (res.ok) {
         setNotice({ kind: "success", text: copy.sync.done })
         router.refresh()
@@ -99,7 +99,7 @@ export function PaymentActions({
   const onConfirm = () => {
     setConfirmMinor(null)
     startRefund(async () => {
-      const res = await refundPaymentAction({ orderId, paymentId, amount, expectedRefundedMinor: refundedMinor })
+      const res = await refundPaymentAction({ paymentId, amount, expectedRefundedMinor: refundedMinor })
       if (res.ok) {
         setRequested(true)
         setAmount("")

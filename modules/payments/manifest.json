@@ -2,11 +2,19 @@
   "schema": 1,
   "id": "payments",
   "feature": "billing",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "title": "Pagos",
   "description": "Núcleo de cobro: interfaz de proveedor, pagos, eventos idempotentes y suscripciones, con webhook autenticado en /api/payments/webhook/[provider]. Los adaptadores de Mercado Pago, Flow y Paddle se enchufan en providers/.",
-  "tables": ["payments", "payments_events", "payments_subscriptions"],
-  "migrations": ["0101_payments_init"],
+  "tables": [
+    "payments",
+    "payments_events",
+    "payments_subscriptions",
+    "payments_refund_requests"
+  ],
+  "migrations": [
+    "0101_payments_init",
+    "0124_payments_refund_guard"
+  ],
   "routes": [
     {
       "path": "/api/payments/webhook/[provider]",

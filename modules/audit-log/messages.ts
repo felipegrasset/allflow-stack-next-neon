@@ -1,0 +1,88 @@
+/** Catalog of the audit-log module (entrypoint `messages`). Data only. */
+import type { WidenMessages } from "@/modules/contract/types"
+
+export const es = {
+  "audit-log": {
+    nav: "Auditoría",
+    title: "Registro de auditoría",
+    subtitle: "Quién cambió qué y cuándo. Los registros no se pueden editar ni borrar.",
+    filters: {
+      label: "Filtros del registro",
+      entity: "Entidad",
+      entityAll: "Todas",
+      action: "Acción",
+      actionHint: "contact. (prefijo)",
+      actor: "Persona",
+      actorPlaceholder: "Nombre o id",
+      from: "Desde",
+      to: "Hasta",
+      apply: "Filtrar",
+      clear: "Quitar filtros",
+      invalid: "Algún filtro no era válido y se ignoró.",
+    },
+    columns: {
+      when: "Cuándo",
+      actor: "Quién",
+      action: "Acción",
+      entity: "Registro",
+      changes: "Cambios",
+    },
+    count: "{n, plural, =0 {Sin resultados} one {# registro en esta página} other {# registros en esta página}}",
+    empty: "Todavía no hay nada registrado.",
+    emptyFiltered: "Ningún registro coincide con los filtros.",
+    system: "Sistema",
+    unknownActor: "Sin nombre",
+    changes: {
+      none: "Sin detalle",
+      summary: "{n, plural, one {# campo} other {# campos}}",
+      before: "Antes",
+      after: "Después",
+      removed: "quitado",
+      redacted: "oculto",
+    },
+    pager: { older: "Ver más antiguos" },
+  },
+} as const
+
+export const en: WidenMessages<typeof es> = {
+  "audit-log": {
+    nav: "Audit log",
+    title: "Audit log",
+    subtitle: "Who changed what and when. Entries cannot be edited or deleted.",
+    filters: {
+      label: "Log filters",
+      entity: "Entity",
+      entityAll: "All",
+      action: "Action",
+      actionHint: "contact. (prefix)",
+      actor: "Person",
+      actorPlaceholder: "Name or id",
+      from: "From",
+      to: "To",
+      apply: "Filter",
+      clear: "Clear filters",
+      invalid: "Some filter was not valid and was ignored.",
+    },
+    columns: {
+      when: "When",
+      actor: "Who",
+      action: "Action",
+      entity: "Record",
+      changes: "Changes",
+    },
+    count: "{n, plural, =0 {No results} one {# entry on this page} other {# entries on this page}}",
+    empty: "Nothing has been recorded yet.",
+    emptyFiltered: "No entry matches the filters.",
+    system: "System",
+    unknownActor: "Unnamed",
+    changes: {
+      none: "No detail",
+      summary: "{n, plural, one {# field} other {# fields}}",
+      before: "Before",
+      after: "After",
+      removed: "removed",
+      redacted: "hidden",
+    },
+    pager: { older: "Show older" },
+  },
+}

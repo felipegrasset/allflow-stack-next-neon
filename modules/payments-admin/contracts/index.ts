@@ -32,7 +32,12 @@ export function paymentReturnPath(orderId: string, next?: string): string {
   return `${PAYMENT_RETURN_PATH}?${q.toString()}`
 }
 
-/** Link to the admin screen showing one order's payment. */
+/** Link to the admin screen's lookup by order (it opens the order's payment). */
 export function paymentAdminHref(orderId: string): string {
   return `${PAYMENTS_ADMIN_PATH}?${new URLSearchParams({ order: orderId }).toString()}`
+}
+
+/** Link to one payment's detail in the admin screen. */
+export function paymentDetailHref(paymentId: string): string {
+  return `${PAYMENTS_ADMIN_PATH}/${encodeURIComponent(paymentId)}`
 }

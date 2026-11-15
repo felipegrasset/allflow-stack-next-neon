@@ -115,8 +115,11 @@ quién puede editar flujos.
 
 ## Avisos (dependsOn `notifications`)
 Tras crear o mover una solicitud, con `notify()` (idempotente por evento y persona):
-- a los miembros cuyo rol aparece en alguna transición que sale del nuevo estado (salvo quien
-  actuó y, sin `allowSelfApproval`, quien pidió), si el estado no es final;
+- a los miembros que pueden decidir: su rol aparece en alguna transición que sale del nuevo estado
+  **y** tienen `approval:decide` (roles estáticos y dinámicos, con `listUsersWithPermission` de
+  `notifications`), salvo quien actuó y, sin `allowSelfApproval`, quien pidió; solo si el estado no es
+  final. No se usa `notifyPermission` a propósito: avisaría a todos los que tienen `approval:decide`
+  aunque el flujo no los nombre;
 - a quien pidió, si lo movió otra persona.
 Es best-effort: si falla, se registra en consola y la decisión queda hecha. El texto del aviso
 sale en el idioma de **quien actúa** (limitación de `notifications`, que guarda texto literal).
@@ -147,8 +150,9 @@ Sigue «Desinstalar» en `modules/README.md`:
 - No hay pantalla para crear o editar flujos: se definen en código con `saveFlow` (o el seed).
 - «Por decidir» revisa las 200 solicitudes abiertas más antiguas y filtra en memoria
   (la definición vive en cada solicitud); con más volumen hace falta otra estrategia.
-- Los avisos eligen destinatarios por nombre de rol, sin volver a comprobar `approval:decide`
-  de cada uno; no avisa a roles definidos solo en `organizationRole` si el flujo no los nombra.
+- Los avisos exigen las dos cosas (rol nombrado por el flujo y `approval:decide`). Si el flujo
+  nombra un rol propio que no tiene `approval:decide`, esa gente no se entera (tampoco podría decidir).
+  Se consideran hasta 500 personas con `approval:decide` y se avisa a un máximo de 50.
 - Sin plazos, recordatorios, delegación ni aprobaciones en paralelo (N de M).
 - Un flujo de una sola organización (la de la app), como el resto del template.
 

@@ -1,9 +1,6 @@
 import type { ModuleNavItem } from "../contract/types"
 
-/**
- * `adminOnly`: by default only owner and admin hold `report:view`. A member
- * granted it through a runtime role can still open /reports by URL.
- */
+/** Visible to whoever holds `report:view` (owner/admin by default, or a custom role); the page checks it again. */
 export const nav: ModuleNavItem[] = [
-  { href: "/reports", label: "reports.nav", adminOnly: true },
+  { href: "/reports", label: "reports.nav", permission: { report: ["view"] } },
 ]

@@ -4,7 +4,7 @@
  */
 import { getLocale } from "next-intl/server"
 
-import { notify } from "@/modules/notifications/contracts"
+import { RECIPIENTS_MAX_LIMIT, listUsersWithPermission, notify } from "@/modules/notifications/contracts"
 import { getModuleCopy } from "@/modules/i18n/contracts/server"
 import { getKysely } from "@/server/db/pool"
 import { getDefaultOrganizationId } from "@/server/session"
@@ -15,7 +15,15 @@ import { splitRoles } from "./authz"
 
 const MAX_RECIPIENTS = 50
 
-/** Members whose role appears in a transition out of `state` (role match only). */
+/**
+ * Members who can run a transition out of `state`: their role appears in one
+ * of the flow's transitions (the flow decides WHICH roles) AND they hold
+ * `approval:decide` (the permission, static or dynamic roles, resolved by
+ * `listUsersWithPermission`). Both checks apply, as when the transition runs
+ * (`canTransition` + the action's permission), so nobody is told about
+ * something they could not do. `notifyPermission` is not used on purpose: it
+ * would tell every `approval:decide` holder, whatever the flow says.
+ */
 async function decidersFor(def: FlowDefinition, state: string): Promise<string[]> {
   const wanted = new Set(
     def.transitions
@@ -26,6 +34,12 @@ async function decidersFor(def: FlowDefinition, state: string): Promise<string[]
   if (wanted.size === 0) return []
   const orgId = await getDefaultOrganizationId()
   if (!orgId) return []
+  const { userIds: holders, truncated } = await listUsersWithPermission(
+    { resource: "approval", action: "decide" },
+    { limit: RECIPIENTS_MAX_LIMIT }
+  )
+  if (truncated) console.error("[approvals] notify: more approval:decide holders than the limit; some may not be told")
+  const canDecide = new Set(holders)
   const members = await getKysely()
     .selectFrom("member")
     .select(["userId", "role"])
@@ -33,7 +47,7 @@ async function decidersFor(def: FlowDefinition, state: string): Promise<string[]
     .limit(1000)
     .execute()
   return members
-    .filter((m) => splitRoles(m.role).some((r) => wanted.has(r)))
+    .filter((m) => canDecide.has(m.userId) && splitRoles(m.role).some((r) => wanted.has(r)))
     .map((m) => m.userId)
 }
 

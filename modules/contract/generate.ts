@@ -78,9 +78,9 @@ export function buildRegistryFiles(
       `${GENERATED_DIR}/permissions.ts`,
       [
         header("module RBAC statements and grants"),
-        ...(withPerms.length
-          ? [`import type { ModulePermissions } from "../contract/types"`]
-          : []),
+        withPerms.length
+          ? `import type { AdminAccessOf, CheckAdminAccess, ModulePermissions, ModuleStatement } from "../contract/types"`
+          : `import type { ModuleStatement } from "../contract/types"`,
         ...imports,
         "",
         "/** Merged into `statement` by lib/permissions.ts. */",
@@ -101,6 +101,29 @@ export function buildRegistryFiles(
         "  },",
         "} as const",
         "",
+        "/**",
+        " * Who may enter /admin besides owner/admin: anyone holding ANY one",
+        " * `resource:action` of a module's `adminAccess` (app/(app)/admin/layout.tsx).",
+        " */",
+        "export const moduleAdminAccess: { module: string; permissions: ModuleStatement }[] = [",
+        ...withPerms.map(
+          (m) =>
+            `  { module: "${m.id}", permissions: (p_${ident(m.id)} as ModulePermissions).adminAccess ?? {} },`
+        ),
+        "].filter((a) => Object.keys(a.permissions).length > 0)",
+        "",
+        ...(withPerms.length
+          ? [
+              "/** Type-only: `tsc` fails if an `adminAccess` names a resource or action its module does not declare. */",
+              "export type _AdminAccessChecks = [",
+              ...withPerms.map(
+                (m) =>
+                  `  CheckAdminAccess<typeof p_${ident(m.id)}.statement, AdminAccessOf<typeof p_${ident(m.id)}>>,`
+              ),
+              "]",
+              "",
+            ]
+          : []),
       ].join("\n")
     )
   }
@@ -213,4 +236,86 @@ export function buildRegistryFiles(
     }
   }
   return out
+}
+
+// ── .env.example: the env block of the installed modules ────────────────────
+
+export const ENV_EXAMPLE_FILE = ".env.example"
+export const ENV_BLOCK_START = "# --- módulos (generado por modules:sync) ---"
+export const ENV_BLOCK_END = "# --- fin módulos (generado por modules:sync) ---"
+
+/** Wraps a description into `# ` comment lines of at most ~`width` characters. */
+function commentLines(text: string, width = 78): string[] {
+  const out: string[] = []
+  for (const para of text.split(/\r?\n/)) {
+    let line = ""
+    for (const word of para.split(/\s+/).filter(Boolean)) {
+      if (line && line.length + 1 + word.length > width - 2) {
+        out.push(`# ${line}`)
+        line = word
+      } else line = line ? `${line} ${word}` : word
+    }
+    out.push(line ? `# ${line}` : "#")
+  }
+  return out
+}
+
+/** The generated block (markers included), or "" when no installed module declares `env`. */
+export function buildEnvBlock(manifests: readonly ModuleManifest[]): string {
+  const mods = [...manifests]
+    .filter((m) => (m.env ?? []).length > 0)
+    .sort((a, b) => a.id.localeCompare(b.id))
+  if (!mods.length) return ""
+  const seen = new Map<string, string>()
+  const lines = [
+    ENV_BLOCK_START,
+    "# No edites este bloque: `pnpm modules:sync` lo reescribe con las `env` de",
+    "# modules/*/manifest.json. Copia a .env.local las que uses y quítales el #.",
+  ]
+  for (const m of mods) {
+    lines.push("#", `# ── ${m.id} ──`)
+    for (const v of m.env ?? []) {
+      const first = seen.get(v.key)
+      if (first) {
+        lines.push(`# ${v.key}: la misma de ${first}, más arriba.`)
+        continue
+      }
+      seen.set(v.key, m.id)
+      lines.push(...commentLines(v.description), `# ${v.key}=${v.example ?? ""}`)
+    }
+  }
+  lines.push(ENV_BLOCK_END)
+  return lines.join("\n")
+}
+
+/**
+ * `current` (the text of .env.example) with the module block replaced, added
+ * at the end, or removed when no module declares `env`. Nothing outside the
+ * markers changes, and applying it twice gives the same text (idempotent).
+ * A start marker without its end marker is replaced up to the end of the file.
+ */
+export function buildEnvExample(
+  current: string,
+  manifests: readonly ModuleManifest[]
+): string {
+  const block = buildEnvBlock(manifests)
+  const start = current.indexOf(ENV_BLOCK_START)
+  let before = current
+  let after = ""
+  if (start >= 0) {
+    const endAt = current.indexOf(ENV_BLOCK_END, start)
+    before = current.slice(0, start)
+    after =
+      endAt >= 0
+        ? current.slice(endAt + ENV_BLOCK_END.length).replace(/^\r?\n/, "")
+        : ""
+  }
+  if (!block) {
+    if (start < 0) return current
+    const joined = before.replace(/\n+$/, "\n") + after
+    return joined.replace(/\n+$/, "\n")
+  }
+  if (start >= 0) return `${before}${block}\n${after}`
+  const base = current.replace(/\n*$/, "")
+  return base ? `${base}\n\n${block}\n` : `${block}\n`
 }

@@ -9,13 +9,23 @@ import { readdirSync, readFileSync, statSync } from "node:fs"
 import { join } from "node:path"
 import test from "node:test"
 
-import { paymentAdminHref, paymentReturnPath } from "../contracts"
+import { PAYMENT_STATUSES, PROVIDER_IDS } from "../../payments/contracts/types"
+import { paymentAdminHref, paymentDetailHref, paymentReturnPath } from "../contracts"
+import { en, es } from "../messages"
+import { permissions } from "../permissions"
 import { adminLogLine, errorName } from "../server/log"
 import {
   decideRefund,
+  FILTER_PROVIDERS,
+  FILTER_STATUSES,
+  listHref,
+  parseListParams,
   parseMajorAmount,
   refundableMinor,
   resolveReturnLookup,
+  returnRateLimits,
+  RETURN_IP_RULE,
+  RETURN_TARGET_RULE,
   returnOutcome,
   safeInternalPath,
   type RefundableRecord,
@@ -168,6 +178,7 @@ test("paymentReturnPath: an internal path payments accepts as returnPath", () =>
   assert.equal(u.searchParams.get("order"), "pedido 42/a")
   assert.equal(u.searchParams.get("next"), "/orders/42")
   assert.equal(paymentAdminHref("42"), "/admin/payments?order=42")
+  assert.equal(paymentDetailHref("a/b c"), "/admin/payments/a%2Fb%20c")
 })
 
 // ── PAY-4: logs ──────────────────────────────────────────────────────────────
@@ -206,6 +217,87 @@ test("no route to approve or simulate a payment, and no direct table access", ()
   }
   assert.deepEqual(
     manifest.routes.map((r) => r.path).sort(),
-    ["/admin/payments", "/pago/retorno"]
+    ["/admin/payments", "/admin/payments/[id]", "/pago/retorno"]
   )
+})
+
+// ── list filters ─────────────────────────────────────────────────────────────
+
+test("filter lists match payments' own (no stale status or provider)", () => {
+  assert.deepEqual([...FILTER_STATUSES].sort(), [...PAYMENT_STATUSES].sort())
+  assert.deepEqual([...FILTER_PROVIDERS].sort(), [...PROVIDER_IDS].sort())
+})
+
+test("parseListParams: known values pass, anything else is dropped", () => {
+  assert.deepEqual(
+    parseListParams({ status: "needs_review", provider: "flow", environment: "production", cursor: "abc" }),
+    { filters: { status: "needs_review", provider: "flow", environment: "production" }, cursor: "abc" }
+  )
+  assert.deepEqual(
+    parseListParams({ status: "", provider: "stripe", environment: ["sandbox", "x"], cursor: "x".repeat(401) }),
+    { filters: { environment: "sandbox" }, cursor: undefined }
+  )
+  assert.deepEqual(parseListParams({ status: "approved'; drop table payments" }), { filters: {}, cursor: undefined })
+})
+
+test("listHref: filters and cursor round-trip through the query string", () => {
+  assert.equal(listHref("/admin/payments", {}), "/admin/payments")
+  const href = listHref("/admin/payments", { status: "approved", provider: "mercadopago" }, "eyJh+/=")
+  const u = new URL(href, "https://app.example")
+  assert.deepEqual(parseListParams(Object.fromEntries(u.searchParams)), {
+    filters: { status: "approved", provider: "mercadopago" },
+    cursor: "eyJh+/=",
+  })
+})
+
+// ── access, rate limit and refund in progress ────────────────────────────────
+
+const read = (rel: string) => readFileSync(join(process.cwd(), "modules/payments-admin", rel), "utf8")
+
+test("permissions: payment:read opens /admin; refunding stays a separate permission", () => {
+  assert.deepEqual(permissions.statement, { payment: ["read", "refund"] })
+  assert.deepEqual(permissions.adminAccess, { payment: ["read"] })
+  assert.equal("grants" in permissions, false) // member gets nothing
+  assert.match(read("nav.ts"), /area: "admin", permission: \{ payment: \["read"\] \}/)
+})
+
+test("source: the guard is the permission, not 'is admin', and refunding still asks for payment:refund", () => {
+  const access = read("server/access.ts")
+  assert.doesNotMatch(access, /requireAdmin/)
+  assert.match(access, /requireOnboardedUser\(/)
+  assert.match(access, /if \(!\(await hasPaymentPermission\(action\)\)\) forbidden\(\)/)
+  const actions = read("server/actions.ts")
+  assert.match(actions, /requirePaymentPermission\("refund"\)/)
+  assert.match(actions, /requirePaymentPermission\("read"\)/)
+  // the permission is checked before anything is read or asked of the provider
+  assert.ok(actions.indexOf('requirePaymentPermission("refund")') < actions.indexOf("getPayment(paymentId)"))
+})
+
+test("source: RefundInProgressError becomes its own error code, with text in es and en", () => {
+  const actions = read("server/actions.ts")
+  assert.match(actions, /e instanceof RefundInProgressError/)
+  assert.match(actions, /error: "in_progress"/)
+  assert.ok(es["payments-admin"].refund.errors.in_progress.length > 10)
+  assert.ok(en["payments-admin"].refund.errors.in_progress.length > 10)
+})
+
+test("returnRateLimits: per IP and payment, and per IP; nothing to limit without a lookup", () => {
+  assert.equal(returnRateLimits({ kind: "none" }, "1.2.3.4"), null)
+  const buckets = returnRateLimits({ kind: "order", orderId: "ord-1" }, "1.2.3.4")!
+  assert.deepEqual(buckets.map((b) => b.key), [
+    "payments-admin:return:1.2.3.4:order:ord-1",
+    "payments-admin:return:1.2.3.4",
+  ])
+  assert.deepEqual(buckets.map((b) => b.rule), [RETURN_TARGET_RULE, RETURN_IP_RULE])
+  const other = returnRateLimits({ kind: "order", orderId: "ord-2" }, "1.2.3.4")!
+  assert.notEqual(other[0].key, buckets[0].key)
+  assert.equal(other[1].key, buckets[1].key)
+})
+
+test("source: the return page spends the limit before it asks the provider, and never calls out when limited", () => {
+  const src = read("server/return.ts")
+  assert.match(src, /from "@\/server\/rate-limit"/)
+  assert.ok(src.indexOf("mayAskProvider(lookup)") > -1)
+  assert.ok(src.indexOf("await mayAskProvider(lookup)") < src.indexOf("await syncPayment("))
+  assert.match(src, /catch \{\s*return false\s*\}/) // a failing limiter fails closed
 })

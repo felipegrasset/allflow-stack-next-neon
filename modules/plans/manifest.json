@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "id": "plans",
+  "feature": "plans",
+  "version": "0.2.0",
+  "title": "Planes",
+  "description": "Planes, límites y derechos sobre las suscripciones de payments: mapea el plan del proveedor (plan_ref) a un plan de la app y responde getPlan / can / limit. Catálogo editable en /admin/plans (crear, editar, publicar, archivar, plan por defecto, derechos) y cambio o cancelación de la propia suscripción en /settings/plan. El precio vive en el proveedor.",
+  "dependsOn": ["payments"],
+  "tables": ["plans_plans", "plans_entitlements", "plans_subscription_requests"],
+  "migrations": ["0125_plans_init", "0128_plans_v02"],
+  "routes": [
+    { "path": "/settings/plan", "entry": "ui/page.tsx" },
+    { "path": "/admin/plans", "entry": "ui/admin-page.tsx" }
+  ],
+  "covers": [
+    "plan",
+    "plan de suscripción",
+    "subscription plan",
+    "suscripción",
+    "subscription",
+    "derecho",
+    "entitlement",
+    "límite de plan",
+    "plan limit"
+  ],
+  "entrypoints": {
+    "nav": "nav.ts",
+    "permissions": "permissions.ts",
+    "seed": "seed.ts",
+    "messages": "messages.ts"
+  }
+}

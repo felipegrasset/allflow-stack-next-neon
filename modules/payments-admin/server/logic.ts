@@ -163,6 +163,31 @@ export function resolveReturnLookup(params: SearchParams): ReturnLookup {
   return { kind: "none" }
 }
 
+/** Rate-limit rule shape (same as `consume` of `@/server/rate-limit`, kept literal: no imports here). */
+export type ReturnRateRule = { max: number; windowMs: number }
+
+/** Per visitor (IP) and payment: a refresh or two is normal, a script is not. */
+export const RETURN_TARGET_RULE: ReturnRateRule = { max: 10, windowMs: 60_000 }
+/** Per visitor (IP) across all payments: stops walking through order ids. */
+export const RETURN_IP_RULE: ReturnRateRule = { max: 30, windowMs: 60_000 }
+
+/**
+ * The limiter buckets one visit to the return page counts against, BEFORE the
+ * provider is asked: the IP and the order (or payment id), and the IP alone.
+ * `null` for a lookup that never reaches the provider.
+ */
+export function returnRateLimits(
+  lookup: ReturnLookup,
+  ip: string
+): { key: string; rule: ReturnRateRule }[] | null {
+  if (lookup.kind === "none") return null
+  const target = lookup.kind === "order" ? `order:${lookup.orderId}` : `payment:${lookup.paymentId}`
+  return [
+    { key: `payments-admin:return:${ip}:${target}`, rule: RETURN_TARGET_RULE },
+    { key: `payments-admin:return:${ip}`, rule: RETURN_IP_RULE },
+  ]
+}
+
 export type ReturnOutcome =
   | "approved"
   | "pending"
@@ -213,4 +238,67 @@ export function statusVariant(
     default:
       return "outline"
   }
+}
+
+// ── List filters (/admin/payments) ───────────────────────────────────────────
+
+/** Kept literal so this file stays dependency-free; tests check them against payments' lists. */
+export const FILTER_STATUSES = [
+  "pending",
+  "failed",
+  "approved",
+  "refunded",
+  "canceled",
+  "needs_review",
+] as const satisfies readonly AdminPaymentStatus[]
+export const FILTER_PROVIDERS = ["mercadopago", "flow", "paddle"] as const
+export const FILTER_ENVIRONMENTS = ["sandbox", "production"] as const
+
+export type ListFilters = {
+  status?: (typeof FILTER_STATUSES)[number]
+  provider?: (typeof FILTER_PROVIDERS)[number]
+  environment?: (typeof FILTER_ENVIRONMENTS)[number]
+}
+
+const pick = <T extends string>(
+  allowed: readonly T[],
+  v: string | string[] | undefined
+): T | undefined => {
+  const s = first(v)
+  return s && (allowed as readonly string[]).includes(s) ? (s as T) : undefined
+}
+
+/**
+ * Filters and cursor from the query string. Unknown values are dropped (an
+ * empty <select> sends `status=`), never passed on. The cursor is only
+ * bounded here: `listPayments` decides whether it is valid.
+ */
+export function parseListParams(params: SearchParams): {
+  filters: ListFilters
+  cursor?: string
+} {
+  const filters: ListFilters = {}
+  const status = pick(FILTER_STATUSES, params.status)
+  const provider = pick(FILTER_PROVIDERS, params.provider)
+  const environment = pick(FILTER_ENVIRONMENTS, params.environment)
+  if (status) filters.status = status
+  if (provider) filters.provider = provider
+  if (environment) filters.environment = environment
+  const c = first(params.cursor)
+  return { filters, cursor: c && c.length <= 400 ? c : undefined }
+}
+
+/** `/admin/payments?…` with the filters (and a cursor, for "next page"). */
+export function listHref(
+  base: string,
+  filters: ListFilters,
+  cursor?: string
+): string {
+  const q = new URLSearchParams()
+  if (filters.status) q.set("status", filters.status)
+  if (filters.provider) q.set("provider", filters.provider)
+  if (filters.environment) q.set("environment", filters.environment)
+  if (cursor) q.set("cursor", cursor)
+  const s = q.toString()
+  return s ? `${base}?${s}` : base
 }

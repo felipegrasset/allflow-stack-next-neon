@@ -2,22 +2,36 @@
 
 import type { MessageTree, ModuleLocale, ModuleMessagesFile } from "../contract/types"
 import * as raw_approvals from "../approvals/messages"
+import * as raw_audit_log from "../audit-log/messages"
 import * as raw_bookings from "../bookings/messages"
 import * as raw_crm_lite from "../crm-lite/messages"
+import * as raw_forms from "../forms/messages"
+import * as raw_help_center from "../help-center/messages"
 import * as raw_payments_admin from "../payments-admin/messages"
+import * as raw_plans from "../plans/messages"
 import * as raw_reports from "../reports/messages"
+import * as raw_settings from "../settings/messages"
 import * as raw_storage from "../storage/messages"
+import * as raw_tickets from "../tickets/messages"
+import * as raw_whatsapp from "../whatsapp/messages"
 
 // Each catalog against the contract: its only top-level key is the module id, and every locale has the keys of es.
 const msg_approvals: ModuleMessagesFile<"approvals", typeof raw_approvals.es> = raw_approvals
+const msg_audit_log: ModuleMessagesFile<"audit-log", typeof raw_audit_log.es> = raw_audit_log
 const msg_bookings: ModuleMessagesFile<"bookings", typeof raw_bookings.es> = raw_bookings
 const msg_crm_lite: ModuleMessagesFile<"crm-lite", typeof raw_crm_lite.es> = raw_crm_lite
+const msg_forms: ModuleMessagesFile<"forms", typeof raw_forms.es> = raw_forms
+const msg_help_center: ModuleMessagesFile<"help-center", typeof raw_help_center.es> = raw_help_center
 const msg_payments_admin: ModuleMessagesFile<"payments-admin", typeof raw_payments_admin.es> = raw_payments_admin
+const msg_plans: ModuleMessagesFile<"plans", typeof raw_plans.es> = raw_plans
 const msg_reports: ModuleMessagesFile<"reports", typeof raw_reports.es> = raw_reports
+const msg_settings: ModuleMessagesFile<"settings", typeof raw_settings.es> = raw_settings
 const msg_storage: ModuleMessagesFile<"storage", typeof raw_storage.es> = raw_storage
+const msg_tickets: ModuleMessagesFile<"tickets", typeof raw_tickets.es> = raw_tickets
+const msg_whatsapp: ModuleMessagesFile<"whatsapp", typeof raw_whatsapp.es> = raw_whatsapp
 
 /** Read by modules/i18n/request.ts, which lays the core catalog over it (the core wins a clash). */
 export const moduleMessages: Record<ModuleLocale, MessageTree> = {
-  es: { ...msg_approvals.es, ...msg_bookings.es, ...msg_crm_lite.es, ...msg_payments_admin.es, ...msg_reports.es, ...msg_storage.es },
-  en: { ...msg_approvals.en, ...msg_bookings.en, ...msg_crm_lite.en, ...msg_payments_admin.en, ...msg_reports.en, ...msg_storage.en },
+  es: { ...msg_approvals.es, ...msg_audit_log.es, ...msg_bookings.es, ...msg_crm_lite.es, ...msg_forms.es, ...msg_help_center.es, ...msg_payments_admin.es, ...msg_plans.es, ...msg_reports.es, ...msg_settings.es, ...msg_storage.es, ...msg_tickets.es, ...msg_whatsapp.es },
+  en: { ...msg_approvals.en, ...msg_audit_log.en, ...msg_bookings.en, ...msg_crm_lite.en, ...msg_forms.en, ...msg_help_center.en, ...msg_payments_admin.en, ...msg_plans.en, ...msg_reports.en, ...msg_settings.en, ...msg_storage.en, ...msg_tickets.en, ...msg_whatsapp.en },
 }

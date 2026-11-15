@@ -24,7 +24,7 @@ propio con tokens del tema (el template no trae librería de gráficos).
     member no lo tiene por defecto.
   - `edit`: subir, bajar o quitar tarjetas desde la pantalla. **No** permite cambiar las fuentes: qué
     tablas y columnas lee un panel lo decide solo el código.
-- **Navegación:** enlace «Reportes» (`adminOnly`). Un member con `view` por un rol propio entra por URL.
+- **Navegación:** enlace «Reportes» (área principal, visible solo con `report:view`: owner/admin o un rol propio que lo tenga). La página lo comprueba de nuevo.
 - **Textos:** `messages.ts`, espacio `reports` en `es` y `en`. Los títulos de paneles y tarjetas son
   datos de cada definición: un texto, o `{ es, en }`.
 - **Entidades que cubre (`covers`):** tablero, dashboard, reporte, report, informe.

@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "id": "audit-log",
+  "feature": "audit-log",
+  "version": "0.1.0",
+  "title": "Registro de auditoría",
+  "description": "Quién cambió qué y cuándo: una tabla de solo inserción (actor, acción, entidad, id, diff en jsonb) con recordAudit() y un envoltorio para acciones de servidor que redacta campos sensibles antes de guardar, y la pantalla /admin/audit con filtros.",
+  "tables": ["audit_log"],
+  "migrations": ["0109_audit_log_init"],
+  "routes": [{ "path": "/admin/audit", "entry": "ui/page.tsx" }],
+  "covers": ["auditoría", "audit", "registro de auditoría", "audit log", "bitácora", "historial de cambios", "change log"],
+  "entrypoints": {
+    "nav": "nav.ts",
+    "permissions": "permissions.ts",
+    "seed": "seed.ts",
+    "messages": "messages.ts"
+  }
+}

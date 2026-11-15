@@ -124,7 +124,11 @@ ya están instaladas. Rutas: `/login` (contraseña o magic link), `/signup`,
 - **Guardas** (`server/session.ts`): `requireUser()`, `requireOnboardedUser()`
   (sin `onboardedAt` → `/onboarding`) y `requireAdmin()` (sin rol admin →
   `forbidden()`, que pinta `forbidden.tsx` con un 403 real; necesita
-  `experimental.authInterrupts` en `next.config.ts`). `proxy.ts` sólo hace la
+  `experimental.authInterrupts` en `next.config.ts`). `/admin/*` pasa por
+  `requireAdminArea()` (`server/module-access.ts`): admin, o quien tenga algún
+  permiso `adminAccess` de un módulo instalado; cada página de `/admin` comprueba
+  además **su** permiso (`can()` o la guarda del módulo), y `requireAdmin()` queda
+  para lo que es solo de admin (`/admin/users`). Ver `modules/README.md`. `proxy.ts` sólo hace la
   redirección optimista a `/login?next=` si no hay cookie; **cada página y cada
   Server Action llama a su guarda**.
 - **No pongas `loading.tsx` por encima de una guarda.** Un `loading.tsx` en

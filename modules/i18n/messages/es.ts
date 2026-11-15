@@ -144,6 +144,7 @@ export const es = {
       home: "Inicio",
       settings: "Configuración",
       admin: "Usuarios",
+      adminArea: "Administración",
       mainNav: "Navegación principal",
       guestTitle: "Bienvenido",
       guestDescription: "Inicia sesión o crea una cuenta para continuar.",

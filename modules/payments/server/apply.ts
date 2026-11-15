@@ -8,7 +8,7 @@ import type {
   PaymentEvent,
   PaymentStatus,
 } from "../contracts/types"
-import type { PaymentsTable } from "../db/types"
+import type { PaymentsSubscriptionsTable, PaymentsTable } from "../db/types"
 
 type PaymentRow = Selectable<PaymentsTable>
 type Db = Kysely<Database>
@@ -182,9 +182,65 @@ async function applyPayment(
   return { outcome, paymentId: pay.id }
 }
 
+type SubscriptionRow = Selectable<PaymentsSubscriptionsTable>
+type SubscriptionEvent = Extract<PaymentEvent, { kind: "subscription" }>
+
+/** What a subscription event changes. `null` fields are not in the patch: absent = unchanged. */
+export type SubscriptionPatch = {
+  status?: "active" | "past_due" | "canceled"
+  current_period_end?: Date
+  plan_ref?: string
+  cancel_at?: Date | null
+  last_event_at?: Date
+}
+
+const sameTime = (a: Date | null, b: Date | null | undefined) =>
+  (a === null && (b === null || b === undefined)) ||
+  (a !== null && b instanceof Date && a.getTime() === b.getTime())
+
+/**
+ * Pure: (stored subscription, authenticated event) → what to write.
+ *
+ * - `canceled` is terminal: a late event does not revive it.
+ * - An event older than the last applied one (`occurredAt < last_event_at`,
+ *   when both exist) changes nothing: a delayed old event cannot roll back a
+ *   plan change.
+ * - Otherwise status, period end, plan (`planRef`) and scheduled cancellation
+ *   (`cancelAt`) follow the event; what the event does not carry stays.
+ */
+export function decideSubscription(
+  sub: Pick<
+    SubscriptionRow,
+    "status" | "current_period_end" | "plan_ref" | "cancel_at" | "last_event_at"
+  >,
+  ev: SubscriptionEvent
+): { outcome: "applied" | "noop"; patch: SubscriptionPatch | null } {
+  const status = ev.type.slice("subscription.".length) as
+    "active" | "past_due" | "canceled"
+  if (sub.status === "canceled") return { outcome: "noop", patch: null }
+  const at = ev.occurredAt
+  if (at && sub.last_event_at && at.getTime() < sub.last_event_at.getTime())
+    return { outcome: "noop", patch: null }
+
+  const patch: SubscriptionPatch = {}
+  if (sub.status !== status) patch.status = status
+  if (ev.currentPeriodEnd && !sameTime(sub.current_period_end, ev.currentPeriodEnd))
+    patch.current_period_end = ev.currentPeriodEnd
+  if (ev.planRef && ev.planRef !== sub.plan_ref) patch.plan_ref = ev.planRef
+  if (ev.cancelAt !== undefined && !sameTime(sub.cancel_at, ev.cancelAt))
+    patch.cancel_at = ev.cancelAt
+  const changed = Object.keys(patch).length > 0
+  if (at && (!sub.last_event_at || at.getTime() > sub.last_event_at.getTime()))
+    patch.last_event_at = at
+  return {
+    outcome: changed ? "applied" : "noop",
+    patch: Object.keys(patch).length > 0 ? patch : null,
+  }
+}
+
 async function applySubscription(
   trx: Transaction<Database>,
-  ev: Extract<PaymentEvent, { kind: "subscription" }>
+  ev: SubscriptionEvent
 ): Promise<{ outcome: ApplyOutcome }> {
   const status = ev.type.slice("subscription.".length) as
     "active" | "past_due" | "canceled"
@@ -208,25 +264,21 @@ async function applySubscription(
         plan_ref: ev.planRef ?? null,
         status,
         current_period_end: ev.currentPeriodEnd ?? null,
+        cancel_at: ev.cancelAt ?? null,
+        last_event_at: ev.occurredAt ?? null,
       })
       .execute()
     return { outcome: "applied" }
   }
-  // `canceled` es terminal: un evento tardío no la revive.
-  if (sub.status === "canceled") return { outcome: "noop" }
-  if (sub.status === status && !ev.currentPeriodEnd) return { outcome: "noop" }
-  await trx
-    .updateTable("payments_subscriptions")
-    .set({
-      status,
-      ...(ev.currentPeriodEnd
-        ? { current_period_end: ev.currentPeriodEnd }
-        : {}),
-      updated_at: new Date(),
-    })
-    .where("id", "=", sub.id)
-    .execute()
-  return { outcome: "applied" }
+  const { outcome, patch } = decideSubscription(sub, ev)
+  if (patch) {
+    await trx
+      .updateTable("payments_subscriptions")
+      .set({ ...patch, updated_at: new Date() })
+      .where("id", "=", sub.id)
+      .execute()
+  }
+  return { outcome }
 }
 
 const isMinor = (n: unknown): n is number =>

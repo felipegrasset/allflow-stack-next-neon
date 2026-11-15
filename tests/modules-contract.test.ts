@@ -24,10 +24,28 @@ import { dirname, join, relative } from "node:path"
 import test from "node:test"
 
 import { plan, readModules } from "../scripts/modules"
-import { buildRegistryFiles, SHIM_MARKER } from "../modules/contract/generate"
+import {
+  adminAccessPairs,
+  isNavItemVisible,
+  mainNavForShell,
+  navItemsIn,
+} from "../modules/contract/access"
+import {
+  buildEnvBlock,
+  buildEnvExample,
+  buildRegistryFiles,
+  ENV_BLOCK_END,
+  ENV_BLOCK_START,
+  SHIM_MARKER,
+} from "../modules/contract/generate"
 import { checkMessagesFile, icuArgs } from "../modules/contract/messages"
 import { planRemoval } from "../modules/contract/remove"
-import type { ModuleManifest } from "../modules/contract/types"
+import type {
+  CheckAdminAccess,
+  ModuleManifest,
+  ModuleNavItem,
+  ModuleStatement,
+} from "../modules/contract/types"
 import {
   ANCHOR_FILES,
   PROTECTED_ZONES,
@@ -428,6 +446,123 @@ test("validator: a dependsOn cycle is reported", () => {
   b.files.set("db/migrations/9100_pang_init.ts", "export {}")
   b.files.delete("db/migrations/9000_ping_init.ts")
   assert.ok(codes([a, { ...b, dir: "pang" }]).includes("depends_on_cycle"))
+})
+
+// ── 2b · env block of .env.example, /admin door, navigation areas ───────────
+
+const withEnv = (id: string, env: ModuleManifest["env"]): ModuleManifest => ({
+  ...(ping().manifest as ModuleManifest),
+  id,
+  env,
+})
+
+test(".env.example: the module block is generated between markers, idempotent, and leaves the rest alone", () => {
+  const app = "# app\nDATABASE_URL=\n"
+  const mods = [
+    withEnv("b-mod", [{ key: "SHARED_URL", description: "La de b.", example: "https://b.example" }]),
+    withEnv("a-mod", [
+      { key: "A_TOKEN", description: "Token de a. Secreto." },
+      { key: "SHARED_URL", description: "La de a.", example: "https://a.example" },
+    ]),
+    withEnv("no-env", undefined),
+  ]
+  const once = buildEnvExample(app, mods)
+  assert.ok(once.startsWith(app), "lo de la app queda igual")
+  assert.ok(once.includes(`${ENV_BLOCK_START}\n`) && once.endsWith(`${ENV_BLOCK_END}\n`))
+  assert.equal(buildEnvExample(once, mods), once, "idempotente")
+  // Sorted by module id, commented, with description and example; a repeated key is declared once.
+  assert.ok(once.indexOf("── a-mod ──") < once.indexOf("── b-mod ──"))
+  assert.match(once, /# Token de a\. Secreto\.\n# A_TOKEN=\n/)
+  assert.match(once, /# SHARED_URL=https:\/\/a\.example\n/)
+  assert.match(once, /# SHARED_URL: la misma de a-mod, más arriba\./)
+  assert.doesNotMatch(once, /b\.example/)
+  assert.doesNotMatch(once, /no-env/)
+  assert.doesNotMatch(once.slice(app.length), /^[A-Z_]+=/m, "todo comentado")
+  // Edits outside the block survive a regeneration; a hand edit inside it is replaced (and check flags it).
+  const edited = `${once.replace("DATABASE_URL=", "DATABASE_URL=postgres://x")}OTRA=1\n`
+  const again = buildEnvExample(edited, mods)
+  assert.ok(again.includes("DATABASE_URL=postgres://x") && again.endsWith("OTRA=1\n"))
+  assert.equal(buildEnvExample(again, mods), again)
+  const tampered = once.replace("# A_TOKEN=", "# A_TOKEN=cambiado")
+  assert.notEqual(buildEnvExample(tampered, mods), tampered)
+  assert.equal(buildEnvExample(tampered, mods), once)
+  // No module with env: the block goes away and the file is the app's again.
+  assert.equal(buildEnvExample(once, [withEnv("no-env", undefined)]), app)
+  assert.equal(buildEnvExample(app, []), app)
+  assert.equal(buildEnvBlock([]), "")
+  // A start marker without its end is replaced to the end of the file.
+  assert.equal(buildEnvExample(`${app}\n${ENV_BLOCK_START}\n# basura\n`, mods), once)
+})
+
+test("the permissions registry lists each module's adminAccess and type-checks it", () => {
+  const m = ping().manifest as ModuleManifest
+  const text = buildRegistryFiles([{ manifest: m }]).get(
+    "modules/_generated/permissions.ts"
+  )!
+  assert.match(text, /export const moduleAdminAccess/)
+  assert.match(
+    text,
+    /\{ module: "ping", permissions: \(p_ping as ModulePermissions\)\.adminAccess \?\? \{\} \}/
+  )
+  assert.match(
+    text,
+    /CheckAdminAccess<typeof p_ping\.statement, AdminAccessOf<typeof p_ping>>/
+  )
+  const none = buildRegistryFiles([
+    { manifest: { ...m, entrypoints: { nav: "nav.ts" } } },
+  ]).get("modules/_generated/permissions.ts")!
+  assert.match(none, /moduleAdminAccess: \{ module: string; permissions: ModuleStatement \}\[\] = \[\n\]/)
+  assert.doesNotMatch(none, /_AdminAccessChecks/)
+})
+
+// Type-level: `pnpm typecheck` fails if these expectations break.
+type Stmt = { readonly ticket: readonly ["read", "manage"] }
+export type _AdminAccessOk = CheckAdminAccess<Stmt, { readonly ticket: readonly ["manage"] }>
+// @ts-expect-error an action the statement does not declare
+export type _AdminAccessBadAction = CheckAdminAccess<Stmt, { readonly ticket: readonly ["delete"] }>
+// @ts-expect-error a resource the statement does not declare
+export type _AdminAccessBadResource = CheckAdminAccess<Stmt, { readonly audit: readonly ["read"] }>
+
+test("/admin door: any one resource:action of any adminAccess, without repeats", () => {
+  assert.deepEqual(
+    adminAccessPairs([
+      { permissions: { ticket: ["manage"] } },
+      { permissions: { audit: ["read"], ticket: ["manage", "assign"] } },
+      { permissions: {} },
+    ]),
+    [{ ticket: ["manage"] }, { audit: ["read"] }, { ticket: ["assign"] }]
+  )
+})
+
+test("navigation areas: main by default, per-person visibility, shell list fails closed", async () => {
+  const items: ModuleNavItem[] = [
+    { href: "/orders", label: "orders.nav" },
+    { href: "/reports", label: "reports.nav", adminOnly: true },
+    { href: "/stock", label: "stock.nav", permission: { stock: ["read"] } },
+    { href: "/settings/plan", label: "plans.nav", area: "settings", permission: { plan: ["manage"] } },
+    { href: "/admin/tickets", label: "tickets.admin", area: "admin", permission: { ticket: ["manage"] } },
+    { href: "/admin/secret", label: "x.admin", area: "admin" },
+  ]
+  assert.deepEqual(navItemsIn("main", items).map((i) => i.href), ["/orders", "/reports", "/stock"])
+  assert.deepEqual(navItemsIn("settings", items).map((i) => i.href), ["/settings/plan"])
+  assert.deepEqual(navItemsIn("admin", items).map((i) => i.href), ["/admin/tickets", "/admin/secret"])
+  assert.deepEqual(
+    mainNavForShell(items).map((i) => [i.href, !!i.adminOnly]),
+    [["/orders", false], ["/reports", true], ["/stock", true]]
+  )
+  const holds = (granted: ModuleStatement) => async (p: ModuleStatement) =>
+    Object.entries(p).every(([r, acts]) => acts.every((a) => granted[r]?.includes(a)))
+  const visible = async (who: { isAdmin: boolean; can: (p: ModuleStatement) => Promise<boolean> }) => {
+    const out: string[] = []
+    for (const i of items) if (await isNavItemVisible(i, who)) out.push(i.href)
+    return out
+  }
+  assert.deepEqual(await visible({ isAdmin: true, can: holds({}) }), items.map((i) => i.href))
+  assert.deepEqual(await visible({ isAdmin: false, can: holds({}) }), ["/orders"])
+  assert.deepEqual(
+    await visible({ isAdmin: false, can: holds({ ticket: ["manage"], plan: ["manage"], stock: ["read"] }) }),
+    ["/orders", "/stock", "/settings/plan", "/admin/tickets"]
+  )
 })
 
 // ── 3 · the guard: protected zones and anchors ──────────────────────────────

@@ -3,7 +3,7 @@ import { forbidden } from "next/navigation"
 
 import { auth } from "@/server/auth"
 import type { Session } from "@/server/auth"
-import { getDefaultOrganizationId, requireAdmin } from "@/server/session"
+import { getDefaultOrganizationId, requireOnboardedUser } from "@/server/session"
 
 import { PAYMENTS_ADMIN_PATH } from "../contracts"
 
@@ -40,14 +40,17 @@ export async function hasPaymentPermission(
 }
 
 /**
- * The guard of every page and Server Action of the admin screen: admin of the
- * app (same as the /admin layout; Server Actions are reachable by direct POST
- * so they check again) AND `payment:<action>`. Otherwise the 403 page.
+ * The guard of every page and Server Action of the admin screen: a signed-in,
+ * onboarded person who holds `payment:<action>` (a static or dynamic role, as
+ * Better Auth merges them). It is NOT an "is admin" check: a custom role with
+ * `payment:read` gets in, and refunding still needs `payment:refund`. Server
+ * Actions are reachable by direct POST, so each one calls this itself.
+ * Otherwise the 403 page.
  */
 export async function requirePaymentPermission(
   action: PaymentPermission
 ): Promise<Session> {
-  const { session } = await requireAdmin(PAYMENTS_ADMIN_PATH)
+  const session = await requireOnboardedUser(PAYMENTS_ADMIN_PATH)
   if (!(await hasPaymentPermission(action))) forbidden()
   return session
 }

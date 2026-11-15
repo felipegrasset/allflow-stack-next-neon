@@ -17,9 +17,12 @@ import { readProviderEnv, type Env } from "../server/config"
  * para las llaves de Fulvia y las del cliente (BYOK):
  *   MERCADOPAGO_ACCESS_TOKEN, MERCADOPAGO_WEBHOOK_SECRET.
  *
- * Sin suscripciones (`createSubscription` / `cancelSubscription` no existen
- * aquí a propósito). El sandbox de MP NO envía webhooks con credenciales de
- * prueba: ahí la vía real es `syncPayment` → `getPayment`.
+ * Sin suscripciones (`createSubscription` / `cancelSubscription` /
+ * `changeSubscriptionPlan` no existen aquí a propósito: el adaptador no crea
+ * preapprovals ni lee sus webhooks, así que no habría estado local que
+ * confirmar; el núcleo responde `OperationNotSupportedError`). El sandbox de
+ * MP NO envía webhooks con credenciales de prueba: ahí la vía real es
+ * `syncPayment` → `getPayment`.
  */
 
 const API = "https://api.mercadopago.com"
@@ -171,7 +174,13 @@ export function createMercadoPagoProvider(
   async function call(
     operation: string,
     path: string,
-    init: { method?: string; body?: unknown; idempotent?: boolean } = {}
+    init: {
+      method?: string
+      body?: unknown
+      idempotent?: boolean
+      /** Fixed key (a refund request id); without it, a fresh one per call. */
+      idempotencyKey?: string
+    } = {}
   ): Promise<unknown> {
     let res: Response
     try {
@@ -182,7 +191,9 @@ export function createMercadoPagoProvider(
           ...(init.body !== undefined
             ? { "Content-Type": "application/json" }
             : {}),
-          ...(init.idempotent ? { "X-Idempotency-Key": randomUUID() } : {}),
+          ...(init.idempotent
+            ? { "X-Idempotency-Key": init.idempotencyKey ?? randomUUID() }
+            : {}),
         },
         body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
         signal: AbortSignal.timeout(TIMEOUT_MS),
@@ -330,7 +341,16 @@ export function createMercadoPagoProvider(
       return stateFromPayment(best)
     },
 
-    async refund(providerPaymentId: string, amountMinor?: number) {
+    /**
+     * `POST /v1/payments/{id}/refunds`. `X-Idempotency-Key` is the refund
+     * request id of the core (`opts.idempotencyKey`), stable per request, so a
+     * resend of the SAME request is not a second refund for Mercado Pago.
+     */
+    async refund(
+      providerPaymentId: string,
+      amountMinor?: number,
+      opts?: { idempotencyKey?: string }
+    ) {
       const payment = await fetchPayment(providerPaymentId, "refund")
       const currency = String(payment.currency_id ?? "")
       const body =
@@ -344,6 +364,7 @@ export function createMercadoPagoProvider(
         method: "POST",
         body: body ?? {},
         idempotent: true,
+        idempotencyKey: opts?.idempotencyKey,
       })
     },
   }

@@ -2,21 +2,35 @@
 
 import type { ModuleHeaderSlot, ModuleNavItem } from "../contract/types"
 import { nav as nav_approvals } from "../approvals/nav"
+import { nav as nav_audit_log } from "../audit-log/nav"
 import { nav as nav_bookings } from "../bookings/nav"
 import { nav as nav_crm_lite } from "../crm-lite/nav"
+import { nav as nav_forms } from "../forms/nav"
+import { nav as nav_help_center } from "../help-center/nav"
 import { nav as nav_notifications } from "../notifications/nav"
 import { nav as nav_payments_admin } from "../payments-admin/nav"
+import { nav as nav_plans } from "../plans/nav"
 import { nav as nav_reports } from "../reports/nav"
+import { nav as nav_settings } from "../settings/nav"
+import { nav as nav_tickets } from "../tickets/nav"
+import { nav as nav_whatsapp } from "../whatsapp/nav"
 import header_i18n from "../i18n/header"
 import header_notifications from "../notifications/header"
 
 export const moduleNavItems: ModuleNavItem[] = [
   ...nav_approvals,
+  ...nav_audit_log,
   ...nav_bookings,
   ...nav_crm_lite,
+  ...nav_forms,
+  ...nav_help_center,
   ...nav_notifications,
   ...nav_payments_admin,
+  ...nav_plans,
   ...nav_reports,
+  ...nav_settings,
+  ...nav_tickets,
+  ...nav_whatsapp,
 ]
 
 export const moduleHeaderSlots: { id: string; Slot: ModuleHeaderSlot }[] = [

@@ -13,6 +13,7 @@ import pg from "pg"
 import type { Database } from "@/server/db/schema"
 
 import { up } from "../db/migrations/0101_payments_init"
+import { up as up0124 } from "../db/migrations/0124_payments_refund_guard"
 import {
   ProviderApiError,
   WebhookAuthError,
@@ -351,7 +352,60 @@ test("suscripciones: created/activated → active; past_due; canceled; con subsc
     assert.equal(e.planRef, "pri_1")
     assert.equal(e.currentPeriodEnd?.toISOString(), "2027-01-15T00:00:00.000Z")
   }
-  assert.deepEqual(await signed(p, sub("subscription.updated")), [])
+})
+
+test("subscription.updated: sigue el status de la entidad (trialing = active; paused → nada), trae plan nuevo, occurredAt y cancelAt", async () => {
+  const p = mkProvider()
+  const upd = (data: Record<string, unknown>) => ({
+    ...sub("subscription.updated", data),
+    occurred_at: "2026-11-14T10:00:00Z",
+  })
+  const [a] = await signed(
+    p,
+    upd({
+      status: "active",
+      items: [{ price: { id: "pri_2" } }],
+      scheduled_change: null,
+    })
+  )
+  assert.ok(a && a.kind === "subscription")
+  assert.equal(a.type, "subscription.active")
+  assert.equal(a.planRef, "pri_2")
+  assert.equal(a.occurredAt?.toISOString(), "2026-11-14T10:00:00.000Z")
+  assert.equal(a.cancelAt, null, "scheduled_change null limpia la cancelación")
+
+  const [b] = await signed(
+    p,
+    upd({
+      status: "active",
+      scheduled_change: {
+        action: "cancel",
+        effective_at: "2027-01-15T00:00:00Z",
+      },
+    })
+  )
+  assert.ok(b && b.kind === "subscription")
+  assert.equal(b.cancelAt?.toISOString(), "2027-01-15T00:00:00.000Z")
+
+  const [c] = await signed(p, upd({ status: "trialing" }))
+  assert.equal(c!.type, "subscription.active")
+  assert.ok(c!.kind === "subscription")
+  assert.equal(c.cancelAt, undefined, "sin el campo no se toca lo guardado")
+  assert.equal((await signed(p, upd({ status: "past_due" })))[0]!.type, "subscription.past_due")
+  assert.deepEqual(await signed(p, upd({ status: "paused" })), [])
+})
+
+test("subscription.canceled: el fin de lo pagado es canceled_at (cancelación inmediata corta ya)", async () => {
+  const [e] = await signed(
+    mkProvider(),
+    sub("subscription.canceled", {
+      status: "canceled",
+      current_billing_period: null,
+      canceled_at: "2026-11-14T12:00:00Z",
+    })
+  )
+  assert.ok(e && e.kind === "subscription")
+  assert.equal(e.currentPeriodEnd?.toISOString(), "2026-11-14T12:00:00.000Z")
 })
 
 // ── llamadas a la API ────────────────────────────────────────────────────────
@@ -550,6 +604,46 @@ test("createSubscription: transacción con el price id y subscriber_ref; cancelS
     "https://sandbox-api.paddle.com/subscriptions/sub_9/cancel"
   )
   assert.equal(f.calls[1]!.method, "POST")
+  assert.deepEqual(f.calls[1]!.body, { effective_from: "next_billing_period" })
+  await p.cancelSubscription!("sub_9", { atPeriodEnd: false })
+  assert.deepEqual(f.calls[2]!.body, { effective_from: "immediately" })
+  await p.cancelSubscription!("sub_9", { atPeriodEnd: true })
+  assert.deepEqual(f.calls[3]!.body, { effective_from: "next_billing_period" })
+})
+
+test("changeSubscriptionPlan: lee la suscripción y hace PATCH con la lista completa de ítems y prorrateo inmediato", async () => {
+  const f = fakeFetch((c) =>
+    c.method === "GET"
+      ? {
+          json: {
+            data: {
+              id: "sub_9",
+              status: "active",
+              items: [{ quantity: 2, price: { id: "pri_1" } }],
+            },
+          },
+        }
+      : { json: { data: { id: "sub_9" } } }
+  )
+  const out = await mkProvider(f.fetch).changeSubscriptionPlan!("sub_9", "pri_2")
+  assert.deepEqual(out, { mode: "in_place", billing: "prorated_immediately" })
+  assert.equal(f.calls[1]!.method, "PATCH")
+  assert.equal(f.calls[1]!.url, "https://sandbox-api.paddle.com/subscriptions/sub_9")
+  assert.deepEqual(f.calls[1]!.body, {
+    items: [{ price_id: "pri_2", quantity: 2 }],
+    proration_billing_mode: "prorated_immediately",
+  })
+})
+
+test("changeSubscriptionPlan: con varios ítems o no active, no llama al PATCH", async () => {
+  for (const data of [
+    { status: "active", items: [{ price: { id: "a" } }, { price: { id: "b" } }] },
+    { status: "past_due", items: [{ price: { id: "a" } }] },
+  ]) {
+    const f = fakeFetch(() => ({ json: { data } }))
+    await assert.rejects(mkProvider(f.fetch).changeSubscriptionPlan!("sub_9", "pri_2"))
+    assert.equal(f.calls.filter((c) => c.method === "PATCH").length, 0)
+  }
 })
 
 // ── punta a punta contra Postgres: webhook firmado → handleWebhook → fila ────
@@ -571,6 +665,7 @@ before(async () => {
   pool.on("connect", (c) => void c.query(`set search_path to ${schema}`))
   db = new Kysely<Database>({ dialect: new PostgresDialect({ pool }) })
   await up(db as unknown as Kysely<unknown>)
+  await up0124(db as unknown as Kysely<unknown>)
 })
 after(async () => {
   if (skip) return

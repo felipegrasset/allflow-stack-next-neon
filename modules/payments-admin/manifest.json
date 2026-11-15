@@ -4,11 +4,24 @@
   "feature": "payments-admin",
   "version": "0.1.0",
   "title": "Administración de pagos",
-  "description": "Pantalla de administración del módulo payments: buscar un pago por orden, ver su detalle, consultar su estado al proveedor y reembolsarlo con confirmación; y la página pública de retorno del checkout (/pago/retorno), que concilia con syncPayment. Sin tablas: todo pasa por payments/contracts.",
-  "dependsOn": ["payments"],
+  "description": "Pantalla de administración del módulo payments: lista de pagos con filtros y paginación, cola de needs_review primero, búsqueda por orden, detalle con consulta al proveedor y reembolso con confirmación; y la página pública de retorno del checkout (/pago/retorno), que concilia con syncPayment. Sin tablas: todo pasa por payments/contracts.",
+  "dependsOn": [
+    "payments"
+  ],
   "routes": [
-    { "path": "/admin/payments", "entry": "ui/page.tsx" },
-    { "path": "/pago/retorno", "entry": "ui/return-page.tsx", "group": "marketing" }
+    {
+      "path": "/admin/payments",
+      "entry": "ui/page.tsx"
+    },
+    {
+      "path": "/admin/payments/[id]",
+      "entry": "ui/detail-page.tsx"
+    },
+    {
+      "path": "/pago/retorno",
+      "entry": "ui/return-page.tsx",
+      "group": "marketing"
+    }
   ],
   "entrypoints": {
     "nav": "nav.ts",

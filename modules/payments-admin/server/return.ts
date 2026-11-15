@@ -1,15 +1,35 @@
 import {
+  getPayment,
   getPaymentByOrder,
   syncPayment,
   type PaymentRecord,
   type PaymentStatus,
 } from "@/modules/payments/contracts"
 
+import { clientIp, consume } from "@/server/rate-limit"
+
 import { errorName, logAdmin } from "./log"
-import type { ReturnLookup } from "./logic"
+import { returnRateLimits, type ReturnLookup } from "./logic"
 
 /** Already final for the person who pays: no need to ask the provider again. */
 const SETTLED: readonly PaymentStatus[] = ["approved", "refunded"]
+
+/**
+ * May this visit ask the provider? The page is public and every unsettled
+ * visit costs a provider call, so it counts against the per-IP limits first
+ * (`returnRateLimits`). Over the limit, or the limiter failing, means "no":
+ * the page then shows what the database already knows and never calls out.
+ */
+async function mayAskProvider(lookup: ReturnLookup): Promise<boolean> {
+  const buckets = returnRateLimits(lookup, await clientIp())
+  if (!buckets) return false
+  try {
+    for (const { key, rule } of buckets) if (!(await consume(key, rule)).ok) return false
+    return true
+  } catch {
+    return false
+  }
+}
 
 /**
  * What the return page does: find the payment and reconcile it with the
@@ -20,6 +40,9 @@ const SETTLED: readonly PaymentStatus[] = ["approved", "refunded"]
  *
  * The provider reference from the URL is untrusted: if `syncPayment` rejects
  * it, we retry once with the reference stored in the payment.
+ *
+ * Before asking the provider the visit is rate limited (`mayAskProvider`).
+ * Over the limit, the stored status is shown and the provider is not asked.
  *
  * Returns the status, or `null` when there is no payment to show.
  */
@@ -35,6 +58,12 @@ export async function reconcileReturn(lookup: ReturnLookup): Promise<{ found: bo
     paymentId = record.id
   } else {
     paymentId = lookup.paymentId
+  }
+
+  if (!(await mayAskProvider(lookup))) {
+    logAdmin({ action: "return", outcome: "rate_limited", paymentId })
+    const stored = record ?? (await getPayment(paymentId))
+    return stored ? { found: true, status: stored.status } : { found: false, status: null }
   }
 
   const attempts: (string | undefined)[] = lookup.providerRef ? [lookup.providerRef, undefined] : [undefined]

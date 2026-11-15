@@ -13,6 +13,7 @@ import pg from "pg"
 import type { Database } from "@/server/db/schema"
 
 import { up } from "../db/migrations/0101_payments_init"
+import { up as up0124 } from "../db/migrations/0124_payments_refund_guard"
 import {
   ProviderApiError,
   ProviderNotConfiguredError,
@@ -467,6 +468,20 @@ test("refund: total sin monto; parcial con monto en unidad mayor", async () => {
   )
 })
 
+test("refund: X-Idempotency-Key es la del pedido de reembolso del núcleo cuando llega", async () => {
+  const f = fakeFetch((c) =>
+    c.method === "GET"
+      ? { json: mpPayment({ currency_id: "USD", transaction_amount: 20 }) }
+      : { status: 201, json: {} }
+  )
+  const p = createProvider(ENV, { fetch: f.fetch })!
+  await p.refund!("1001", 550, { idempotencyKey: "rr-1" })
+  await p.refund!("1001", 550, { idempotencyKey: "rr-1" })
+  const posts = f.calls.filter((c) => c.method === "POST")
+  assert.equal(posts[0].headers.get("x-idempotency-key"), "rr-1")
+  assert.equal(posts[1].headers.get("x-idempotency-key"), "rr-1")
+})
+
 // ── errores de API sin filtrar ───────────────────────────────────────────────
 
 test("error de API: solo el estado; ni el cuerpo ni el token en el mensaje", async () => {
@@ -526,6 +541,7 @@ before(async () => {
   pool.on("connect", (c) => void c.query(`set search_path to ${schema}`))
   db = new Kysely<Database>({ dialect: new PostgresDialect({ pool }) })
   await up(db as unknown as Kysely<unknown>)
+  await up0124(db as unknown as Kysely<unknown>)
 })
 
 after(async () => {

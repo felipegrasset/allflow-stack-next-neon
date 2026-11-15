@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "id": "whatsapp",
+  "feature": "whatsapp",
+  "version": "0.1.0",
+  "title": "WhatsApp",
+  "description": "Enviar mensajes de WhatsApp (texto dentro de la ventana de 24 h, plantillas aprobadas fuera de ella) solo a números con opt-in vigente; la baja gana siempre. Registro de consentimientos y mensajes, webhook entrante con firma verificada e idempotente (mensajes, recibos de entrega y palabras BAJA/ALTA), página /admin/whatsapp y sendWhatsApp/recordOptIn/recordOptOut para otros módulos. Proveedores: Meta Cloud API, «vía Fulvia» (endpoint pendiente en la plataforma) y memoria para pruebas.",
+  "dependsOn": ["notifications"],
+  "tables": ["whatsapp_optins", "whatsapp_messages"],
+  "migrations": ["0113_whatsapp_init"],
+  "routes": [
+    { "path": "/api/whatsapp/webhook", "entry": "server/webhook/route.ts" },
+    { "path": "/admin/whatsapp", "entry": "ui/page.tsx" }
+  ],
+  "env": [
+    {
+      "key": "WHATSAPP_PROVIDER",
+      "description": "Quién envía: meta (Cloud API con credenciales propias), fulvia (a través de la plataforma; PENDIENTE, el endpoint aún no existe) o memory (solo desarrollo, rechazado en producción). Sin esta variable no sale ningún mensaje.",
+      "example": "meta"
+    },
+    {
+      "key": "WHATSAPP_META_TOKEN",
+      "description": "Token de acceso permanente de un usuario del sistema de Meta Business con permiso whatsapp_business_messaging. Secreto. Solo con WHATSAPP_PROVIDER=meta.",
+      "example": "EAAG<token-del-usuario-del-sistema>"
+    },
+    {
+      "key": "WHATSAPP_META_PHONE_NUMBER_ID",
+      "description": "Id del número en WhatsApp Manager (no el número de teléfono). El webhook ignora eventos de otros números. Solo con meta.",
+      "example": "123456789012345"
+    },
+    {
+      "key": "WHATSAPP_META_APP_SECRET",
+      "description": "Clave secreta de la app de Meta: firma el webhook (X-Hub-Signature-256). Sin ella el webhook rechaza todo (401). Secreto. Solo con meta.",
+      "example": "<clave-secreta-de-la-app>"
+    },
+    {
+      "key": "WHATSAPP_META_VERIFY_TOKEN",
+      "description": "Texto que inventas y pegas en Meta al suscribir el webhook (handshake GET). Secreto. Solo con meta.",
+      "example": "<texto-aleatorio-largo>"
+    },
+    {
+      "key": "WHATSAPP_META_API_VERSION",
+      "description": "Versión de la Graph API. Opcional; por defecto v23.0.",
+      "example": "v23.0"
+    },
+    {
+      "key": "ALLFLOW_INGEST_URL",
+      "description": "URL base de la ingesta de Fulvia (la misma del módulo landing). Con WHATSAPP_PROVIDER=fulvia los envíos van a ${ALLFLOW_INGEST_URL}/whatsapp/messages (PENDIENTE en la plataforma).",
+      "example": "https://fulvia.app/api/ingest/v1"
+    },
+    {
+      "key": "ALLFLOW_INGEST_KEY",
+      "description": "Llave de la app en la ingesta de Fulvia (Bearer). Secreto. Solo con fulvia.",
+      "example": "afk_<llave>"
+    },
+    {
+      "key": "WHATSAPP_FULVIA_WEBHOOK_SECRET",
+      "description": "Secreto con que Fulvia firmaría (HMAC-SHA256, X-Hub-Signature-256) los eventos que reenvía al webhook. PENDIENTE en la plataforma. Secreto. Solo con fulvia.",
+      "example": "<secreto-compartido>"
+    }
+  ],
+  "covers": [
+    "mensaje de whatsapp",
+    "whatsapp message",
+    "consentimiento de whatsapp",
+    "whatsapp consent",
+    "opt-in de whatsapp",
+    "whatsapp opt-in"
+  ],
+  "entrypoints": {
+    "nav": "nav.ts",
+    "permissions": "permissions.ts",
+    "messages": "messages.ts"
+  }
+}

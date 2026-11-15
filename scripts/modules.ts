@@ -2,7 +2,8 @@
  * `pnpm modules:sync | modules:check | modules:guard` — the module contract's CLI (T1).
  *
  *   sync    validates modules/<id>/manifest.json, then (re)writes the generated
- *           registries (modules/_generated/*) and the route shims under app/.
+ *           registries (modules/_generated/*), the route shims under app/ and
+ *           the module block of .env.example (between its markers).
  *           Run it after copying a module in or taking one out.
  *   check   same validation, writes nothing, exits 1 if anything is invalid or
  *           the generated files are stale. CI runs it.
@@ -34,7 +35,12 @@ import {
 } from "node:fs"
 import { dirname, join, relative } from "node:path"
 
-import { buildRegistryFiles, SHIM_MARKER } from "../modules/contract/generate"
+import {
+  buildEnvExample,
+  buildRegistryFiles,
+  ENV_EXAMPLE_FILE,
+  SHIM_MARKER,
+} from "../modules/contract/generate"
 import { planRemoval } from "../modules/contract/remove"
 import { findViolations } from "../modules/contract/zones"
 import {
@@ -105,10 +111,17 @@ export function plan(root: string): {
     const m = parseManifest(s.dir, s.manifest, sink)
     return m ? [{ manifest: m }] : []
   })
-  return {
-    issues,
-    files: issues.length ? new Map() : buildRegistryFiles(manifests),
-  }
+  if (issues.length) return { issues, files: new Map() }
+  const files = buildRegistryFiles(manifests)
+  // .env.example: only the delimited module block is generated; the rest is the app's.
+  const envPath = join(root, ENV_EXAMPLE_FILE)
+  const envNow = existsSync(envPath) ? readFileSync(envPath, "utf8") : ""
+  const envNext = buildEnvExample(
+    envNow,
+    manifests.map((m) => m.manifest)
+  )
+  if (existsSync(envPath) || envNext) files.set(ENV_EXAMPLE_FILE, envNext)
+  return { issues, files }
 }
 
 function existingShims(root: string): string[] {

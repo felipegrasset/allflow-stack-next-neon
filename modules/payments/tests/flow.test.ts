@@ -12,6 +12,7 @@ import pg from "pg"
 import type { Database } from "@/server/db/schema"
 
 import { up } from "../db/migrations/0101_payments_init"
+import { up as up0124 } from "../db/migrations/0124_payments_refund_guard"
 import {
   ProviderApiError,
   WebhookAuthError,
@@ -435,6 +436,7 @@ before(async () => {
   pool.on("connect", (c) => void c.query(`set search_path to ${schema}`))
   db = new Kysely<Database>({ dialect: new PostgresDialect({ pool }) })
   await up(db as unknown as Kysely<unknown>)
+  await up0124(db as unknown as Kysely<unknown>)
 })
 after(async () => {
   if (skip) return

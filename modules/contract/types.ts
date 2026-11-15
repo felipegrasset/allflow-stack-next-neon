@@ -93,10 +93,31 @@ export type ModuleRoute = {
   group?: "app" | "marketing"
 }
 
+/**
+ * Where a module link shows:
+ *  - `main` (default): the shell's header navigation (components/app-shell.tsx).
+ *  - `settings`: the tabs of /settings (app/(app)/settings/layout.tsx), for pages under /settings/….
+ *  - `admin`: the menu of /admin (app/(app)/admin/layout.tsx), for pages under /admin/….
+ */
+export type ModuleNavArea = "main" | "settings" | "admin"
+export const MODULE_NAV_AREAS = ["main", "settings", "admin"] as const satisfies readonly ModuleNavArea[]
+
 export type ModuleNavItem = {
   href: string
+  /** A catalog key (`"<id>.nav"`) or a literal; the shell translates keys. */
   label: string
+  /** Shown only to owner/admin, unless `permission` says who else sees it. */
   adminOnly?: boolean
+  /** Default `main`. */
+  area?: ModuleNavArea
+  /**
+   * Shown to whoever holds ALL of these permissions (Better Auth
+   * `hasPermission`: static roles plus the dynamic "organizationRole" ones).
+   * Owner/admin always see it. Visibility only: the page checks again.
+   * In the `main` area the shell does not evaluate permissions yet, so a main
+   * link with `permission` is shown to admins only (fails closed).
+   */
+  permission?: ModuleStatement
 }
 
 /** Resource → actions, as Better Auth's access control takes them. */
@@ -110,7 +131,27 @@ export type ModulePermissions = {
     admin?: ModuleStatement
     member?: ModuleStatement
   }
+  /**
+   * Permissions of `statement` that open the /admin area: anyone holding ANY
+   * ONE of these `resource:action` pairs gets past app/(app)/admin/layout.tsx
+   * (owner/admin always do). Each admin page still checks its own permission.
+   * `modules:sync` lists them in `_generated/permissions.ts` (`moduleAdminAccess`)
+   * and `tsc` rejects a resource or action that is not in `statement`.
+   */
+  adminAccess?: ModuleStatement
 }
+
+/** `adminAccess` of a permissions literal, `{}` when it declares none. */
+export type AdminAccessOf<P> = P extends { readonly adminAccess: infer A } ? A : {}
+
+/**
+ * Compiles only when `A` uses resources and actions of `S`. The generated
+ * permissions registry instantiates it once per module (`_AdminAccessChecks`).
+ */
+export type CheckAdminAccess<
+  S,
+  A extends { readonly [R in keyof A]: R extends keyof S ? S[R] extends readonly (infer X)[] ? readonly X[] : never : never },
+> = A
 
 export type ModuleHeaderSlotProps = { user: Session["user"] }
 /** A server component rendered in AppShell's header, before the theme toggle. */

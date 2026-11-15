@@ -2,20 +2,38 @@
 
 import type { Migration } from "kysely/migration"
 import * as m_approvals_0107_approvals_init from "../approvals/db/migrations/0107_approvals_init"
+import * as m_audit_log_0109_audit_log_init from "../audit-log/db/migrations/0109_audit_log_init"
 import * as m_bookings_0103_bookings_init from "../bookings/db/migrations/0103_bookings_init"
 import * as m_crm_lite_0105_crm_lite_init from "../crm-lite/db/migrations/0105_crm_lite_init"
+import * as m_forms_0115_forms_init from "../forms/db/migrations/0115_forms_init"
+import * as m_help_center_0117_help_center_init from "../help-center/db/migrations/0117_help_center_init"
 import * as m_notifications_0100_notifications_init from "../notifications/db/migrations/0100_notifications_init"
 import * as m_payments_0101_payments_init from "../payments/db/migrations/0101_payments_init"
+import * as m_payments_0124_payments_refund_guard from "../payments/db/migrations/0124_payments_refund_guard"
+import * as m_plans_0125_plans_init from "../plans/db/migrations/0125_plans_init"
+import * as m_plans_0128_plans_v02 from "../plans/db/migrations/0128_plans_v02"
 import * as m_reports_0104_reports_init from "../reports/db/migrations/0104_reports_init"
+import * as m_settings_0116_settings_init from "../settings/db/migrations/0116_settings_init"
 import * as m_storage_0102_storage_init from "../storage/db/migrations/0102_storage_init"
+import * as m_tickets_0118_tickets_init from "../tickets/db/migrations/0118_tickets_init"
+import * as m_whatsapp_0113_whatsapp_init from "../whatsapp/db/migrations/0113_whatsapp_init"
 
 /** Numbered 0100+ (the core and the genesis use 0001–0099); server/db/migrate.ts spreads this in. */
 export const moduleMigrations: Record<string, Migration> = {
   "0107_approvals_init": m_approvals_0107_approvals_init,
+  "0109_audit_log_init": m_audit_log_0109_audit_log_init,
   "0103_bookings_init": m_bookings_0103_bookings_init,
   "0105_crm_lite_init": m_crm_lite_0105_crm_lite_init,
+  "0115_forms_init": m_forms_0115_forms_init,
+  "0117_help_center_init": m_help_center_0117_help_center_init,
   "0100_notifications_init": m_notifications_0100_notifications_init,
   "0101_payments_init": m_payments_0101_payments_init,
+  "0124_payments_refund_guard": m_payments_0124_payments_refund_guard,
+  "0125_plans_init": m_plans_0125_plans_init,
+  "0128_plans_v02": m_plans_0128_plans_v02,
   "0104_reports_init": m_reports_0104_reports_init,
+  "0116_settings_init": m_settings_0116_settings_init,
   "0102_storage_init": m_storage_0102_storage_init,
+  "0118_tickets_init": m_tickets_0118_tickets_init,
+  "0113_whatsapp_init": m_whatsapp_0113_whatsapp_init,
 }
