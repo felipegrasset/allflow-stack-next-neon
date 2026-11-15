@@ -4,9 +4,13 @@ import type { ModuleSeed } from "../contract/types"
 import { seed as seed_approvals } from "../approvals/seed"
 import { seed as seed_audit_log } from "../audit-log/seed"
 import { seed as seed_bookings } from "../bookings/seed"
+import { seed as seed_catalog } from "../catalog/seed"
+import { seed as seed_comments } from "../comments/seed"
 import { seed as seed_crm_lite } from "../crm-lite/seed"
+import { seed as seed_csv_import } from "../csv-import/seed"
 import { seed as seed_forms } from "../forms/seed"
 import { seed as seed_help_center } from "../help-center/seed"
+import { seed as seed_jobs } from "../jobs/seed"
 import { seed as seed_notifications } from "../notifications/seed"
 import { seed as seed_plans } from "../plans/seed"
 import { seed as seed_reports } from "../reports/seed"
@@ -18,9 +22,13 @@ export const moduleSeeds: { id: string; seed: ModuleSeed }[] = [
   { id: "approvals", seed: seed_approvals },
   { id: "audit-log", seed: seed_audit_log },
   { id: "bookings", seed: seed_bookings },
+  { id: "catalog", seed: seed_catalog },
+  { id: "comments", seed: seed_comments },
   { id: "crm-lite", seed: seed_crm_lite },
+  { id: "csv-import", seed: seed_csv_import },
   { id: "forms", seed: seed_forms },
   { id: "help-center", seed: seed_help_center },
+  { id: "jobs", seed: seed_jobs },
   { id: "notifications", seed: seed_notifications },
   { id: "plans", seed: seed_plans },
   { id: "reports", seed: seed_reports },

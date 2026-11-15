@@ -63,3 +63,28 @@ export function adminAccessPairs(
       }
   return out
 }
+
+/** What a module grants one built-in role: its own `grants[role]`, else `D`. */
+export type GrantOf<P, R extends "owner" | "admin" | "member", D> = P extends {
+  readonly grants: infer G
+}
+  ? G extends Record<R, infer S>
+    ? S
+    : D
+  : D
+
+/**
+ * `p.grants?.[role] ?? fallback`, typed as ONE type per module instead of a
+ * union. The generated permissions registry spreads one of these per module:
+ * with `a ?? b` each term was a two-member union, and past ~16 modules the
+ * spread of N unions is 2^N combinations (TS2590, "union type too complex").
+ */
+export function moduleGrant<
+  P extends object,
+  R extends "owner" | "admin" | "member",
+  D,
+>(p: P, role: R, fallback: D): GrantOf<P, R, D> {
+  const grants = (p as { grants?: Partial<Record<string, unknown>> }).grants
+  const own = grants?.[role]
+  return (own ?? fallback) as GrantOf<P, R, D>
+}

@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "id": "comments",
+  "feature": "comments",
+  "version": "0.1.0",
+  "title": "Comentarios y menciones",
+  "description": "Hilo de comentarios de texto plano sobre cualquier registro de la app, con menciones @ que avisan con notify(). El llamador pasa una comprobación de acceso; sin ella no se muestra nada.",
+  "dependsOn": ["notifications"],
+  "tables": ["comments"],
+  "migrations": ["0120_comments_init"],
+  "routes": [],
+  "covers": ["comentario", "comment", "nota", "note", "observación", "observation"],
+  "entrypoints": {
+    "permissions": "permissions.ts",
+    "seed": "seed.ts",
+    "messages": "messages.ts"
+  }
+}

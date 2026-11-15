@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "id": "notifications-email",
+  "feature": "notifications-email",
+  "version": "0.1.0",
+  "title": "Notificaciones por correo",
+  "description": "Canal de correo para las notificaciones: notifyWithEmail() envuelve a notify() y además envía un correo (Resend, vía el envío del piso) a quien no lo desactivó. Preferencia por persona en /settings/notifications y baja con un clic desde el propio correo (enlace firmado). Sin RESEND_API_KEY no envía nada.",
+  "dependsOn": ["notifications"],
+  "tables": ["notifications_email_prefs"],
+  "migrations": ["0108_notifications_email_init"],
+  "routes": [
+    { "path": "/settings/notifications", "entry": "ui/page.tsx" },
+    { "path": "/notifications/unsubscribe", "entry": "server/unsubscribe/route.ts" }
+  ],
+  "covers": ["preferencia de correo", "email preference", "baja de correo", "email unsubscribe"],
+  "env": [
+    {
+      "key": "RESEND_API_KEY",
+      "description": "Llave de Resend. Sin ella el módulo no envía correos (los avisos internos siguen funcionando). La usa el envío del piso.",
+      "example": "re_xxxxxxxxxxxx"
+    },
+    {
+      "key": "EMAIL_FROM",
+      "description": "Remitente con dominio verificado en Resend, p. ej. «Mi app <avisos@midominio.cl>».",
+      "example": "Mi app <avisos@ejemplo.cl>"
+    },
+    {
+      "key": "BETTER_AUTH_SECRET",
+      "description": "La misma de la app: firma los enlaces de baja de correo. Sin ella no se envía ningún correo (no puede haber baja).",
+      "example": "<openssl rand -hex 32>"
+    }
+  ],
+  "entrypoints": {
+    "nav": "nav.ts",
+    "permissions": "permissions.ts",
+    "messages": "messages.ts"
+  }
+}

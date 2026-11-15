@@ -64,22 +64,22 @@ export function buildRegistryFiles(
         `import { permissions as p_${ident(m.id)} } from "../${m.id}/${noExt(m.entrypoints!.permissions!)}"`
     )
     const stmt = withPerms.map((m) => `  ...p_${ident(m.id)}.statement,`)
-    // `grants` is read through ModulePermissions so a module that declares only
-    // some roles (an `as const` literal) still type-checks for the others.
+    // `moduleGrant` resolves `grants[role] ?? default` to ONE type per module.
+    // A plain `a ?? b` made each term a union, and the spread of N of them is
+    // 2^N combinations: tsc gives up (TS2590) past ~16 modules with permissions.
     const role = (r: "owner" | "admin" | "member") =>
       withPerms.map((m) => {
         const v = ident(m.id)
-        const g = `(p_${v} as ModulePermissions).grants?.${r}`
         return r === "member"
-          ? `    ...(${g} ?? {}),`
-          : `    ...(${g} ?? p_${v}.statement),`
+          ? `    ...moduleGrant(p_${v}, "member", {} as const),`
+          : `    ...moduleGrant(p_${v}, "${r}", p_${v}.statement),`
       })
     out.set(
       `${GENERATED_DIR}/permissions.ts`,
       [
         header("module RBAC statements and grants"),
         withPerms.length
-          ? `import type { AdminAccessOf, CheckAdminAccess, ModulePermissions, ModuleStatement } from "../contract/types"`
+          ? `import { moduleGrant } from "../contract/access"\nimport type { AdminAccessOf, CheckAdminAccess, ModulePermissions, ModuleStatement } from "../contract/types"`
           : `import type { ModuleStatement } from "../contract/types"`,
         ...imports,
         "",
