@@ -17,7 +17,7 @@ import { en, es } from "../messages"
 import { permissions } from "../permissions"
 import { VOTER_COOKIE, ensureToken, hashVoter } from "../server/voter"
 
-const DIR = join(__dirname, "..")
+const DIR = join(process.cwd(), "modules/help-center")
 const read = (rel: string) => readFileSync(join(DIR, rel), "utf8")
 
 // ── markdown ─────────────────────────────────────────────────────────────────

@@ -29,7 +29,7 @@ import { MOVE_REASONS, StockError } from "../contracts/types"
 import { en, es } from "../messages"
 import { permissions } from "../permissions"
 
-const DIR = join(__dirname, "..")
+const DIR = join(process.cwd(), "modules/catalog")
 const read = (rel: string) => readFileSync(join(DIR, rel), "utf8")
 
 const stockError = (code: string) => (err: unknown) =>

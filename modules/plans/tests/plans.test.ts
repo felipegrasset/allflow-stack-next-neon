@@ -52,7 +52,7 @@ import { nav } from "../nav"
 import { permissions } from "../permissions"
 import { EXAMPLE_PLANS } from "../seed"
 
-const DIR = join(__dirname, "..")
+const DIR = join(process.cwd(), "modules/plans")
 const read = (rel: string) => readFileSync(join(DIR, rel), "utf8")
 
 const NOW = new Date("2026-11-14T12:00:00Z")
