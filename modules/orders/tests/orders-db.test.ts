@@ -219,22 +219,71 @@ test("rule 4: a paid order is never released (code and database)", { skip }, asy
   )
 })
 
+/**
+ * Tests share one schema, so earlier tests leave pending orders behind (e.g.
+ * «rule 1+2»). They are REALLY due at a far `now`, so a sweep must expire them
+ * too. This drains them first with its own fakes, and checks that what it
+ * released was pending, due and is now expired — never anything else.
+ */
+async function drainDue(now: Date): Promise<void> {
+  const f = fakes()
+  const due = await db
+    .selectFrom("orders_orders")
+    .select("id")
+    .where("status", "=", "pending")
+    .where("expires_at", "<=", now)
+    .execute()
+  await expireDueOrders(db, f.ports, { now, limit: 500 })
+  assert.deepEqual([...f.calls.release].sort(), due.map((d) => `order:${d.id}`).sort())
+  for (const d of due) assert.equal((await getOrderDetail(db, d.id))!.status, "expired")
+}
+
 test("rule 5: the sweep cancels the open checkout, expires and releases; a second run finds nothing", { skip }, async () => {
+  const later = new Date(Date.now() + 2 * 3_600_000)
+  await drainDue(later)
   const f = fakes()
   const o = await createOrder(db, f.ports, { userId: "ana", cart: CART, ttlMinutes: 30 })
   const r = await startOrderPayment(db, f.ports, o.id, { userId: "ana", ttlMinutes: 30, description: "Pedido" })
   assert.equal(r.kind, "redirect")
-  const later = new Date(Date.now() + 2 * 3_600_000)
   const first = await expireDueOrders(db, f.ports, { now: later })
-  assert.ok(first.expired >= 1)
+  assert.equal(first.expired, 1)
   assert.equal(f.calls.cancelPayment, 1)
   assert.deepEqual(f.calls.release, [`order:${o.id}`])
   const second = await expireDueOrders(db, f.ports, { now: later })
+  assert.equal(second.checked, 0)
   assert.equal(second.expired, 0)
   assert.deepEqual(f.calls.release, [`order:${o.id}`])
   const detail = await getOrderDetail(db, o.id)
   assert.equal(detail!.status, "expired")
   assert.equal(detail!.history.at(-1)!.actorKind, "system")
+})
+
+test("rule 5: the sweep never touches an order that is not due yet", { skip }, async () => {
+  const soon = new Date(Date.now() + 10 * 60_000)
+  await drainDue(soon)
+  const f = fakes()
+  const o = await createOrder(db, f.ports, { userId: "ana", cart: CART, ttlMinutes: 30 })
+  const report = await expireDueOrders(db, f.ports, { now: soon })
+  assert.equal(report.checked, 0)
+  assert.deepEqual(f.calls.release, [])
+  assert.equal((await getOrderDetail(db, o.id))!.status, "pending")
+  await releaseOrder(db, f.ports, o.id, { kind: "cancel", actor: { kind: "buyer", userId: "ana" }, asStaff: false })
+})
+
+test("rule 5: two simultaneous sweeps release each due order exactly once", { skip }, async () => {
+  const later = new Date(Date.now() + 3 * 3_600_000)
+  await drainDue(later)
+  const f = fakes()
+  const ids: string[] = []
+  for (let i = 0; i < 4; i++) ids.push((await createOrder(db, f.ports, { userId: "ana", cart: CART, ttlMinutes: 30 })).id)
+  const [a, b] = await Promise.all([
+    expireDueOrders(db, f.ports, { now: later }),
+    expireDueOrders(db, f.ports, { now: later }),
+  ])
+  assert.equal(a.expired + b.expired, 4)
+  assert.equal(a.failed + b.failed, 0)
+  assert.deepEqual([...f.calls.release].sort(), ids.map((id) => `order:${id}`).sort())
+  for (const id of ids) assert.equal((await getOrderDetail(db, id))!.status, "expired")
 })
 
 test("rule 6: history keeps the author of each change", { skip }, async () => {
