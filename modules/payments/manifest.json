@@ -5,6 +5,7 @@
   "version": "0.2.0",
   "title": "Pagos",
   "description": "Núcleo de cobro: interfaz de proveedor, pagos, eventos idempotentes y suscripciones, con webhook autenticado en /api/payments/webhook/[provider]. Los adaptadores de Mercado Pago, Flow y Paddle se enchufan en providers/.",
+  "covers": ["pago", "payment", "cobro", "charge"],
   "tables": [
     "payments",
     "payments_events",

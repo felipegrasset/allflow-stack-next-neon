@@ -24,7 +24,7 @@
     },
     {
       "key": "CRON_SECRET",
-      "description": "Autentica la tarea programada /api/orders/expire (Authorization: Bearer). Mínimo 16 caracteres; sin ella la ruta responde 503. Secreto.",
+      "description": "Secreto que autentica los handlers de tareas programadas (Authorization: Bearer <secreto>), como lo manda Vercel Cron. Mínimo 16 caracteres; sin él, o más corto, el handler responde 503 y no corre nada. Secreto.",
       "example": "<cadena aleatoria de 32+ caracteres>"
     }
   ],

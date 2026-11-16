@@ -8,12 +8,12 @@
   "env": [
     {
       "key": "ALLFLOW_INGEST_URL",
-      "description": "Base de la ingesta del CRM de Fulvia; track() hace POST a <base>/events. La fija la saga de la génesis (la misma que usa el bloque de captura de lead).",
+      "description": "Base de la ingesta del CRM de Fulvia; cada módulo hace POST a <base>/<recurso>. La fija la saga de la génesis.",
       "example": "https://fulvia.app/api/ingest/v1"
     },
     {
       "key": "ALLFLOW_INGEST_KEY",
-      "description": "Llave de ingesta de la app (Bearer afk_…). Sin ella track() no hace nada. Secreto."
+      "description": "Llave de ingesta de la app (Bearer afk_…). Sin ella el módulo no entrega nada a Fulvia. Secreto."
     }
   ]
 }
