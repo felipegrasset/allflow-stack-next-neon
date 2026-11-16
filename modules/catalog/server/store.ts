@@ -108,22 +108,30 @@ export class SkuTakenError extends Error {
  * Inserts with `slug`, or, when the caller left it empty, with one derived
  * from `name` — adding a short random suffix if that one is taken. An explicit
  * slug that is taken throws SlugTakenError.
+ *
+ * `insert` must use `on conflict (slug) do nothing` and resolve to undefined
+ * when the slug is taken. It must NOT rely on catching a unique violation:
+ * inside a transaction (createItem) a failed statement aborts the whole
+ * transaction (25P02), so a retry after a caught error can never succeed.
+ * A conflict on another unique column (sku) still throws, and aborts.
  */
 async function withSlug<T>(
   name: string,
   explicit: string,
   fallback: string,
-  insert: (slug: string) => Promise<T>
+  insert: (slug: string) => Promise<T | undefined>
 ): Promise<T> {
   const base = explicit || slugify(name) || fallback
-  try {
-    return await insert(base)
-  } catch (err) {
-    if (!isUniqueViolation(err, "slug")) throw err
-    if (explicit) throw new SlugTakenError(explicit)
+  const first = await insert(base)
+  if (first !== undefined) return first
+  if (explicit) throw new SlugTakenError(explicit)
+  // Sequential on purpose: `insert` may run on a transaction's single connection.
+  for (let attempt = 0; attempt < 3; attempt++) {
     const suffix = randomUUID().slice(0, 6)
-    return insert(`${base.slice(0, 80 - suffix.length - 1)}-${suffix}`)
+    const row = await insert(`${base.slice(0, 80 - suffix.length - 1)}-${suffix}`)
+    if (row !== undefined) return row
   }
+  throw new SlugTakenError(base)
 }
 
 export async function createCategory(
@@ -139,8 +147,9 @@ export async function createCategory(
         name: input.name,
         description: input.description || null,
       })
+      .onConflict((oc) => oc.column("slug").doNothing())
       .returningAll()
-      .executeTakeFirstOrThrow()
+      .executeTakeFirst()
   )
   return toCategory(row)
 }
@@ -177,8 +186,9 @@ export async function createItem(
         trx
           .insertInto("catalog_items")
           .values({ id: randomUUID(), slug, created_by: createdBy, ...itemValues(data) })
+          .onConflict((oc) => oc.column("slug").doNothing())
           .returningAll()
-          .executeTakeFirstOrThrow()
+          .executeTakeFirst()
       )
       const initial = opts.initialStock ?? 0
       if (initial > 0 && row.track_stock)

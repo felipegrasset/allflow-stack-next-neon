@@ -20,6 +20,8 @@ import { up } from "../db/migrations/0106_catalog_init"
 import { adjustStock, releaseStock, reserveStock, stockOf } from "../server/stock"
 import {
   SkuTakenError,
+  SlugTakenError,
+  createCategory,
   createItem,
   getSellableItems,
   listItems,
@@ -38,8 +40,9 @@ before(async () => {
   const admin = new pg.Pool({ connectionString: url, max: 1 })
   await admin.query(`create schema ${schema}`)
   await admin.end()
-  pool = new pg.Pool({ connectionString: url, max: 10 })
-  pool.on("connect", (c) => void c.query(`set search_path to ${schema}, public`))
+  // search_path as a startup option, not an un-awaited query in a "connect"
+  // hook (that one races the first statement on the same client).
+  pool = new pg.Pool({ connectionString: url, max: 10, options: `-c search_path=${schema},public` })
   db = new Kysely<Database>({ dialect: new PostgresDialect({ pool }) })
   await pool.query(`create table "user" (id text primary key, name text not null)`)
   await pool.query(`insert into "user" (id, name) values ('ana', 'Ana Rojas')`)
@@ -159,4 +162,36 @@ test("inside the caller's transaction: a rollback gives the stock back", { skip 
 test("SKU is unique", { skip }, async () => {
   await createItem(db, data({ name: "Uno", sku: "SKU-1" }))
   await assert.rejects(createItem(db, data({ name: "Dos", sku: "SKU-1" })), SkuTakenError)
+})
+
+test("a taken slug never aborts the transaction (derived → suffix, explicit → SlugTakenError)", { skip }, async () => {
+  await createItem(db, data({ name: "Té verde" }), { initialStock: 1 })
+  // derived slug taken, inside the caller's transaction: the rest of it still works
+  const twin = await db.transaction().execute(async (trx) => {
+    const t = await createItem(trx, data({ name: "Té verde" }), { initialStock: 2 })
+    assert.equal(await stockOf(trx, t.id), 2)
+    return t
+  })
+  assert.match(twin.slug, /^te-verde-[0-9a-f]{6}$/)
+  assert.equal(await stockOf(db, twin.id), 2)
+  // explicit slug taken: SlugTakenError, and nothing was written
+  const before = (await listItems(db, { q: "Té verde", status: "all" })).length
+  await assert.rejects(createItem(db, data({ name: "Otro té", slug: "te-verde" }), { initialStock: 3 }), SlugTakenError)
+  assert.equal((await listItems(db, { q: "té", status: "all" })).filter((i) => i.name === "Otro té").length, 0)
+  assert.equal((await listItems(db, { q: "Té verde", status: "all" })).length, before)
+  // categories follow the same rule
+  const c1 = await createCategory(db, { name: "Tés", slug: "", description: "" })
+  const c2 = await createCategory(db, { name: "Tés", slug: "", description: "" })
+  assert.equal(c1.slug, "tes")
+  assert.match(c2.slug, /^tes-[0-9a-f]{6}$/)
+  await assert.rejects(createCategory(db, { name: "Más tés", slug: "tes", description: "" }), SlugTakenError)
+})
+
+test("a SKU conflict inside a transaction rolls back the item and its initial stock", { skip }, async () => {
+  await createItem(db, data({ name: "Con SKU", sku: "SKU-TX" }))
+  await assert.rejects(
+    createItem(db, data({ name: "Con SKU repetido", sku: "SKU-TX" }), { initialStock: 4 }),
+    SkuTakenError
+  )
+  assert.equal((await listItems(db, { q: "Con SKU repetido", status: "all" })).length, 0)
 })
