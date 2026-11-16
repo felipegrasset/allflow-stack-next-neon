@@ -150,6 +150,11 @@ export const es = {
       back: "Volver a los productos",
       attributes: "Características",
     },
+    /** Sample data written by seed.ts (what the person sees in the seeded rows). */
+    seed: {
+      groceryDescription: "Lo de todos los días.",
+      bakeryDescription: "Horneado cada mañana.",
+    },
   },
 } as const
 
@@ -298,6 +303,11 @@ export const en: WidenMessages<typeof es> = {
       inStock: "{n, plural, one {# unit left} other {# units left}}",
       back: "Back to products",
       attributes: "Details",
+    },
+    /** Sample data written by seed.ts (what the person sees in the seeded rows). */
+    seed: {
+      groceryDescription: "Everyday essentials.",
+      bakeryDescription: "Baked fresh every morning.",
     },
   },
 }

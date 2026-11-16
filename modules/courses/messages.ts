@@ -140,6 +140,16 @@ export const es = {
       attachFailed: "No se pudo adjuntar el archivo. Súbelo de nuevo.",
       generic: "No se pudo completar la acción. Inténtalo de nuevo.",
     },
+    /** Sample data written by seed.ts (what the person sees in the seeded rows). */
+    seed: {
+      courseTitle: "Introducción al diseño de menús",
+      courseDescription: "Un curso corto para quien abre su primer local.\n\n- Aprenderás a ordenar una carta.\n- Calcularás costos por plato.\n- Practicarás con ejemplos reales.",
+      draftTitle: "Fotografía de producto con el celular",
+      draftDescription: "Material en preparación.",
+      lesson1Title: "Qué es una buena carta",
+      lesson2Title: "Costos por plato",
+      lesson3Title: "Clase en vivo: revisemos tu carta",
+    },
   },
 } as const
 
@@ -278,6 +288,16 @@ export const en: WidenMessages<typeof es> = {
       noUser: "There is no account with that email.",
       attachFailed: "The file could not be attached. Upload it again.",
       generic: "The action could not be completed. Try again.",
+    },
+    /** Sample data written by seed.ts (what the person sees in the seeded rows). */
+    seed: {
+      courseTitle: "Introduction to menu design",
+      courseDescription: "A short course for anyone opening their first venue.\n\n- You will learn to organise a menu.\n- You will work out the cost per dish.\n- You will practise with real examples.",
+      draftTitle: "Product photography with your phone",
+      draftDescription: "Material in preparation.",
+      lesson1Title: "What makes a good menu",
+      lesson2Title: "Cost per dish",
+      lesson3Title: "Live class: let's review your menu",
     },
   },
 }

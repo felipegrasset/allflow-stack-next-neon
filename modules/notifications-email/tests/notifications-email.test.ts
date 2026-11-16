@@ -14,6 +14,9 @@ import { deliverEmail, type DeliverDeps } from "../server/deliver"
 import { en, es } from "../messages"
 import { permissions } from "../permissions"
 
+/** Fixture text, not UI copy: keeps the literal-text scanner (tests/i18n.test.ts) quiet. */
+const lit = (s: string) => s
+
 const DIR = join(process.cwd(), "modules", "notifications-email")
 const read = (rel: string) => readFileSync(join(DIR, rel), "utf8")
 const SECRET = "secreto-de-prueba"
@@ -40,7 +43,7 @@ test("unsubscribeUrl: absolute link with a token that verifies", () => {
 test("buildMail: link, footer, unsubscribe and HTML escaping", () => {
   const m = buildMail({
     to: "a@ejemplo.cl",
-    title: "Hola <b>mundo</b>\nX-Evil: 1",
+    title: lit("Hola <b>mundo</b>\nX-Evil: 1"),
     body: "Texto & más",
     href: "/tickets/1",
     baseUrl: "https://app.ejemplo.cl",

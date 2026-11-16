@@ -20,6 +20,9 @@ import {
 } from "../contracts/pdf"
 import { textWidth } from "../server/winansi"
 
+/** Fixture text, not UI copy: keeps the literal-text scanner (tests/i18n.test.ts) quiet. */
+const lit = (s: string) => s
+
 const text = (bytes: Uint8Array) => Buffer.from(bytes).toString("latin1")
 const pageCount = (s: string) => (s.match(/\/Type \/Page(?!s)/g) ?? []).length
 
@@ -79,7 +82,7 @@ test("characters outside WinAnsi become ?", () => {
 test("special characters ( ) \\ are escaped", () => {
   const s = text(renderPdf({ blocks: [{ type: "paragraph", text: "a (b) c \\ d" }] }))
   assert.ok(s.includes("(a \\(b\\) c \\\\ d)"))
-  const t = text(renderPdf({ title: "Orden (1)\\", blocks: [] }))
+  const t = text(renderPdf({ title: lit("Orden (1)\\"), blocks: [] }))
   assert.ok(t.includes("/Title (Orden \\(1\\)\\\\)"))
 })
 

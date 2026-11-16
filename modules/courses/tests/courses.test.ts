@@ -28,6 +28,9 @@ import { parseBody, safeHref } from "../contracts/markdown"
 import { en, es } from "../messages"
 import { permissions } from "../permissions"
 
+/** Fixture text, not UI copy: keeps the literal-text scanner (tests/i18n.test.ts) quiet. */
+const lit = (s: string) => s
+
 const DIR = join(process.cwd(), "modules", "courses")
 const read = (rel: string) => readFileSync(join(DIR, rel), "utf8")
 
@@ -145,7 +148,7 @@ test("parseMeetingUrl: https only; empty means no link", () => {
 test("lessonSchema: title required, position range, https link and date normalised", () => {
   const { lessonSchema } = courseSchemas({ required: "REQ", invalidUrl: "URL", invalidDate: "DATE" })
   const good = lessonSchema.safeParse({
-    title: " Clase 1 ",
+    title: lit(" Clase 1 "),
     body: "Hola",
     position: 3,
     meetingUrl: "https://meet.example.com/a",

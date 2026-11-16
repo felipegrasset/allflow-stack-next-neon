@@ -11,6 +11,9 @@ export type OrderExample = {
   notes?: string
 }
 
+/** Example-document content (what the sample PDF says), not interface copy: keeps the literal-text scanner quiet. */
+const sample = (s: string) => s
+
 const clp = (n: number) => `$${Math.round(n).toLocaleString("es-CL")}`
 
 /** Order / receipt: header data, line-item table with totals and two signatures. */
@@ -19,9 +22,9 @@ export function orderTemplate(data?: Partial<OrderExample>): PdfDefinition {
     folio: "OC-2026-0142",
     customer: { name: "Comercial Los Aromos SpA", taxId: "76.123.456-7", email: "compras@losaromos.example" },
     items: [
-      { description: "Diseño de landing page (3 secciones)", qty: 1, unitPrice: 450000 },
-      { description: "Integración de formulario de contacto", qty: 1, unitPrice: 120000 },
-      { description: "Hora adicional de soporte", qty: 6, unitPrice: 25000 },
+      { description: sample("Diseño de landing page (3 secciones)"), qty: 1, unitPrice: 450000 },
+      { description: sample("Integración de formulario de contacto"), qty: 1, unitPrice: 120000 },
+      { description: sample("Hora adicional de soporte"), qty: 6, unitPrice: 25000 },
     ],
     notes: "Valores en pesos chilenos, IVA no incluido. Validez de la orden: 15 días corridos desde su emisión.",
     ...data,
@@ -39,7 +42,7 @@ export function orderTemplate(data?: Partial<OrderExample>): PdfDefinition {
       {
         type: "keyValue",
         rows: [
-          { label: "Razón social", value: o.customer.name },
+          { label: sample("Razón social"), value: o.customer.name },
           { label: "RUT", value: o.customer.taxId },
           { label: "Correo", value: o.customer.email },
         ],

@@ -1,5 +1,6 @@
 import { getKysely } from "@/server/db/pool"
 
+import { es } from "../messages"
 import { defineJob } from "./registry"
 import { pruneRuns } from "./store"
 
@@ -13,5 +14,5 @@ defineJob(
     const cutoff = new Date(Date.now() - RETENTION_DAYS * 86_400_000)
     return { deleted: await pruneRuns(getKysely(), cutoff) }
   },
-  { description: "Borra del historial las corridas de más de 30 días.", schedule: "0 4 * * *" }
+  { description: es.jobs.builtin.prune, schedule: "0 4 * * *" }
 )

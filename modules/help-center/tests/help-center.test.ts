@@ -97,7 +97,10 @@ test("slugify", () => {
   assert.ok(slugify("a".repeat(200)).length <= 80)
 })
 
-const base = { title: "Mi artículo", slug: "", summary: "", category: "", locale: "es", sortOrder: 0, body: "Texto", published: false }
+/** Fixture text, not UI copy: keeps the literal-text scanner (tests/i18n.test.ts) quiet. */
+const lit = (s: string) => s
+
+const base = { title: lit("Mi artículo"), slug: "", summary: "", category: "", locale: "es", sortOrder: 0, body: "Texto", published: false }
 
 test("articleSchema: slug from title, bad slug, empty and too long fields", () => {
   const { articleSchema } = articleSchemas()

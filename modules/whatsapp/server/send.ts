@@ -43,9 +43,8 @@ export const sendInputSchema = z
     sentBy: z.string().min(1).max(200).optional(),
     idempotencyKey: z.string().min(1).max(200).optional(),
   })
-  .refine((v) => (v.text === undefined) !== (v.template === undefined), {
-    message: "text xor template",
-  })
+  // Internal invariant (never shown to a person): the plain-string form of refine.
+  .refine((v) => (v.text === undefined) !== (v.template === undefined), "text xor template")
 
 export type SendDeps = {
   store: WhatsAppStore

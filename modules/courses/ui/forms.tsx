@@ -23,6 +23,9 @@ import {
 import type { FormState } from "../server/state"
 import { FieldRow, TEXTAREA_CLASS } from "./field-row"
 
+/** A URL scheme hint, not translatable text. */
+const URL_PREFIX = "https://"
+
 const IDLE: FormState = { status: "idle" }
 
 type Action = (prev: FormState, formData: FormData) => Promise<FormState>
@@ -232,7 +235,7 @@ export function LessonForm({
               name="meetingUrl"
               type="url"
               inputMode="url"
-              placeholder="https://"
+              placeholder={URL_PREFIX}
               defaultValue={lesson?.meetingUrl ?? ""}
               maxLength={2000}
               autoComplete="off"

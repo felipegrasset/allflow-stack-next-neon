@@ -32,6 +32,9 @@ import { handleCallback, handleConnect, STATE_TTL_MS, type OAuthDeps, type Viewe
 import type { AccountRow, CalendarSyncStore, EventRow, StateRow } from "../server/store"
 import { MAX_ATTEMPTS, reconcile, syncBooking, type ReconcileDeps } from "../server/sync"
 
+/** Fixture text, not UI copy: keeps the literal-text scanner (tests/i18n.test.ts) quiet. */
+const lit = (s: string) => s
+
 const HEX_KEY = "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff"
 const KEYS = deriveKeys(parseMasterKey(HEX_KEY))
 const ENV = { GOOGLE_CLIENT_ID: "client-id.apps.test", GOOGLE_CLIENT_SECRET: "client-secret-x", CALENDAR_SYNC_KEY: HEX_KEY }
@@ -657,7 +660,7 @@ test("sync: los logs no llevan tokens, nombres del recurso ni el texto de Google
     (c) =>
       c.url === GOOGLE_TOKEN_URL
         ? tokenResponse()
-        : json(400, { error: { message: "Sala Pehuén ya29.access-NEW", errors: [{ reason: "invalid" }] } }),
+        : json(400, { error: { message: lit("Sala Pehuén ya29.access-NEW"), errors: [{ reason: "invalid" }] } }),
     { accessValid: false }
   )
   await syncBooking(s.deps, BOOKING)

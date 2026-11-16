@@ -102,6 +102,14 @@ export const es = {
       slugTaken: "Ya hay otro artículo con esa dirección.",
       generic: "No se pudo completar la acción. Inténtalo de nuevo.",
     },
+    /** Titles of the sample articles written by seed.ts. The es-locale articles read the es values, the en-locale ones the en values. */
+    seed: {
+      gettingStartedTitle: "Primeros pasos",
+      changePasswordTitle: "Cómo cambiar tu contraseña",
+      inviteTeamTitle: "Invitar a tu equipo",
+      downloadInvoiceTitle: "Descargar una factura",
+      changePlanDraftTitle: "Cambiar de plan (borrador)",
+    },
   },
 } as const
 
@@ -201,6 +209,14 @@ export const en: WidenMessages<typeof es> = {
       notFound: "The article does not exist.",
       slugTaken: "Another article already has that address.",
       generic: "The action could not be completed. Try again.",
+    },
+    /** Titles of the sample articles written by seed.ts. The es-locale articles read the es values, the en-locale ones the en values. */
+    seed: {
+      gettingStartedTitle: "Getting started",
+      changePasswordTitle: "Change your password",
+      inviteTeamTitle: "Invite your team",
+      downloadInvoiceTitle: "Download an invoice",
+      changePlanDraftTitle: "Change plan (draft)",
     },
   },
 }

@@ -3,6 +3,11 @@ import type { Kysely } from "kysely"
 import type { Database } from "@/server/db/schema"
 
 import "./db/types"
+import { en, es } from "./messages"
+
+/** Titles come from the catalog: es articles read the es values, en articles the en ones. */
+const es_ = es["help-center"].seed
+const en_ = en["help-center"].seed
 
 /**
  * Invented sample content. Idempotent: fixed ids and slugs + `on conflict do
@@ -12,7 +17,7 @@ const ARTICLES = [
   {
     id: "seed-hc-a1",
     slug: "primeros-pasos",
-    title: "Primeros pasos",
+    title: es_.gettingStartedTitle,
     summary: "Qué hacer después de crear tu cuenta.",
     category: "Primeros pasos",
     locale: "es",
@@ -23,7 +28,7 @@ const ARTICLES = [
   {
     id: "seed-hc-a2",
     slug: "como-cambiar-tu-contrasena",
-    title: "Cómo cambiar tu contraseña",
+    title: es_.changePasswordTitle,
     summary: "Actualiza tu contraseña en menos de un minuto.",
     category: "Cuenta",
     locale: "es",
@@ -34,7 +39,7 @@ const ARTICLES = [
   {
     id: "seed-hc-a3",
     slug: "invitar-a-tu-equipo",
-    title: "Invitar a tu equipo",
+    title: es_.inviteTeamTitle,
     summary: "Agrega personas y elige qué pueden hacer.",
     category: "Cuenta",
     locale: "es",
@@ -45,7 +50,7 @@ const ARTICLES = [
   {
     id: "seed-hc-a4",
     slug: "descargar-una-factura",
-    title: "Descargar una factura",
+    title: es_.downloadInvoiceTitle,
     summary: "Dónde encontrar tus comprobantes de pago.",
     category: "Facturación",
     locale: "es",
@@ -56,7 +61,7 @@ const ARTICLES = [
   {
     id: "seed-hc-a5",
     slug: "nuevo-plan-en-borrador",
-    title: "Cambiar de plan (borrador)",
+    title: es_.changePlanDraftTitle,
     summary: "Este artículo aún no se publica.",
     category: "Facturación",
     locale: "es",
@@ -67,7 +72,7 @@ const ARTICLES = [
   {
     id: "seed-hc-a6",
     slug: "getting-started",
-    title: "Getting started",
+    title: en_.gettingStartedTitle,
     summary: "What to do after creating your account.",
     category: "Getting started",
     locale: "en",
@@ -78,7 +83,7 @@ const ARTICLES = [
   {
     id: "seed-hc-a7",
     slug: "change-your-password",
-    title: "Change your password",
+    title: en_.changePasswordTitle,
     summary: "Update your password in under a minute.",
     category: "Account",
     locale: "en",

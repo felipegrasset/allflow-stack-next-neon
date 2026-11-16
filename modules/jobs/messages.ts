@@ -41,6 +41,9 @@ export const es = {
       notFound: "Esa tarea no existe.",
       generic: "No se pudo correr la tarea. Inténtalo de nuevo.",
     },
+    builtin: {
+      prune: "Borra del historial las corridas de más de 30 días.",
+    },
   },
 } as const
 
@@ -83,6 +86,9 @@ export const en: WidenMessages<typeof es> = {
       forbidden: "You do not have permission to run jobs.",
       notFound: "That job does not exist.",
       generic: "The job could not be run. Try again.",
+    },
+    builtin: {
+      prune: "Deletes job runs older than 30 days from the history.",
     },
   },
 }

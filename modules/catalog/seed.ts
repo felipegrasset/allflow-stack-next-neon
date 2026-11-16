@@ -3,6 +3,9 @@ import type { Kysely } from "kysely"
 import type { Database } from "@/server/db/schema"
 
 import "./db/types"
+import { es } from "./messages"
+
+const s = es.catalog.seed
 
 /**
  * Invented sample data (a neighbourhood shop; names and prices are fictitious).
@@ -12,8 +15,8 @@ import "./db/types"
  * storage provider would only 404.
  */
 const CATEGORIES = [
-  { id: "seed-cat-c1", slug: "almacen", name: "Almacén", description: "Lo de todos los días.", position: 1 },
-  { id: "seed-cat-c2", slug: "panaderia", name: "Panadería", description: "Horneado cada mañana.", position: 2 },
+  { id: "seed-cat-c1", slug: "almacen", name: "Almacén", description: s.groceryDescription, position: 1 },
+  { id: "seed-cat-c2", slug: "panaderia", name: "Panadería", description: s.bakeryDescription, position: 2 },
   { id: "seed-cat-c3", slug: "servicios", name: "Servicios", description: null, position: 3 },
 ]
 
