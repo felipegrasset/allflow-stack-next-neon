@@ -9,6 +9,7 @@ import { seed as seed_comments } from "../comments/seed"
 import { seed as seed_courses } from "../courses/seed"
 import { seed as seed_crm_lite } from "../crm-lite/seed"
 import { seed as seed_csv_import } from "../csv-import/seed"
+import { seed as seed_discounts } from "../discounts/seed"
 import { seed as seed_forms } from "../forms/seed"
 import { seed as seed_help_center } from "../help-center/seed"
 import { seed as seed_jobs } from "../jobs/seed"
@@ -28,6 +29,7 @@ export const moduleSeeds: { id: string; seed: ModuleSeed }[] = [
   { id: "courses", seed: seed_courses },
   { id: "crm-lite", seed: seed_crm_lite },
   { id: "csv-import", seed: seed_csv_import },
+  { id: "discounts", seed: seed_discounts },
   { id: "forms", seed: seed_forms },
   { id: "help-center", seed: seed_help_center },
   { id: "jobs", seed: seed_jobs },

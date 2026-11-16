@@ -10,6 +10,7 @@ import * as m_comments_0120_comments_init from "../comments/db/migrations/0120_c
 import * as m_courses_0123_courses_init from "../courses/db/migrations/0123_courses_init"
 import * as m_crm_lite_0105_crm_lite_init from "../crm-lite/db/migrations/0105_crm_lite_init"
 import * as m_csv_import_0114_csv_import_init from "../csv-import/db/migrations/0114_csv_import_init"
+import * as m_discounts_0127_discounts_init from "../discounts/db/migrations/0127_discounts_init"
 import * as m_forms_0115_forms_init from "../forms/db/migrations/0115_forms_init"
 import * as m_help_center_0117_help_center_init from "../help-center/db/migrations/0117_help_center_init"
 import * as m_jobs_0110_jobs_init from "../jobs/db/migrations/0110_jobs_init"
@@ -38,6 +39,7 @@ export const moduleMigrations: Record<string, Migration> = {
   "0123_courses_init": m_courses_0123_courses_init,
   "0105_crm_lite_init": m_crm_lite_0105_crm_lite_init,
   "0114_csv_import_init": m_csv_import_0114_csv_import_init,
+  "0127_discounts_init": m_discounts_0127_discounts_init,
   "0115_forms_init": m_forms_0115_forms_init,
   "0117_help_center_init": m_help_center_0117_help_center_init,
   "0110_jobs_init": m_jobs_0110_jobs_init,

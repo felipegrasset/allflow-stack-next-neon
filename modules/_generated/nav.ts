@@ -9,6 +9,7 @@ import { nav as nav_catalog } from "../catalog/nav"
 import { nav as nav_courses } from "../courses/nav"
 import { nav as nav_crm_lite } from "../crm-lite/nav"
 import { nav as nav_csv_import } from "../csv-import/nav"
+import { nav as nav_discounts } from "../discounts/nav"
 import { nav as nav_forms } from "../forms/nav"
 import { nav as nav_help_center } from "../help-center/nav"
 import { nav as nav_jobs } from "../jobs/nav"
@@ -34,6 +35,7 @@ export const moduleNavItems: ModuleNavItem[] = [
   ...nav_courses,
   ...nav_crm_lite,
   ...nav_csv_import,
+  ...nav_discounts,
   ...nav_forms,
   ...nav_help_center,
   ...nav_jobs,

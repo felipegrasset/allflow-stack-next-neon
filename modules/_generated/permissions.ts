@@ -11,6 +11,7 @@ import { permissions as p_comments } from "../comments/permissions"
 import { permissions as p_courses } from "../courses/permissions"
 import { permissions as p_crm_lite } from "../crm-lite/permissions"
 import { permissions as p_csv_import } from "../csv-import/permissions"
+import { permissions as p_discounts } from "../discounts/permissions"
 import { permissions as p_forms } from "../forms/permissions"
 import { permissions as p_help_center } from "../help-center/permissions"
 import { permissions as p_jobs } from "../jobs/permissions"
@@ -37,6 +38,7 @@ export const moduleStatements = {
   ...p_courses.statement,
   ...p_crm_lite.statement,
   ...p_csv_import.statement,
+  ...p_discounts.statement,
   ...p_forms.statement,
   ...p_help_center.statement,
   ...p_jobs.statement,
@@ -65,6 +67,7 @@ export const moduleGrants = {
     ...moduleGrant(p_courses, "owner", p_courses.statement),
     ...moduleGrant(p_crm_lite, "owner", p_crm_lite.statement),
     ...moduleGrant(p_csv_import, "owner", p_csv_import.statement),
+    ...moduleGrant(p_discounts, "owner", p_discounts.statement),
     ...moduleGrant(p_forms, "owner", p_forms.statement),
     ...moduleGrant(p_help_center, "owner", p_help_center.statement),
     ...moduleGrant(p_jobs, "owner", p_jobs.statement),
@@ -90,6 +93,7 @@ export const moduleGrants = {
     ...moduleGrant(p_courses, "admin", p_courses.statement),
     ...moduleGrant(p_crm_lite, "admin", p_crm_lite.statement),
     ...moduleGrant(p_csv_import, "admin", p_csv_import.statement),
+    ...moduleGrant(p_discounts, "admin", p_discounts.statement),
     ...moduleGrant(p_forms, "admin", p_forms.statement),
     ...moduleGrant(p_help_center, "admin", p_help_center.statement),
     ...moduleGrant(p_jobs, "admin", p_jobs.statement),
@@ -115,6 +119,7 @@ export const moduleGrants = {
     ...moduleGrant(p_courses, "member", {} as const),
     ...moduleGrant(p_crm_lite, "member", {} as const),
     ...moduleGrant(p_csv_import, "member", {} as const),
+    ...moduleGrant(p_discounts, "member", {} as const),
     ...moduleGrant(p_forms, "member", {} as const),
     ...moduleGrant(p_help_center, "member", {} as const),
     ...moduleGrant(p_jobs, "member", {} as const),
@@ -146,6 +151,7 @@ export const moduleAdminAccess: { module: string; permissions: ModuleStatement }
   { module: "courses", permissions: (p_courses as ModulePermissions).adminAccess ?? {} },
   { module: "crm-lite", permissions: (p_crm_lite as ModulePermissions).adminAccess ?? {} },
   { module: "csv-import", permissions: (p_csv_import as ModulePermissions).adminAccess ?? {} },
+  { module: "discounts", permissions: (p_discounts as ModulePermissions).adminAccess ?? {} },
   { module: "forms", permissions: (p_forms as ModulePermissions).adminAccess ?? {} },
   { module: "help-center", permissions: (p_help_center as ModulePermissions).adminAccess ?? {} },
   { module: "jobs", permissions: (p_jobs as ModulePermissions).adminAccess ?? {} },
@@ -173,6 +179,7 @@ export type _AdminAccessChecks = [
   CheckAdminAccess<typeof p_courses.statement, AdminAccessOf<typeof p_courses>>,
   CheckAdminAccess<typeof p_crm_lite.statement, AdminAccessOf<typeof p_crm_lite>>,
   CheckAdminAccess<typeof p_csv_import.statement, AdminAccessOf<typeof p_csv_import>>,
+  CheckAdminAccess<typeof p_discounts.statement, AdminAccessOf<typeof p_discounts>>,
   CheckAdminAccess<typeof p_forms.statement, AdminAccessOf<typeof p_forms>>,
   CheckAdminAccess<typeof p_help_center.statement, AdminAccessOf<typeof p_help_center>>,
   CheckAdminAccess<typeof p_jobs.statement, AdminAccessOf<typeof p_jobs>>,

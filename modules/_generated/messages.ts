@@ -10,6 +10,7 @@ import * as raw_comments from "../comments/messages"
 import * as raw_courses from "../courses/messages"
 import * as raw_crm_lite from "../crm-lite/messages"
 import * as raw_csv_import from "../csv-import/messages"
+import * as raw_discounts from "../discounts/messages"
 import * as raw_export from "../export/messages"
 import * as raw_forms from "../forms/messages"
 import * as raw_help_center from "../help-center/messages"
@@ -35,6 +36,7 @@ const msg_comments: ModuleMessagesFile<"comments", typeof raw_comments.es> = raw
 const msg_courses: ModuleMessagesFile<"courses", typeof raw_courses.es> = raw_courses
 const msg_crm_lite: ModuleMessagesFile<"crm-lite", typeof raw_crm_lite.es> = raw_crm_lite
 const msg_csv_import: ModuleMessagesFile<"csv-import", typeof raw_csv_import.es> = raw_csv_import
+const msg_discounts: ModuleMessagesFile<"discounts", typeof raw_discounts.es> = raw_discounts
 const msg_export: ModuleMessagesFile<"export", typeof raw_export.es> = raw_export
 const msg_forms: ModuleMessagesFile<"forms", typeof raw_forms.es> = raw_forms
 const msg_help_center: ModuleMessagesFile<"help-center", typeof raw_help_center.es> = raw_help_center
@@ -52,6 +54,6 @@ const msg_whatsapp: ModuleMessagesFile<"whatsapp", typeof raw_whatsapp.es> = raw
 
 /** Read by modules/i18n/request.ts, which lays the core catalog over it (the core wins a clash). */
 export const moduleMessages: Record<ModuleLocale, MessageTree> = {
-  es: { ...msg_approvals.es, ...msg_audit_log.es, ...msg_bookings.es, ...msg_calendar_sync.es, ...msg_catalog.es, ...msg_comments.es, ...msg_courses.es, ...msg_crm_lite.es, ...msg_csv_import.es, ...msg_export.es, ...msg_forms.es, ...msg_help_center.es, ...msg_jobs.es, ...msg_notifications_email.es, ...msg_orders.es, ...msg_payments_admin.es, ...msg_plans.es, ...msg_push.es, ...msg_reports.es, ...msg_settings.es, ...msg_storage.es, ...msg_tickets.es, ...msg_whatsapp.es },
-  en: { ...msg_approvals.en, ...msg_audit_log.en, ...msg_bookings.en, ...msg_calendar_sync.en, ...msg_catalog.en, ...msg_comments.en, ...msg_courses.en, ...msg_crm_lite.en, ...msg_csv_import.en, ...msg_export.en, ...msg_forms.en, ...msg_help_center.en, ...msg_jobs.en, ...msg_notifications_email.en, ...msg_orders.en, ...msg_payments_admin.en, ...msg_plans.en, ...msg_push.en, ...msg_reports.en, ...msg_settings.en, ...msg_storage.en, ...msg_tickets.en, ...msg_whatsapp.en },
+  es: { ...msg_approvals.es, ...msg_audit_log.es, ...msg_bookings.es, ...msg_calendar_sync.es, ...msg_catalog.es, ...msg_comments.es, ...msg_courses.es, ...msg_crm_lite.es, ...msg_csv_import.es, ...msg_discounts.es, ...msg_export.es, ...msg_forms.es, ...msg_help_center.es, ...msg_jobs.es, ...msg_notifications_email.es, ...msg_orders.es, ...msg_payments_admin.es, ...msg_plans.es, ...msg_push.es, ...msg_reports.es, ...msg_settings.es, ...msg_storage.es, ...msg_tickets.es, ...msg_whatsapp.es },
+  en: { ...msg_approvals.en, ...msg_audit_log.en, ...msg_bookings.en, ...msg_calendar_sync.en, ...msg_catalog.en, ...msg_comments.en, ...msg_courses.en, ...msg_crm_lite.en, ...msg_csv_import.en, ...msg_discounts.en, ...msg_export.en, ...msg_forms.en, ...msg_help_center.en, ...msg_jobs.en, ...msg_notifications_email.en, ...msg_orders.en, ...msg_payments_admin.en, ...msg_plans.en, ...msg_push.en, ...msg_reports.en, ...msg_settings.en, ...msg_storage.en, ...msg_tickets.en, ...msg_whatsapp.en },
 }
