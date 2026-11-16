@@ -4,7 +4,9 @@ import type { ModuleHeaderSlot, ModuleNavItem } from "../contract/types"
 import { nav as nav_approvals } from "../approvals/nav"
 import { nav as nav_audit_log } from "../audit-log/nav"
 import { nav as nav_bookings } from "../bookings/nav"
+import { nav as nav_calendar_sync } from "../calendar-sync/nav"
 import { nav as nav_catalog } from "../catalog/nav"
+import { nav as nav_courses } from "../courses/nav"
 import { nav as nav_crm_lite } from "../crm-lite/nav"
 import { nav as nav_csv_import } from "../csv-import/nav"
 import { nav as nav_forms } from "../forms/nav"
@@ -12,6 +14,7 @@ import { nav as nav_help_center } from "../help-center/nav"
 import { nav as nav_jobs } from "../jobs/nav"
 import { nav as nav_notifications } from "../notifications/nav"
 import { nav as nav_notifications_email } from "../notifications-email/nav"
+import { nav as nav_orders } from "../orders/nav"
 import { nav as nav_payments_admin } from "../payments-admin/nav"
 import { nav as nav_plans } from "../plans/nav"
 import { nav as nav_push } from "../push/nav"
@@ -26,7 +29,9 @@ export const moduleNavItems: ModuleNavItem[] = [
   ...nav_approvals,
   ...nav_audit_log,
   ...nav_bookings,
+  ...nav_calendar_sync,
   ...nav_catalog,
+  ...nav_courses,
   ...nav_crm_lite,
   ...nav_csv_import,
   ...nav_forms,
@@ -34,6 +39,7 @@ export const moduleNavItems: ModuleNavItem[] = [
   ...nav_jobs,
   ...nav_notifications,
   ...nav_notifications_email,
+  ...nav_orders,
   ...nav_payments_admin,
   ...nav_plans,
   ...nav_push,

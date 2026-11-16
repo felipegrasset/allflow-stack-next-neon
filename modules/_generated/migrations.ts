@@ -4,8 +4,10 @@ import type { Migration } from "kysely/migration"
 import * as m_approvals_0107_approvals_init from "../approvals/db/migrations/0107_approvals_init"
 import * as m_audit_log_0109_audit_log_init from "../audit-log/db/migrations/0109_audit_log_init"
 import * as m_bookings_0103_bookings_init from "../bookings/db/migrations/0103_bookings_init"
+import * as m_calendar_sync_0122_calendar_sync_init from "../calendar-sync/db/migrations/0122_calendar_sync_init"
 import * as m_catalog_0106_catalog_init from "../catalog/db/migrations/0106_catalog_init"
 import * as m_comments_0120_comments_init from "../comments/db/migrations/0120_comments_init"
+import * as m_courses_0123_courses_init from "../courses/db/migrations/0123_courses_init"
 import * as m_crm_lite_0105_crm_lite_init from "../crm-lite/db/migrations/0105_crm_lite_init"
 import * as m_csv_import_0114_csv_import_init from "../csv-import/db/migrations/0114_csv_import_init"
 import * as m_forms_0115_forms_init from "../forms/db/migrations/0115_forms_init"
@@ -13,6 +15,7 @@ import * as m_help_center_0117_help_center_init from "../help-center/db/migratio
 import * as m_jobs_0110_jobs_init from "../jobs/db/migrations/0110_jobs_init"
 import * as m_notifications_0100_notifications_init from "../notifications/db/migrations/0100_notifications_init"
 import * as m_notifications_email_0108_notifications_email_init from "../notifications-email/db/migrations/0108_notifications_email_init"
+import * as m_orders_0126_orders_init from "../orders/db/migrations/0126_orders_init"
 import * as m_payments_0101_payments_init from "../payments/db/migrations/0101_payments_init"
 import * as m_payments_0124_payments_refund_guard from "../payments/db/migrations/0124_payments_refund_guard"
 import * as m_plans_0125_plans_init from "../plans/db/migrations/0125_plans_init"
@@ -29,8 +32,10 @@ export const moduleMigrations: Record<string, Migration> = {
   "0107_approvals_init": m_approvals_0107_approvals_init,
   "0109_audit_log_init": m_audit_log_0109_audit_log_init,
   "0103_bookings_init": m_bookings_0103_bookings_init,
+  "0122_calendar_sync_init": m_calendar_sync_0122_calendar_sync_init,
   "0106_catalog_init": m_catalog_0106_catalog_init,
   "0120_comments_init": m_comments_0120_comments_init,
+  "0123_courses_init": m_courses_0123_courses_init,
   "0105_crm_lite_init": m_crm_lite_0105_crm_lite_init,
   "0114_csv_import_init": m_csv_import_0114_csv_import_init,
   "0115_forms_init": m_forms_0115_forms_init,
@@ -38,6 +43,7 @@ export const moduleMigrations: Record<string, Migration> = {
   "0110_jobs_init": m_jobs_0110_jobs_init,
   "0100_notifications_init": m_notifications_0100_notifications_init,
   "0108_notifications_email_init": m_notifications_email_0108_notifications_email_init,
+  "0126_orders_init": m_orders_0126_orders_init,
   "0101_payments_init": m_payments_0101_payments_init,
   "0124_payments_refund_guard": m_payments_0124_payments_refund_guard,
   "0125_plans_init": m_plans_0125_plans_init,

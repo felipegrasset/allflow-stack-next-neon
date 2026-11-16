@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "id": "pdf-docs",
+  "feature": "pdf-docs",
+  "version": "0.1.0",
+  "title": "Documentos PDF",
+  "description": "Genera PDFs desde plantillas declarativas (bloques: título, párrafo, tabla clave-valor, tabla con columnas, separador, firma) con un motor propio y sin dependencias: texto Helvetica con tildes y ñ, salto de línea por ancho, paginación automática, encabezado y pie con número de página. renderPdf, pdfResponse y savePdf (guarda con storage). Incluye plantillas de ejemplo de orden y certificado.",
+  "dependsOn": ["storage"],
+  "dependencies": {}
+}

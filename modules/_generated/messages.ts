@@ -4,8 +4,10 @@ import type { MessageTree, ModuleLocale, ModuleMessagesFile } from "../contract/
 import * as raw_approvals from "../approvals/messages"
 import * as raw_audit_log from "../audit-log/messages"
 import * as raw_bookings from "../bookings/messages"
+import * as raw_calendar_sync from "../calendar-sync/messages"
 import * as raw_catalog from "../catalog/messages"
 import * as raw_comments from "../comments/messages"
+import * as raw_courses from "../courses/messages"
 import * as raw_crm_lite from "../crm-lite/messages"
 import * as raw_csv_import from "../csv-import/messages"
 import * as raw_export from "../export/messages"
@@ -13,6 +15,7 @@ import * as raw_forms from "../forms/messages"
 import * as raw_help_center from "../help-center/messages"
 import * as raw_jobs from "../jobs/messages"
 import * as raw_notifications_email from "../notifications-email/messages"
+import * as raw_orders from "../orders/messages"
 import * as raw_payments_admin from "../payments-admin/messages"
 import * as raw_plans from "../plans/messages"
 import * as raw_push from "../push/messages"
@@ -26,8 +29,10 @@ import * as raw_whatsapp from "../whatsapp/messages"
 const msg_approvals: ModuleMessagesFile<"approvals", typeof raw_approvals.es> = raw_approvals
 const msg_audit_log: ModuleMessagesFile<"audit-log", typeof raw_audit_log.es> = raw_audit_log
 const msg_bookings: ModuleMessagesFile<"bookings", typeof raw_bookings.es> = raw_bookings
+const msg_calendar_sync: ModuleMessagesFile<"calendar-sync", typeof raw_calendar_sync.es> = raw_calendar_sync
 const msg_catalog: ModuleMessagesFile<"catalog", typeof raw_catalog.es> = raw_catalog
 const msg_comments: ModuleMessagesFile<"comments", typeof raw_comments.es> = raw_comments
+const msg_courses: ModuleMessagesFile<"courses", typeof raw_courses.es> = raw_courses
 const msg_crm_lite: ModuleMessagesFile<"crm-lite", typeof raw_crm_lite.es> = raw_crm_lite
 const msg_csv_import: ModuleMessagesFile<"csv-import", typeof raw_csv_import.es> = raw_csv_import
 const msg_export: ModuleMessagesFile<"export", typeof raw_export.es> = raw_export
@@ -35,6 +40,7 @@ const msg_forms: ModuleMessagesFile<"forms", typeof raw_forms.es> = raw_forms
 const msg_help_center: ModuleMessagesFile<"help-center", typeof raw_help_center.es> = raw_help_center
 const msg_jobs: ModuleMessagesFile<"jobs", typeof raw_jobs.es> = raw_jobs
 const msg_notifications_email: ModuleMessagesFile<"notifications-email", typeof raw_notifications_email.es> = raw_notifications_email
+const msg_orders: ModuleMessagesFile<"orders", typeof raw_orders.es> = raw_orders
 const msg_payments_admin: ModuleMessagesFile<"payments-admin", typeof raw_payments_admin.es> = raw_payments_admin
 const msg_plans: ModuleMessagesFile<"plans", typeof raw_plans.es> = raw_plans
 const msg_push: ModuleMessagesFile<"push", typeof raw_push.es> = raw_push
@@ -46,6 +52,6 @@ const msg_whatsapp: ModuleMessagesFile<"whatsapp", typeof raw_whatsapp.es> = raw
 
 /** Read by modules/i18n/request.ts, which lays the core catalog over it (the core wins a clash). */
 export const moduleMessages: Record<ModuleLocale, MessageTree> = {
-  es: { ...msg_approvals.es, ...msg_audit_log.es, ...msg_bookings.es, ...msg_catalog.es, ...msg_comments.es, ...msg_crm_lite.es, ...msg_csv_import.es, ...msg_export.es, ...msg_forms.es, ...msg_help_center.es, ...msg_jobs.es, ...msg_notifications_email.es, ...msg_payments_admin.es, ...msg_plans.es, ...msg_push.es, ...msg_reports.es, ...msg_settings.es, ...msg_storage.es, ...msg_tickets.es, ...msg_whatsapp.es },
-  en: { ...msg_approvals.en, ...msg_audit_log.en, ...msg_bookings.en, ...msg_catalog.en, ...msg_comments.en, ...msg_crm_lite.en, ...msg_csv_import.en, ...msg_export.en, ...msg_forms.en, ...msg_help_center.en, ...msg_jobs.en, ...msg_notifications_email.en, ...msg_payments_admin.en, ...msg_plans.en, ...msg_push.en, ...msg_reports.en, ...msg_settings.en, ...msg_storage.en, ...msg_tickets.en, ...msg_whatsapp.en },
+  es: { ...msg_approvals.es, ...msg_audit_log.es, ...msg_bookings.es, ...msg_calendar_sync.es, ...msg_catalog.es, ...msg_comments.es, ...msg_courses.es, ...msg_crm_lite.es, ...msg_csv_import.es, ...msg_export.es, ...msg_forms.es, ...msg_help_center.es, ...msg_jobs.es, ...msg_notifications_email.es, ...msg_orders.es, ...msg_payments_admin.es, ...msg_plans.es, ...msg_push.es, ...msg_reports.es, ...msg_settings.es, ...msg_storage.es, ...msg_tickets.es, ...msg_whatsapp.es },
+  en: { ...msg_approvals.en, ...msg_audit_log.en, ...msg_bookings.en, ...msg_calendar_sync.en, ...msg_catalog.en, ...msg_comments.en, ...msg_courses.en, ...msg_crm_lite.en, ...msg_csv_import.en, ...msg_export.en, ...msg_forms.en, ...msg_help_center.en, ...msg_jobs.en, ...msg_notifications_email.en, ...msg_orders.en, ...msg_payments_admin.en, ...msg_plans.en, ...msg_push.en, ...msg_reports.en, ...msg_settings.en, ...msg_storage.en, ...msg_tickets.en, ...msg_whatsapp.en },
 }

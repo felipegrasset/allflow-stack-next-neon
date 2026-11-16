@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "id": "calendar-sync",
+  "feature": "calendar-sync",
+  "version": "0.1.0",
+  "title": "Sincronizar con Google Calendar",
+  "description": "Cada persona conecta su Google Calendar (OAuth con state firmado de un solo uso y PKCE, solo el permiso calendar.events.owned) y sus reservas del módulo bookings aparecen como eventos: se crean, actualizan y borran en un solo sentido (de bookings a Google), de mejor esfuerzo, idempotente por reserva y con reintentos. Tokens cifrados con AES-256-GCM. Si Google revoca el acceso, la cuenta queda desconectada y se avisa, sin tocar las reservas. Página /settings/calendar; syncBookingToCalendar y reconcileCalendarSync para otros módulos y tareas programadas.",
+  "dependsOn": ["bookings", "notifications"],
+  "tables": ["calendar_sync_accounts", "calendar_sync_states", "calendar_sync_events"],
+  "migrations": ["0122_calendar_sync_init"],
+  "routes": [
+    { "path": "/api/calendar-sync/connect", "entry": "server/connect/route.ts" },
+    { "path": "/api/calendar-sync/callback", "entry": "server/callback/route.ts" },
+    { "path": "/settings/calendar", "entry": "ui/page.tsx" }
+  ],
+  "env": [
+    {
+      "key": "GOOGLE_CLIENT_ID",
+      "description": "Id del cliente OAuth «Aplicación web» de Google Cloud, con la Google Calendar API habilitada. URI de redirección autorizada: <URL de la app>/api/calendar-sync/callback (la URL de la app sale de BETTER_AUTH_URL).",
+      "example": "1234567890-abc123def456.apps.googleusercontent.com"
+    },
+    {
+      "key": "GOOGLE_CLIENT_SECRET",
+      "description": "Secreto de ese cliente OAuth. Secreto.",
+      "example": "GOCSPX-<secreto-del-cliente>"
+    },
+    {
+      "key": "CALENDAR_SYNC_KEY",
+      "description": "Llave maestra que cifra los tokens de Google (AES-256-GCM) y firma el state de OAuth: exactamente 64 caracteres hexadecimales (openssl rand -hex 32). Si cambia, las cuentas conectadas tienen que conectarse de nuevo. Secreto.",
+      "example": "<64-caracteres-hex-de-openssl-rand-hex-32>"
+    }
+  ],
+  "covers": [
+    "sincronización de calendario",
+    "calendar sync",
+    "cuenta de google calendar",
+    "google calendar account",
+    "evento de calendario",
+    "calendar event"
+  ],
+  "entrypoints": {
+    "nav": "nav.ts",
+    "permissions": "permissions.ts",
+    "messages": "messages.ts"
+  }
+}

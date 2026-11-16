@@ -6,6 +6,7 @@ import { seed as seed_audit_log } from "../audit-log/seed"
 import { seed as seed_bookings } from "../bookings/seed"
 import { seed as seed_catalog } from "../catalog/seed"
 import { seed as seed_comments } from "../comments/seed"
+import { seed as seed_courses } from "../courses/seed"
 import { seed as seed_crm_lite } from "../crm-lite/seed"
 import { seed as seed_csv_import } from "../csv-import/seed"
 import { seed as seed_forms } from "../forms/seed"
@@ -24,6 +25,7 @@ export const moduleSeeds: { id: string; seed: ModuleSeed }[] = [
   { id: "bookings", seed: seed_bookings },
   { id: "catalog", seed: seed_catalog },
   { id: "comments", seed: seed_comments },
+  { id: "courses", seed: seed_courses },
   { id: "crm-lite", seed: seed_crm_lite },
   { id: "csv-import", seed: seed_csv_import },
   { id: "forms", seed: seed_forms },
