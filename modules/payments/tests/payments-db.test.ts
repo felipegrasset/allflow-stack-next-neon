@@ -19,10 +19,14 @@ import pg from "pg"
 import type { Database } from "@/server/db/schema"
 
 import { up } from "../db/migrations/0101_payments_init"
+import { up as up0124 } from "../db/migrations/0124_payments_refund_guard"
 import {
+  OperationNotSupportedError,
   OrderAlreadyPaidError,
   OrderHasActivePaymentError,
   ProviderApiError,
+  RefundInProgressError,
+  SubscriptionChangeError,
   type PaymentEvent,
   type PaymentProvider,
 } from "../contracts/types"
@@ -32,9 +36,17 @@ import {
   getPaymentByOrder,
   refundPayment,
   startCheckout,
+  startSubscription,
   syncPayment,
+  getSubscription,
   type CheckoutDeps,
 } from "../server/checkout"
+import {
+  cancelSubscription,
+  changeSubscriptionPlan,
+  getActiveSubscription,
+  listSubscriptions,
+} from "../server/subscriptions"
 
 const url = process.env.DATABASE_URL
 const skip = url
@@ -85,6 +97,7 @@ before(async () => {
     plugins: [failingPlugin],
   })
   await up(db as unknown as Kysely<unknown>)
+  await up0124(db as unknown as Kysely<unknown>)
 })
 
 after(async () => {
@@ -666,5 +679,265 @@ test(
       .executeTakeFirstOrThrow()
     assert.equal(row.status, "canceled")
     assert.equal(row.subscriber_ref, "user-9")
+  }
+)
+
+// ── 0.2: doble reembolso (candado en la base) ────────────────────────────────
+
+async function approvedPayment(n: string, p: PaymentProvider) {
+  const a = await startCheckout(db, mk(n), depsFor(p))
+  await applyEvent(db, approvedEv(a.paymentId, { eventId: `evt-${n}-${a.paymentId}` }))
+  return a.paymentId
+}
+const refundRequests = (paymentId: string) =>
+  db
+    .selectFrom("payments_refund_requests")
+    .selectAll()
+    .where("payment_id", "=", paymentId)
+    .orderBy("created_at")
+    .execute()
+
+test(
+  "PAY-7: dos refundPayment CONCURRENTES por el mismo monto pendiente → uno sale, el otro RefundInProgressError",
+  { skip },
+  async () => {
+    // El proveedor tarda: los dos pedidos se cruzan antes de que conteste.
+    let release!: () => void
+    const gate = new Promise<void>((r) => (release = r))
+    const p = fakeProvider()
+    const slow: PaymentProvider = {
+      ...p,
+      refund: async (id, amount, opts) => {
+        await gate
+        return p.refund!(id, amount, opts)
+      },
+    }
+    const paymentId = await approvedPayment("double-refund", slow)
+    const both = Promise.allSettled([
+      refundPayment(db, paymentId, 10000, depsFor(slow)),
+      refundPayment(db, paymentId, 10000, depsFor(slow)),
+    ])
+    setTimeout(release, 50)
+    const settled = await both
+    assert.equal(settled.filter((s) => s.status === "fulfilled").length, 1)
+    const rejected = settled.find((s) => s.status === "rejected")
+    assert.ok(
+      rejected?.status === "rejected" &&
+        rejected.reason instanceof RefundInProgressError
+    )
+    assert.deepEqual(p.calls.refunds, [10000], "UNA sola llamada al proveedor")
+    const reqs = await refundRequests(paymentId)
+    assert.equal(reqs.length, 1)
+    assert.equal(reqs[0]!.status, "sent")
+
+    // Lo que queda libre (5000) sí se puede pedir; el total no, mientras haya uno abierto.
+    await assert.rejects(
+      () => refundPayment(db, paymentId, undefined, depsFor(p)),
+      RefundInProgressError
+    )
+    await refundPayment(db, paymentId, 5000, depsFor(p))
+
+    // El proveedor confirma 15000: los pedidos quedan cerrados y el pago refunded.
+    await applyEvent(db, {
+      kind: "payment",
+      type: "payment.refunded",
+      provider: "mercadopago",
+      eventId: `ref-all-${paymentId}`,
+      paymentId,
+      providerPaymentId: "mp-100",
+      refundedMinor: 15000,
+    })
+    await assert.rejects(
+      () => refundPayment(db, paymentId, 1, depsFor(p)),
+      /aprobado/
+    )
+  }
+)
+
+test(
+  "PAY-7: la confirmación libera la reserva; un 4xx la libera; un timeout la deja tomada",
+  { skip },
+  async () => {
+    const p = fakeProvider()
+    const paymentId = await approvedPayment("refund-release", p)
+    await refundPayment(db, paymentId, 5000, depsFor(p))
+    await assert.rejects(
+      () => refundPayment(db, paymentId, 10001, depsFor(p)),
+      RefundInProgressError
+    )
+    // confirmado 5000 → lo libre vuelve a ser 10000
+    await applyEvent(db, {
+      kind: "payment",
+      type: "payment.refunded",
+      provider: "mercadopago",
+      eventId: `ref-5k-${paymentId}`,
+      paymentId,
+      providerPaymentId: "mp-100",
+      refundedMinor: 5000,
+    })
+
+    const rejecting: PaymentProvider = {
+      ...p,
+      refund: async () => {
+        throw new ProviderApiError("mercadopago", 400, "refund")
+      },
+    }
+    await assert.rejects(
+      () => refundPayment(db, paymentId, 10000, depsFor(rejecting)),
+      ProviderApiError
+    )
+    const timingOut: PaymentProvider = {
+      ...p,
+      refund: async () => {
+        throw new ProviderApiError("mercadopago", 0, "refund")
+      },
+    }
+    await assert.rejects(
+      () => refundPayment(db, paymentId, 4000, depsFor(timingOut)),
+      ProviderApiError
+    )
+    const statuses = (await refundRequests(paymentId)).map((r) => r.status)
+    assert.deepEqual(statuses, ["sent", "failed", "unknown"])
+    // 10000 libres menos 4000 inciertos = 6000
+    await assert.rejects(
+      () => refundPayment(db, paymentId, 6001, depsFor(p)),
+      (e: unknown) => e instanceof RefundInProgressError && e.availableMinor === 6000
+    )
+    await refundPayment(db, paymentId, 6000, depsFor(p))
+  }
+)
+
+test(
+  "OperationNotSupportedError: un proveedor sin refund no reserva nada",
+  { skip },
+  async () => {
+    const p = fakeProvider()
+    const paymentId = await approvedPayment("no-refund", p)
+    const { refund: _r, ...noRefund } = p
+    await assert.rejects(
+      () => refundPayment(db, paymentId, 100, depsFor(noRefund)),
+      OperationNotSupportedError
+    )
+    assert.equal((await refundRequests(paymentId)).length, 0)
+  }
+)
+
+// ── 0.2: suscripción vigente, cancelar y cambiar de plan ─────────────────────
+
+type SubFake = PaymentProvider & {
+  subCalls: { cancel: [string, boolean | undefined][]; change: [string, string][] }
+}
+function subProvider(): SubFake {
+  const subCalls = { cancel: [] as [string, boolean | undefined][], change: [] as [string, string][] }
+  return {
+    ...fakeProvider(),
+    id: "paddle",
+    subCalls,
+    createSubscription: async (input) => ({
+      id: `txn-${input.subscriberRef}-${Math.random().toString(36).slice(2, 6)}`,
+      url: "https://pay.test/sub",
+    }),
+    cancelSubscription: async (id, opts) =>
+      void subCalls.cancel.push([id, opts?.atPeriodEnd]),
+    changeSubscriptionPlan: async (id, plan) => {
+      subCalls.change.push([id, plan])
+      return { mode: "in_place", billing: "prorated_immediately" }
+    },
+  }
+}
+const subEv = (
+  type: "subscription.active" | "subscription.canceled",
+  externalId: string,
+  over: Partial<Extract<PaymentEvent, { kind: "subscription" }>> = {}
+): PaymentEvent => ({
+  kind: "subscription",
+  type,
+  provider: "paddle",
+  eventId: `${type}-${externalId}-${Math.random().toString(36).slice(2, 8)}`,
+  externalId,
+  ...over,
+})
+
+test(
+  "getActiveSubscription: un checkout nuevo sin pagar NO tapa a la activa (getSubscription sí, y no cambió)",
+  { skip },
+  async () => {
+    const who = `user-${Math.random().toString(36).slice(2, 8)}`
+    const p = subProvider()
+    await applyEvent(db, subEv("subscription.active", `sub-${who}`, { subscriberRef: who, planRef: "pri_basic" }))
+    await new Promise((r) => setTimeout(r, 5))
+    await startSubscription(
+      db,
+      { subscriberRef: who, planRef: "pri_pro", returnPath: "/billing" },
+      depsFor(p)
+    )
+    const latest = await getSubscription(db, who)
+    assert.equal(latest?.status, "pending", "comportamiento viejo intacto")
+    const active = await getActiveSubscription(db, who)
+    assert.equal(active?.status, "active")
+    assert.equal(active?.planRef, "pri_basic")
+    const all = await listSubscriptions(db, who)
+    assert.deepEqual(all.map((s) => s.status), ["pending", "active"])
+  }
+)
+
+test(
+  "cancelSubscription y changeSubscriptionPlan solo PIDEN: el estado local cambia con el webhook",
+  { skip },
+  async () => {
+    const who = `user-${Math.random().toString(36).slice(2, 8)}`
+    const ext = `sub-${who}`
+    const p = subProvider()
+    await applyEvent(db, subEv("subscription.active", ext, { subscriberRef: who, planRef: "pri_basic" }))
+
+    await assert.rejects(
+      () => changeSubscriptionPlan(db, who, "pri_basic", depsFor(p)),
+      (e: unknown) => e instanceof SubscriptionChangeError && e.code === "same_plan"
+    )
+    const change = await changeSubscriptionPlan(db, who, "pri_pro", depsFor(p))
+    assert.equal(change.mode, "in_place")
+    assert.deepEqual(p.subCalls.change, [[ext, "pri_pro"]])
+    assert.equal((await getActiveSubscription(db, who))?.planRef, "pri_basic", "sin webhook, nada cambia")
+    await applyEvent(db, subEv("subscription.active", ext, { planRef: "pri_pro", occurredAt: new Date() }))
+    assert.equal((await getActiveSubscription(db, who))?.planRef, "pri_pro")
+
+    const res = await cancelSubscription(db, { subscriberRef: who }, { atPeriodEnd: true }, depsFor(p))
+    assert.equal(res.externalId, ext)
+    assert.deepEqual(p.subCalls.cancel, [[ext, true]])
+    const before = await getActiveSubscription(db, who)
+    assert.equal(before?.status, "active")
+    assert.equal(before?.cancelAt, null)
+    const end = new Date(Date.now() + 86_400_000)
+    await applyEvent(db, subEv("subscription.active", ext, { cancelAt: end, occurredAt: new Date() }))
+    assert.equal((await getActiveSubscription(db, who))?.cancelAt?.getTime(), end.getTime())
+
+    await applyEvent(db, subEv("subscription.canceled", ext, { currentPeriodEnd: new Date(Date.now() - 1000) }))
+    assert.equal(await getActiveSubscription(db, who), null)
+    await assert.rejects(
+      () => cancelSubscription(db, { subscriberRef: who }, { atPeriodEnd: false }, depsFor(p)),
+      (e: unknown) => e instanceof SubscriptionChangeError && e.code === "not_found"
+    )
+  }
+)
+
+test(
+  "cancelar / cambiar con un proveedor que no lo implementa → OperationNotSupportedError, sin éxito fingido",
+  { skip },
+  async () => {
+    const who = `user-${Math.random().toString(36).slice(2, 8)}`
+    await applyEvent(db, subEv("subscription.active", `sub-${who}`, { subscriberRef: who, planRef: "pri_basic" }))
+    const bare = fakeProvider() // sin cancelSubscription ni changeSubscriptionPlan
+    await assert.rejects(
+      () => cancelSubscription(db, { subscriberRef: who }, { atPeriodEnd: true }, depsFor(bare)),
+      OperationNotSupportedError
+    )
+    await assert.rejects(
+      () => changeSubscriptionPlan(db, who, "pri_pro", depsFor(bare)),
+      OperationNotSupportedError
+    )
+    await assert.rejects(
+      () => cancelSubscription(db, { subscriptionId: "no-existe" }, { atPeriodEnd: true }, depsFor(bare)),
+      (e: unknown) => e instanceof SubscriptionChangeError && e.code === "not_found"
+    )
   }
 )

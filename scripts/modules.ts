@@ -2,7 +2,8 @@
  * `pnpm modules:sync | modules:check | modules:guard` — the module contract's CLI (T1).
  *
  *   sync    validates modules/<id>/manifest.json, then (re)writes the generated
- *           registries (modules/_generated/*) and the route shims under app/.
+ *           registries (modules/_generated/*), the route shims under app/ and
+ *           the module block of .env.example (between its markers).
  *           Run it after copying a module in or taking one out.
  *   check   same validation, writes nothing, exits 1 if anything is invalid or
  *           the generated files are stale. CI runs it.
@@ -10,6 +11,14 @@
  *           module) a genesis anchor. `--base <ref>` (default origin/main).
  *           ALLOW_PROTECTED_ZONES=1 lifts the protected-zone rule (CI sets it
  *           for a PR labelled `zonas-protegidas-ok`).
+ *   can-remove <id>
+ *           only CHECKS whether module <id> can be taken out (no other module
+ *           lists it in dependsOn or imports its contracts/) and prints what
+ *           taking it out involves: migrations to revert (newest first), tables
+ *           whose data is lost, shims sync deletes, env, covered entities.
+ *           Deletes nothing and never touches the database. Exit 0 = it can go,
+ *           1 = someone depends on it, 2 = not installed. The procedure is in
+ *           modules/README.md («Desinstalar»).
  *
  * Folders under modules/ that start with `_` (_template, _examples,
  * _generated) and `contract` are not installed modules.
@@ -26,7 +35,13 @@ import {
 } from "node:fs"
 import { dirname, join, relative } from "node:path"
 
-import { buildRegistryFiles, SHIM_MARKER } from "../modules/contract/generate"
+import {
+  buildEnvExample,
+  buildRegistryFiles,
+  ENV_EXAMPLE_FILE,
+  SHIM_MARKER,
+} from "../modules/contract/generate"
+import { planRemoval } from "../modules/contract/remove"
 import { findViolations } from "../modules/contract/zones"
 import {
   parseManifest,
@@ -96,10 +111,17 @@ export function plan(root: string): {
     const m = parseManifest(s.dir, s.manifest, sink)
     return m ? [{ manifest: m }] : []
   })
-  return {
-    issues,
-    files: issues.length ? new Map() : buildRegistryFiles(manifests),
-  }
+  if (issues.length) return { issues, files: new Map() }
+  const files = buildRegistryFiles(manifests)
+  // .env.example: only the delimited module block is generated; the rest is the app's.
+  const envPath = join(root, ENV_EXAMPLE_FILE)
+  const envNow = existsSync(envPath) ? readFileSync(envPath, "utf8") : ""
+  const envNext = buildEnvExample(
+    envNow,
+    manifests.map((m) => m.manifest)
+  )
+  if (existsSync(envPath) || envNext) files.set(ENV_EXAMPLE_FILE, envNext)
+  return { issues, files }
 }
 
 function existingShims(root: string): string[] {
@@ -216,6 +238,36 @@ function guard(args: string[]): number {
   return 1
 }
 
+export function canRemove(root: string, id: string | undefined): number {
+  if (!id) {
+    console.error("uso: tsx scripts/modules.ts can-remove <id>")
+    return 2
+  }
+  const p = planRemoval(readModules(root), id)
+  if (!p.installed) {
+    console.error(`[modules:can-remove] "${id}" no está instalado en modules/`)
+    return 2
+  }
+  const list = (label: string, xs: string[]) =>
+    console.log(`  ${label}: ${xs.length ? xs.join(", ") : "(ninguna)"}`)
+  console.log(`[modules:can-remove] ${id}`)
+  list("migraciones a revertir, en este orden", p.revert)
+  list("tablas que se borran con sus datos", p.tables)
+  list("shims que quita modules:sync", p.shims)
+  list("variables de entorno que sobran", p.env)
+  list("dependencias npm que quizá sobren", p.dependencies)
+  list("entidades que la plataforma vuelve a generar", p.covers)
+  if (p.blockers.length) {
+    console.error(`[modules:can-remove] NO se puede quitar: otros módulos dependen de "${id}"`)
+    for (const b of p.blockers) console.error(`  ✗ ${b.module}: ${b.reason}`)
+    return 1
+  }
+  console.log(
+    `[modules:can-remove] ok: nadie depende de "${id}". Sigue «Desinstalar» en modules/README.md (no se borró nada).`
+  )
+  return 0
+}
+
 const entry = process.argv[1] ?? ""
 if (
   import.meta.url === `file://${entry}` ||
@@ -225,9 +277,10 @@ if (
   if (cmd === "sync") process.exitCode = sync(ROOT, true)
   else if (cmd === "check") process.exitCode = sync(ROOT, false)
   else if (cmd === "guard") process.exitCode = guard(rest)
+  else if (cmd === "can-remove") process.exitCode = canRemove(ROOT, rest[0])
   else {
     console.error(
-      "uso: tsx scripts/modules.ts <sync|check|guard [--base <ref>]>"
+      "uso: tsx scripts/modules.ts <sync|check|guard [--base <ref>]|can-remove <id>>"
     )
     process.exitCode = 2
   }

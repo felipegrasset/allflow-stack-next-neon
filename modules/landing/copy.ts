@@ -1,13 +1,16 @@
 /**
- * Todos los textos de la landing, en UN archivo. Cada clave la usa un bloque de
- * `landing.json` (`"copy": "hero"`). `{app}` y `{year}` se reemplazan al
- * resolver. La génesis (o el agente) reescribe este archivo para cada app; las
- * plantillas por arquetipo (T10) traen el suyo.
+ * Todos los textos de la landing, en UN archivo, en `es` y `en`. Cada clave la
+ * usa un bloque de `landing.json` (`"copy": "hero"`). `{app}` y `{year}` se
+ * reemplazan al resolver. La génesis (o el agente) reescribe este archivo para
+ * cada app; las plantillas por arquetipo (T10) traen el suyo, también en los dos
+ * idiomas.
  *
- * Sin i18n todavía: `copySets` es por idioma para que el módulo `i18n` (T4)
- * pueda levantarlo entero sin tocar los bloques.
+ * Which set is shown is decided per request in `ui/page.tsx` (`locale.ts`): the
+ * i18n cookie, then Accept-Language, then `landing.json`'s `locale`. The text
+ * stays here (not in the i18n catalog) because it is per-app content that the
+ * genesis rewrites, not interface strings.
  */
-import type { CopySet } from "./schema"
+import type { CopySet, CopySets } from "./schema"
 
 const es: CopySet = {
   hero: {
@@ -291,7 +294,7 @@ const en: CopySet = {
       submit: "Send",
       sending: "Sending…",
     },
-    privacy: { label: "Privacy policy", href: "/privacy" },
+    privacy: { label: "Privacy policy", href: "/privacidad" },
     doneTitle: "Received!",
     doneBody: "We will get back to you shortly.",
     errorGeneric: "We could not send it. Please try again in a moment.",
@@ -326,4 +329,4 @@ const en: CopySet = {
   },
 }
 
-export const copySets: Record<"es" | "en", CopySet> = { es, en }
+export const copySets: CopySets = { es, en }

@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "id": "orders",
+  "feature": "orders",
+  "version": "0.1.0",
+  "title": "Pedidos",
+  "description": "Carrito (cookie firmada), checkout y pedidos con estados. El total se calcula siempre en el servidor desde catalog, el stock se reserva al crear el pedido y se libera una sola vez si se cancela o vence, y un pedido se da por pagado solo cuando payments dice approved por el monto guardado.",
+  "dependsOn": ["catalog", "payments", "notifications"],
+  "tables": ["orders_orders", "orders_items", "orders_status_history"],
+  "migrations": ["0126_orders_init"],
+  "routes": [
+    { "path": "/carrito", "entry": "ui/cart-page.tsx", "group": "marketing" },
+    { "path": "/checkout", "entry": "ui/checkout-page.tsx" },
+    { "path": "/orders", "entry": "ui/orders-page.tsx" },
+    { "path": "/orders/[id]", "entry": "ui/order-page.tsx" },
+    { "path": "/admin/orders", "entry": "ui/admin-page.tsx" },
+    { "path": "/api/orders/expire", "entry": "server/expire/route.ts" }
+  ],
+  "env": [
+    {
+      "key": "ORDERS_PENDING_TTL_MINUTES",
+      "description": "Minutos que un pedido sin pagar mantiene su stock reservado antes de vencer (por defecto 30; entre 5 y 10080).",
+      "example": "30"
+    },
+    {
+      "key": "CRON_SECRET",
+      "description": "Secreto que autentica los handlers de tareas programadas (Authorization: Bearer <secreto>), como lo manda Vercel Cron. Mínimo 16 caracteres; sin él, o más corto, el handler responde 503 y no corre nada. Secreto.",
+      "example": "<cadena aleatoria de 32+ caracteres>"
+    }
+  ],
+  "covers": ["pedido", "order", "orden", "orden de compra", "purchase order", "carrito", "cart", "shopping cart", "línea de pedido", "order line"],
+  "entrypoints": {
+    "nav": "nav.ts",
+    "permissions": "permissions.ts",
+    "messages": "messages.ts"
+  }
+}

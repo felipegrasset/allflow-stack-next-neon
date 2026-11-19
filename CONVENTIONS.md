@@ -29,8 +29,13 @@ kit de UI) va como **módulo**, no editando la app: una carpeta `modules/<id>/`
 con `MODULE.md` y `manifest.json`. Contrato completo y ejemplo vivo:
 `modules/README.md` y `modules/_examples/ping/`.
 
-- Instalar = copiar la carpeta + `pnpm modules:sync`. Quitar = revertir sus
-  migraciones, borrar la carpeta + `pnpm modules:sync`.
+- Instalar = copiar la carpeta + `pnpm modules:sync`. Quitar = verificar con
+  `pnpm tsx scripts/modules.ts can-remove <id>`, revertir sus migraciones,
+  borrar la carpeta + `pnpm modules:sync` (pasos en `modules/README.md`).
+- Sus textos van en su propio `messages.ts` (`entrypoints.messages`, `es` y `en`,
+  su id como única clave de primer nivel), no en `modules/i18n/messages/`.
+- Las entidades del dominio que modela se declaran en `covers` del manifiesto:
+  la plataforma no las vuelve a generar.
 - **Un módulo nunca edita** `server/db/migrate.ts`, `server/db/schema/index.ts`,
   `server/db/seed.ts`, `config/nav.ts` ni `lib/permissions.ts`: son anclas que la
   génesis edita por texto exacto. Se registra con su manifiesto; lo generado
@@ -81,7 +86,9 @@ Detalles que ya resolvieron los kits (no los re-inventes):
 
 Todo texto visible vive en **`modules/i18n/messages/es.ts`** y **`en.ts`**
 (español es el idioma fuente; un espacio de nombres por kit: `auth`, `profile`,
-`i18n`). Las pantallas no escriben literales:
+`i18n`). Un **módulo** trae su propio catálogo (`entrypoints.messages`) y lo lee
+con `getModuleCopy(es)` / `useModuleCopy(es)` de `@/modules/i18n/contracts/…`
+(ver `modules/README.md`, «Textos»). Las pantallas no escriben literales:
 
 ```ts
 const copy = await getCopy("auth")   // servidor: páginas, layouts, Server Actions
@@ -117,7 +124,11 @@ ya están instaladas. Rutas: `/login` (contraseña o magic link), `/signup`,
 - **Guardas** (`server/session.ts`): `requireUser()`, `requireOnboardedUser()`
   (sin `onboardedAt` → `/onboarding`) y `requireAdmin()` (sin rol admin →
   `forbidden()`, que pinta `forbidden.tsx` con un 403 real; necesita
-  `experimental.authInterrupts` en `next.config.ts`). `proxy.ts` sólo hace la
+  `experimental.authInterrupts` en `next.config.ts`). `/admin/*` pasa por
+  `requireAdminArea()` (`server/module-access.ts`): admin, o quien tenga algún
+  permiso `adminAccess` de un módulo instalado; cada página de `/admin` comprueba
+  además **su** permiso (`can()` o la guarda del módulo), y `requireAdmin()` queda
+  para lo que es solo de admin (`/admin/users`). Ver `modules/README.md`. `proxy.ts` sólo hace la
   redirección optimista a `/login?next=` si no hay cookie; **cada página y cada
   Server Action llama a su guarda**.
 - **No pongas `loading.tsx` por encima de una guarda.** Un `loading.tsx` en

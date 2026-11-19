@@ -50,7 +50,8 @@ import {
  *
  * Suscripciones (planes, clientes, `subscription/create`): NO implementadas.
  * Quedan fuera hasta tener el pago único probado en un sandbox real; este
- * adaptador no define `createSubscription` ni `cancelSubscription`.
+ * adaptador no define `createSubscription`, `cancelSubscription` ni
+ * `changeSubscriptionPlan` (el núcleo responde `OperationNotSupportedError`).
  */
 
 const PROVIDER = "flow" as const

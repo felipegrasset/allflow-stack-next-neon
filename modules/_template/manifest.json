@@ -8,10 +8,12 @@
   "tables": ["mi_modulo_items"],
   "migrations": ["0100_mi_modulo_init"],
   "routes": [{ "path": "/mi-modulo", "entry": "ui/page.tsx" }],
+  "covers": ["ítem", "item"],
   "entrypoints": {
     "nav": "nav.ts",
     "permissions": "permissions.ts",
     "header": "header.tsx",
-    "seed": "seed.ts"
+    "seed": "seed.ts",
+    "messages": "messages.ts"
   }
 }

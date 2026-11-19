@@ -58,6 +58,23 @@ export interface PaymentsSubscriptionsTable {
   plan_ref: string | null
   status: Generated<"pending" | "active" | "past_due" | "canceled">
   current_period_end: NullableTimestamp
+  /** 0124: cancellation the provider scheduled (null = none). */
+  cancel_at: NullableTimestamp
+  /** 0124: when the provider generated the last applied event. */
+  last_event_at: NullableTimestamp
+  created_at: Timestamp
+  updated_at: Timestamp
+}
+
+/** 0124: a refund asked of the provider; reserves its amount until confirmed or clearly failed. */
+export interface PaymentsRefundRequestsTable {
+  id: string
+  payment_id: string
+  amount_minor: Amount
+  /** Payment's refunded total once this and every earlier open request are confirmed. */
+  expected_total_minor: Amount
+  full_refund: ColumnType<boolean, boolean | undefined, boolean>
+  status: Generated<"requested" | "sent" | "unknown" | "failed">
   created_at: Timestamp
   updated_at: Timestamp
 }
@@ -67,5 +84,6 @@ declare module "@/server/db/schema" {
     payments: PaymentsTable
     payments_events: PaymentsEventsTable
     payments_subscriptions: PaymentsSubscriptionsTable
+    payments_refund_requests: PaymentsRefundRequestsTable
   }
 }

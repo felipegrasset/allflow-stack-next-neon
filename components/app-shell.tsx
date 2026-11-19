@@ -7,12 +7,13 @@ import { Button } from "@/components/ui/button"
 import { UserAvatar } from "@/components/user-avatar"
 import { BrandMark } from "@/components/brand-mark"
 import { navItems } from "@/config/nav"
-import { moduleHeaderSlots, moduleNavItems } from "@/config/nav.modules"
+import { moduleHeaderSlots } from "@/config/nav.modules"
 import { getTranslations } from "next-intl/server"
 
 import { labelKey } from "@/modules/i18n/ui/labels"
 import { getCopy } from "@/modules/i18n/server/copy"
 import type { Session } from "@/server/auth"
+import { canEnterAdmin, visibleModuleNav } from "@/server/module-access"
 
 /**
  * The signed-in shell: header with the main navigation, theme toggle, the
@@ -35,6 +36,20 @@ export async function AppShell({
     const key = labelKey(label, (k) => t.has(k))
     return key ? t(key) : label
   }
+  // Module links of the `main` area, filtered per person (adminOnly / permission)
+  // and already translated; plus the door to /admin for whoever holds an
+  // `adminAccess` permission without being admin (admins have /admin/users).
+  const [moduleLinks, entersAdmin] = await Promise.all([
+    visibleModuleNav("main"),
+    isAdmin ? Promise.resolve(false) : canEnterAdmin(),
+  ])
+  const links = [
+    ...navItems
+      .filter((item) => !item.adminOnly || isAdmin)
+      .map((item) => ({ href: item.href, label: navLabel(item.label) })),
+    ...moduleLinks,
+    ...(entersAdmin ? [{ href: "/admin", label: c.adminArea }] : []),
+  ]
   return (
     <div className="flex min-h-svh flex-col">
       <header className="border-b">
@@ -43,13 +58,11 @@ export async function AppShell({
             <BrandMark />
           </Link>
           <nav aria-label={c.mainNav} className="flex items-center gap-1 text-sm">
-            {[...navItems, ...moduleNavItems]
-              .filter((item) => !item.adminOnly || isAdmin)
-              .map((item) => (
-                <ButtonLink key={item.href} href={item.href} variant="ghost" size="sm">
-                  {navLabel(item.label)}
-                </ButtonLink>
-              ))}
+            {links.map((item) => (
+              <ButtonLink key={item.href} href={item.href} variant="ghost" size="sm">
+                {item.label}
+              </ButtonLink>
+            ))}
           </nav>
           <div className="ml-auto flex items-center gap-2">
             {/* Header slots of installed modules (config/nav.modules.ts). */}

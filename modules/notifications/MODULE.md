@@ -14,8 +14,12 @@ crean avisos con `notify()`. v0.1: sin popover, sin correo, sin tiempo real
   `user_id` → `"user".id` (cascade), `kind` (`info|success|warning|error`),
   `title`, `body?`, `href?` (ruta interna), `read_at?` (nulo = sin leer), `created_at`.
   Índices por `(user_id, created_at desc)` y parcial de no leídas.
-- **Permisos:** recurso `notifications`: `read` (owner, admin y member; sobre lo propio)
-  y `manage` (owner y admin; reservado para v0.2, hoy no se comprueba).
+- **Permisos:** recurso `notifications` con una sola acción, `read` (owner, admin y
+  member). Se declara para que el recurso aparezca en los roles, pero el módulo **no
+  llama a `hasPermission`**: lo que protege los datos es la guarda de sesión y que
+  toda consulta y mutación filtra por el usuario de la sesión. No hay permiso para
+  ver o tocar avisos ajenos porque ninguna pantalla ni acción lo hace; si una v0.2
+  agrega una vista de administración, ese permiso nace junto con su comprobación.
 - **Navegación / cabecera:** enlace «Notificaciones» y, en la cabecera, un enlace con
   el contador (`header.tsx`, componente de servidor). Si la consulta falla, la
   cabecera muestra el enlace sin contador.
@@ -29,7 +33,10 @@ crean avisos con `notify()`. v0.1: sin popover, sin correo, sin tiempo real
   Con `id`, repetir la llamada no duplica el aviso (`created: false`).
   También exporta los tipos `Notification`, `NotifyInput`, `NotifyResult`, `NotificationKind`.
 - **Acciones de servidor** (`server/actions.ts`): `markReadAction`, `markAllReadAction`;
-  cada una llama a su guarda y solo toca filas del usuario de la sesión.
+  cada una llama a `requireOnboardedUser` antes de tocar datos y solo actualiza filas
+  con `user_id` = usuario de la sesión (marcar el id de un aviso ajeno no cambia nada).
+  El `id` del formulario se valida con Zod. `notify()` no es una acción: solo se llama
+  desde código de servidor de otro módulo.
 
 ## Componentes reciclables (`ui/`)
 Genéricos, solo tokens del tema (claro y oscuro), sin colores literales. Cópialos o
@@ -39,8 +46,11 @@ impórtalos desde otro módulo solo si se promueven a un kit; hoy son internos.
 - `ItemList<T>({ items, getKey, renderItem, label, empty })`: `<ul aria-label>` con estado vacío.
 
 ## Textos
-Todos en `copy.ts` (un solo archivo). T4 (i18n) lo levantará a claves; mientras tanto
-no hay literales en los componentes. `nav.ts` también importa de ahí.
+Todos en `copy.ts` (un solo archivo), **solo en español**; las fechas se formatean con
+`es-CL`. Los componentes no llevan literales y `nav.ts` también importa de ahí. El módulo
+`i18n` ya existe, pero un módulo todavía no puede aportar su catálogo: falta el punto de
+extensión `messages` del contrato. Hasta entonces la pantalla sale en español aunque la
+persona haya elegido inglés (pendiente declarado también en `tests/i18n.test.ts`).
 
 ## Variables de entorno
 Ninguna. No envía correo (v0.1).
@@ -61,8 +71,10 @@ idempotente). Si no hay usuarios, no hace nada. La página sin avisos muestra el
 3. `pnpm modules:sync`. Si otro módulo importa `contracts`, quita primero esa llamada.
 
 ## Pruebas
-`modules/notifications/tests/notifications.test.ts` (validación de `notify`, contador y render de los
-componentes), corre con `pnpm test:modules`. No hay prueba contra base: no se aplicó la migración en ninguna base.
+`modules/notifications/tests/notifications.test.ts` (validación de `notify`, contador, render de los
+componentes y, leyendo el código, que cada acción pasa por la guarda de sesión y que toda consulta y
+mutación filtra por `user_id`), corre con `pnpm test:modules`. No hay prueba contra base: no se aplicó
+la migración en ninguna base.
 
 ## Qué NO toca
 Ningún archivo ancla ni zona protegida; no importa de otros módulos.

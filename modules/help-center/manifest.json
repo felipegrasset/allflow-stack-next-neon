@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "id": "help-center",
+  "feature": "help-center",
+  "version": "0.1.0",
+  "title": "Centro de ayuda",
+  "description": "Artículos de ayuda con categorías y búsqueda, páginas públicas /ayuda, editor en /admin/help y valoración «¿te sirvió?» por artículo. Contenido en markdown mínimo renderizado sin HTML crudo.",
+  "tables": ["help_center_articles", "help_center_feedback"],
+  "migrations": ["0117_help_center_init"],
+  "routes": [
+    { "path": "/ayuda", "entry": "ui/public-page.tsx", "group": "marketing" },
+    { "path": "/ayuda/[slug]", "entry": "ui/article-page.tsx", "group": "marketing" },
+    { "path": "/admin/help", "entry": "ui/admin-page.tsx" }
+  ],
+  "covers": [
+    "artículo de ayuda",
+    "help article",
+    "categoría de ayuda",
+    "help category",
+    "pregunta frecuente",
+    "faq",
+    "centro de ayuda",
+    "help center"
+  ],
+  "entrypoints": {
+    "nav": "nav.ts",
+    "permissions": "permissions.ts",
+    "seed": "seed.ts",
+    "messages": "messages.ts"
+  }
+}

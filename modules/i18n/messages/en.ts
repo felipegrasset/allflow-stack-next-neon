@@ -136,6 +136,7 @@ export const en: Messages = {
       home: "Home",
       settings: "Settings",
       admin: "Users",
+      adminArea: "Administration",
       mainNav: "Main navigation",
       guestTitle: "Welcome",
       guestDescription: "Sign in or create an account to continue.",

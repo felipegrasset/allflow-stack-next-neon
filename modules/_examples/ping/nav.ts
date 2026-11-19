@@ -1,3 +1,4 @@
 import type { ModuleNavItem } from "../contract/types"
 
-export const nav: ModuleNavItem[] = [{ href: "/ping", label: "Ping" }]
+/** `label` is a catalog key (messages.ts): AppShell translates it. */
+export const nav: ModuleNavItem[] = [{ href: "/ping", label: "ping.nav" }]

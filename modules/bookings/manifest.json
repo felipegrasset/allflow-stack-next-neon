@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "id": "bookings",
+  "feature": "bookings",
+  "version": "0.1.0",
+  "title": "Reservas",
+  "description": "Reservas de recursos (sala, profesional, servicio) con horario semanal de atención y zona horaria propia: agenda del día y de la semana, reservar y cancelar. La base impide la doble reserva (restricción de exclusión) y avisa con notify().",
+  "dependsOn": ["notifications"],
+  "tables": ["bookings_resources", "bookings_schedules", "bookings_bookings"],
+  "migrations": ["0103_bookings_init"],
+  "routes": [
+    { "path": "/bookings", "entry": "ui/page.tsx" },
+    { "path": "/bookings/new", "entry": "ui/new-page.tsx" },
+    { "path": "/reservar", "entry": "ui/public-page.tsx", "group": "marketing" }
+  ],
+  "covers": [
+    "reserva",
+    "booking",
+    "reservation",
+    "cita",
+    "appointment",
+    "hora",
+    "slot",
+    "recurso",
+    "resource",
+    "sala",
+    "room",
+    "profesional",
+    "professional",
+    "horario",
+    "schedule"
+  ],
+  "entrypoints": {
+    "nav": "nav.ts",
+    "permissions": "permissions.ts",
+    "seed": "seed.ts",
+    "messages": "messages.ts"
+  }
+}

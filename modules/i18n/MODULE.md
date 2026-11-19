@@ -17,6 +17,11 @@ idioma en el perfil o en el onboarding. `<html lang>` sigue al idioma activo.
   `DEFAULT_LOCALE`, `LOCALE_COOKIE`, `isLocale`, `negotiateLocale`, y los
   formateadores `formatDate`, `formatDateTime`, `formatNumber`, `formatCurrency`,
   `formatRelative` (todos sobre `Intl`, con la etiqueta de `INTL_TAG`).
+- **`contracts/server.ts`** → `getModuleCopy(es)` y **`contracts/client.ts`** →
+  `useModuleCopy(es)`: el texto del catálogo propio de un módulo (ver abajo).
+- **`request.ts`** fusiona el catálogo del núcleo con el de cada módulo instalado
+  (`modules/_generated/messages.ts`). Es el único archivo de un módulo que puede
+  importar un registro generado (excepción `MESSAGES_HOST` del validador).
 
 ## Cómo se usa
 Catálogo: `modules/i18n/messages/es.ts` y `en.ts`; un espacio de nombres por
@@ -39,6 +44,12 @@ const { loginSchema } = authSchemas(copy.validation)   // lib/schemas/auth.ts
 - **Metadatos:** `generateMetadata()` con `getCopy`, no `export const metadata` con texto.
 - **Etiquetas de navegación:** un módulo escribe la clave en `label` (`"ping.nav"`);
   `AppShell` la traduce. Lo que no es clave se muestra tal cual.
+- **Textos de otro módulo:** NO se agregan a `messages/`. El módulo declara
+  `entrypoints.messages` (un `messages.ts` que exporta `es` y `en`, con su id como
+  única clave de primer nivel) y los lee con `getModuleCopy(es)` /
+  `useModuleCopy(es)`. Reglas y ejemplo copiable en `modules/README.md` («Textos»).
+  `messages/` es solo para el núcleo (`auth`, `profile`, `i18n`); si un módulo usa
+  uno de esos ids, gana el núcleo.
 - **Un idioma nuevo:** agregar `fr.ts`, sumarlo a `LOCALES`, a `INTL_TAG` y a `messages`
   (el tipo falla si falta alguno). La prueba exige las mismas claves y los mismos argumentos.
 
@@ -64,8 +75,9 @@ const { loginSchema } = authSchemas(copy.validation)   // lib/schemas/auth.ts
   `app/(app)/home.tsx` (versión generada), `lib/copy/domain.ts`, `config/nav.ts`.
 - `app/dev/home-gallery/**` (galería de desarrollo, no llega al usuario).
 - `user.locale` no se lee al iniciar sesión en otro dispositivo (manda `Accept-Language`).
-- Que un módulo aporte su propio catálogo: hoy se suma a mano a `messages/`; falta
-  un punto de extensión `messages` en el contrato (T1).
+- Módulos que aún guardan su texto en un `copy.ts` en español (kits, y los que
+  `tests/i18n.test.ts` lista en `PENDING_LITERALS`): el punto de extensión
+  `messages` ya existe (resuelto en F1); falta migrarlos uno por uno.
 
 ## Instalar
 1. Copiar la carpeta a `modules/i18n/`.

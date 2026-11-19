@@ -4,11 +4,11 @@
  * Dos capas a propósito: `landing.json` dice QUÉ bloques van, en qué orden y con
  * qué variante (lo que edita el agente); el copy (`copy.ts`) dice QUÉ dice cada
  * uno. Un bloque apunta a su texto por una clave. Así traducir o reescribir no
- * toca la estructura, y el módulo `i18n` (T4) podrá levantar `copy.ts` entero.
+ * toca la estructura: `copy.ts` trae un juego por idioma (`CopySets`).
  */
 import { z } from "zod"
 
-import { BLOCK_TYPES } from "./contracts"
+import { BLOCK_TYPES, type LandingDoc } from "./contracts"
 
 export const VARIANTS = {
   hero: ["split", "centered"],
@@ -257,3 +257,5 @@ export type CopyOf<T extends keyof typeof COPY_SCHEMAS> = z.infer<
   (typeof COPY_SCHEMAS)[T]
 >
 export type CopySet = Record<string, unknown>
+/** One copy set per landing locale (`copySets` in `copy.ts`, `copy` of a template). */
+export type CopySets = Record<LandingDoc["locale"], CopySet>

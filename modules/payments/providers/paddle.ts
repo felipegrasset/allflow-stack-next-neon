@@ -65,6 +65,45 @@ function minor(v: unknown): number {
   return Number(s)
 }
 
+const date = (v: string | undefined): Date | undefined => {
+  const d = v ? new Date(v) : undefined
+  return d && !Number.isNaN(+d) ? d : undefined
+}
+
+/**
+ * Event type → normalized subscription type. `subscription.updated` follows
+ * the entity's `status` (`trialing` counts as active); `paused` or unknown
+ * statuses produce no event.
+ */
+function subscriptionType(
+  eventType: string,
+  status: unknown
+):
+  | "subscription.active"
+  | "subscription.past_due"
+  | "subscription.canceled"
+  | null {
+  if (eventType === "subscription.past_due") return "subscription.past_due"
+  if (eventType === "subscription.canceled") return "subscription.canceled"
+  if (eventType !== "subscription.updated") return "subscription.active"
+  if (status === "active" || status === "trialing") return "subscription.active"
+  if (status === "past_due") return "subscription.past_due"
+  if (status === "canceled") return "subscription.canceled"
+  return null
+}
+
+/**
+ * `scheduled_change` → `cancelAt`: the date of a scheduled `cancel`; `null`
+ * when the entity says nothing is scheduled (or a pause/resume is); undefined
+ * when the payload does not carry the field.
+ */
+function scheduledCancel(data: Json): Date | null | undefined {
+  if (!("scheduled_change" in data)) return undefined
+  const sc = obj(data.scheduled_change)
+  if (sc.action !== "cancel") return null
+  return date(str(sc.effective_at)) ?? null
+}
+
 export function createProvider(
   env: Env = process.env,
   deps: Deps = {}
@@ -86,7 +125,7 @@ export function createProvider(
   /** Nunca lanza con cuerpo ni llave: solo estado. */
   async function api(
     op: string,
-    method: "GET" | "POST",
+    method: "GET" | "POST" | "PATCH",
     path: string,
     body?: unknown
   ): Promise<Json> {
@@ -277,30 +316,34 @@ export function createProvider(
         case "subscription.created":
         case "subscription.activated":
         case "subscription.past_due":
-        case "subscription.canceled": {
+        case "subscription.canceled":
+        case "subscription.updated": {
           const externalId = str(data.id)
           if (!externalId) return []
+          const kind = subscriptionType(type, data.status)
+          if (!kind) return []
           const price = obj(
             obj(Array.isArray(data.items) ? data.items[0] : null).price
           )
+          // A canceled subscription has no billing period (Paddle sets
+          // `current_billing_period` to null): what it paid for ends at
+          // `canceled_at` (now for an immediate cancel, the old period end for
+          // a scheduled one).
           const periodEnd =
+            (kind === "subscription.canceled" ? str(data.canceled_at) : undefined) ??
             str(obj(data.current_billing_period).ends_at) ??
             str(data.next_billed_at)
-          const end = periodEnd ? new Date(periodEnd) : undefined
           return [
             {
               ...head,
               kind: "subscription",
-              type:
-                type === "subscription.past_due"
-                  ? "subscription.past_due"
-                  : type === "subscription.canceled"
-                    ? "subscription.canceled"
-                    : "subscription.active",
+              type: kind,
               externalId,
               subscriberRef: str(custom.subscriber_ref),
               planRef: str(price.id),
-              currentPeriodEnd: end && !Number.isNaN(+end) ? end : undefined,
+              currentPeriodEnd: date(periodEnd),
+              occurredAt: date(str(payload.occurred_at)),
+              cancelAt: scheduledCancel(data),
             },
           ]
         }
@@ -400,13 +443,61 @@ export function createProvider(
       })
     },
 
-    async cancelSubscription(externalId: string): Promise<void> {
+    /**
+     * `POST /subscriptions/{subscription_id}/cancel` with `effective_from`:
+     * `next_billing_period` (Paddle schedules `scheduled_change.action =
+     * cancel`; status stays `active` until then) or `immediately` (status
+     * `canceled` right away; Paddle does not refund the unused part).
+     * https://developer.paddle.com/build/subscriptions/cancel-subscriptions
+     */
+    async cancelSubscription(
+      externalId: string,
+      opts?: { atPeriodEnd?: boolean }
+    ): Promise<void> {
       await api(
         "cancelSubscription",
         "POST",
         `/subscriptions/${encodeURIComponent(externalId)}/cancel`,
-        { effective_from: "next_billing_period" }
+        {
+          effective_from:
+            opts?.atPeriodEnd === false ? "immediately" : "next_billing_period",
+        }
       )
+    },
+
+    /**
+     * `PATCH /subscriptions/{subscription_id}` with the complete `items` list
+     * (omitted items are removed) and `proration_billing_mode:
+     * prorated_immediately`: Paddle prorates the difference for the rest of
+     * the period and collects it NOW (a credit on a downgrade). With the
+     * default `on_payment_failure: prevent_change`, a failed charge leaves the
+     * old plan. Paddle rejects changes on `past_due` subscriptions and when the
+     * next billing is within 30 minutes. Confirmed by `subscription.updated`.
+     * https://developer.paddle.com/api-reference/subscriptions/update-subscription
+     * https://developer.paddle.com/build/subscriptions/replace-products-prices-upgrade-downgrade
+     *
+     * Subscriptions created by this module have one item; with several (add-ons
+     * added elsewhere) it refuses instead of guessing which one is the plan.
+     */
+    async changeSubscriptionPlan(externalId: string, newPlanRef: string) {
+      const path = `/subscriptions/${encodeURIComponent(externalId)}`
+      const current = obj((await api("changeSubscriptionPlan", "GET", path)).data)
+      const items = Array.isArray(current.items) ? current.items : []
+      if (items.length !== 1)
+        throw new Error("paddle: cambio de plan solo en suscripciones de un ítem")
+      if (current.status !== "active")
+        throw new Error("paddle: solo se cambia el plan de una suscripción active")
+      const q = Number(obj(items[0]).quantity)
+      await api("changeSubscriptionPlan", "PATCH", path, {
+        items: [
+          {
+            price_id: newPlanRef,
+            quantity: Number.isSafeInteger(q) && q > 0 ? q : 1,
+          },
+        ],
+        proration_billing_mode: "prorated_immediately",
+      })
+      return { mode: "in_place" as const, billing: "prorated_immediately" as const }
     },
   }
 }

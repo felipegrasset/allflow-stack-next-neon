@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "id": "settings",
+  "feature": "settings",
+  "version": "0.1.0",
+  "title": "Ajustes de la app",
+  "description": "Ajustes de la app en clave-valor, tipados con Zod y con valor por defecto, más la pantalla /admin/settings para verlos y editarlos. Otros módulos los declaran con defineSetting y los leen con getSetting. No guarda secretos.",
+  "tables": ["settings"],
+  "migrations": ["0116_settings_init"],
+  "routes": [{ "path": "/admin/settings", "entry": "ui/page.tsx" }],
+  "covers": ["ajuste", "setting", "configuración", "configuration", "preferencia de la app", "app preference"],
+  "entrypoints": {
+    "nav": "nav.ts",
+    "permissions": "permissions.ts",
+    "seed": "seed.ts",
+    "messages": "messages.ts"
+  }
+}

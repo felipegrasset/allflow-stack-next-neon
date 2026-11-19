@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "id": "courses",
+  "feature": "courses",
+  "version": "0.1.0",
+  "title": "Cursos",
+  "description": "Cursos con lecciones en markdown seguro, inscripción y progreso por persona. Cada persona ve solo los cursos en que está inscrita; quien tiene course:write gestiona todo desde /admin/courses. Material adjunto vía storage y enlace https de videollamada por clase.",
+  "dependsOn": ["storage"],
+  "tables": ["courses_courses", "courses_lessons", "courses_enrollments", "courses_progress"],
+  "migrations": ["0123_courses_init"],
+  "routes": [
+    { "path": "/courses", "entry": "ui/page.tsx" },
+    { "path": "/courses/[id]", "entry": "ui/course-page.tsx" },
+    { "path": "/courses/[id]/[lesson]", "entry": "ui/lesson-page.tsx" },
+    { "path": "/admin/courses", "entry": "ui/admin-page.tsx" }
+  ],
+  "covers": ["curso", "course", "lección", "lesson", "clase", "class", "inscripción", "enrollment", "matrícula"],
+  "entrypoints": {
+    "nav": "nav.ts",
+    "permissions": "permissions.ts",
+    "seed": "seed.ts",
+    "messages": "messages.ts"
+  }
+}

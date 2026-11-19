@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "id": "csv-import",
+  "feature": "csv-import",
+  "version": "0.1.0",
+  "title": "Importar desde CSV",
+  "description": "Carga registros desde un CSV con mapeo de columnas, vista previa con errores por fila y carga transaccional. El destino es una lista blanca que otros módulos o la app registran con registerImportTarget. Analizador de CSV propio, sin paquetes nuevos.",
+  "tables": ["csv_import_runs"],
+  "migrations": ["0114_csv_import_init"],
+  "routes": [{ "path": "/admin/import", "entry": "ui/page.tsx" }],
+  "covers": ["importación", "import", "carga masiva", "bulk import", "importación csv", "csv import"],
+  "entrypoints": {
+    "nav": "nav.ts",
+    "permissions": "permissions.ts",
+    "seed": "seed.ts",
+    "messages": "messages.ts"
+  }
+}

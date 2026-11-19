@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "id": "jobs",
+  "feature": "jobs",
+  "version": "0.1.0",
+  "title": "Tareas programadas",
+  "description": "Tareas programadas con registro de corridas: defineJob() registra una tarea, un handler GET|POST /api/jobs/[name] autenticado con CRON_SECRET (Vercel Cron) la ejecuta con un candado en la base que impide que dos corridas se solapen, y /admin/jobs muestra el historial y permite correrla a mano.",
+  "tables": ["jobs_runs"],
+  "migrations": ["0110_jobs_init"],
+  "routes": [
+    { "path": "/api/jobs/[name]", "entry": "server/handler/route.ts" },
+    { "path": "/admin/jobs", "entry": "ui/page.tsx" }
+  ],
+  "covers": ["tarea programada", "scheduled task", "cron", "job", "trabajo programado", "scheduled job"],
+  "env": [
+    {
+      "key": "CRON_SECRET",
+      "description": "Secreto que autentica los handlers de tareas programadas (Authorization: Bearer <secreto>), como lo manda Vercel Cron. Mínimo 16 caracteres; sin él, o más corto, el handler responde 503 y no corre nada. Secreto.",
+      "example": "<cadena aleatoria de 32+ caracteres>"
+    }
+  ],
+  "entrypoints": {
+    "nav": "nav.ts",
+    "permissions": "permissions.ts",
+    "seed": "seed.ts",
+    "messages": "messages.ts"
+  }
+}

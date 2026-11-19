@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "id": "export",
+  "feature": "export",
+  "version": "0.1.0",
+  "title": "Exportar a CSV",
+  "description": "Exporta listados a CSV: toCsv (escapado correcto, BOM opcional para Excel, protección contra inyección de fórmulas) y csvResponse, el componente ExportButton y GET /api/export/[id], que comprueba sesión y el permiso que declaró quien registró el destino con registerExport. Solo CSV, sin paquetes nuevos.",
+  "routes": [
+    { "path": "/api/export/[id]", "entry": "server/route.ts" }
+  ],
+  "entrypoints": {
+    "messages": "messages.ts"
+  }
+}

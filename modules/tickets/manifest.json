@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "id": "tickets",
+  "feature": "tickets",
+  "version": "0.1.0",
+  "title": "Tickets de soporte",
+  "description": "Soporte con tickets, mensajes y estados. Cada persona ve solo sus tickets; quien tiene ticket:manage ve y atiende todos desde /admin/tickets. Avisa con notify().",
+  "dependsOn": ["notifications"],
+  "tables": ["tickets", "tickets_messages"],
+  "migrations": ["0118_tickets_init"],
+  "routes": [
+    { "path": "/tickets", "entry": "ui/page.tsx" },
+    { "path": "/tickets/[id]", "entry": "ui/detail-page.tsx" },
+    { "path": "/admin/tickets", "entry": "ui/admin-page.tsx" }
+  ],
+  "covers": ["ticket", "tiquete", "solicitud de soporte", "support request", "support ticket"],
+  "entrypoints": {
+    "nav": "nav.ts",
+    "permissions": "permissions.ts",
+    "seed": "seed.ts",
+    "messages": "messages.ts"
+  }
+}

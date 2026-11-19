@@ -11,6 +11,8 @@ Una o dos frases. Qué ve la persona y qué problema resuelve.
 - **Tablas:** `<id>_…` (columnas clave, una línea cada una).
 - **Permisos:** recurso `<id>` con acciones `read`, `write`; qué rol recibe cuáles.
 - **Navegación / cabecera:** el enlace y/o el contador que agrega.
+- **Textos:** `messages.ts`, espacio de nombres `<id>` en `es` y `en` (claves principales).
+- **Entidades que cubre (`covers`):** las del manifiesto, con sus sinónimos. La plataforma no las vuelve a generar.
 - **`contracts/`:** tipos y funciones que OTRO módulo puede importar (lo único).
 
 ## Props y eventos
@@ -29,9 +31,10 @@ Qué siembra `seed.ts` (idempotente) y cómo se ve vacío.
 4. `pnpm db:migrate` (aplica las migraciones del módulo).
 
 ## Desinstalar
-1. Revertir las migraciones del módulo **antes** de borrar la carpeta (Kysely falla si una migración ya aplicada desaparece de la lista): `down` de cada una, en orden inverso, y borrar su fila de `kysely_migration`. *(Pendiente: automatizarlo.)*
-2. Borrar `modules/<id>/`.
-3. `pnpm modules:sync` (quita el shim y el registro).
+Sigue «Desinstalar» en modules/README.md. En corto:
+1. `pnpm tsx scripts/modules.ts can-remove <id>` (solo verifica: nadie depende de él; lista qué revertir).
+2. Revertir sus migraciones **antes** de borrar la carpeta (se pierden los datos de sus tablas).
+3. Borrar `modules/<id>/` y correr `pnpm modules:sync`.
 
 ## Qué NO toca
 Ningún archivo ancla ni zona protegida. Si necesitas tocar uno, el contrato está incompleto: avisa en vez de editarlo.

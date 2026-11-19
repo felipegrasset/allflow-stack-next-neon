@@ -10,6 +10,7 @@ import {
   ACTIVE_STATUSES,
   CheckoutInProgressError,
   OrderAlreadyPaidError,
+  OperationNotSupportedError,
   OrderHasActivePaymentError,
   type CheckoutInput,
   type PaymentRecord,
@@ -21,6 +22,12 @@ import type { PaymentsTable } from "../db/types"
 
 import { applyEvent } from "./apply"
 import { appBaseUrl, paymentsEnvironment, webhookUrl, type Env } from "./config"
+import {
+  OPEN_REFUND_STATUSES,
+  planRefund,
+  refundFailureStatus,
+  type RefundRequestStatus,
+} from "./refund-guard"
 import { getProvider, resolveProvider } from "./registry"
 
 /** Entorno y, en pruebas, el registro de proveedores. Nunca llega de una petición. */
@@ -284,6 +291,14 @@ export async function syncPayment(
  * Pide el reembolso al proveedor. No cambia el estado aquí: el cambio llega por
  * el webhook de reembolso o por `syncPayment`, que es lo que el proveedor
  * confirma de verdad.
+ *
+ * Candado contra el doble reembolso: antes de llamar al proveedor se reserva
+ * el monto en `payments_refund_requests`, en la MISMA transacción que bloquea
+ * la fila del pago (`for update`). Un segundo pedido concurrente que no quepa
+ * en lo que queda libre lanza `RefundInProgressError` sin llamar al proveedor.
+ * La reserva se libera cuando el reembolso se confirma, o si la llamada falló
+ * sin duda (ver `refundFailureStatus`); si el resultado es incierto (timeout,
+ * 5xx) queda tomada.
  */
 export async function refundPayment(
   db: Db,
@@ -312,8 +327,80 @@ export async function refundPayment(
   }
   const provider = await (deps.getProvider ?? getProvider)(row.provider, env)
   if (!provider.refund)
-    throw new Error(`${provider.id} no soporta reembolsos desde aquí`)
-  await provider.refund(row.provider_payment_id, amountMinor)
+    throw new OperationNotSupportedError(
+      provider.id,
+      "refund",
+      `${provider.id} no soporta reembolsos desde aquí`
+    )
+
+  const request = await reserveRefund(db, paymentId, amountMinor)
+  // La llamada de red va FUERA de la transacción (la reserva ya está escrita).
+  try {
+    await provider.refund(row.provider_payment_id, amountMinor, {
+      idempotencyKey: request.id,
+    })
+  } catch (e) {
+    await markRefundRequest(db, request.id, refundFailureStatus(e))
+    throw e
+  }
+  await markRefundRequest(db, request.id, "sent")
+}
+
+/** Locks the payment, re-checks it and reserves the amount. Throws `RefundInProgressError` on collision. */
+async function reserveRefund(
+  db: Db,
+  paymentId: string,
+  amountMinor: number | undefined
+): Promise<{ id: string }> {
+  return db.transaction().execute(async (trx) => {
+    const pay = await trx
+      .selectFrom("payments")
+      .selectAll()
+      .where("id", "=", paymentId)
+      .forUpdate()
+      .executeTakeFirst()
+    if (!pay || pay.status !== "approved" || !pay.provider_payment_id) {
+      throw new Error("Solo se reembolsa un pago aprobado")
+    }
+    const open = await trx
+      .selectFrom("payments_refund_requests")
+      .select("expected_total_minor")
+      .where("payment_id", "=", paymentId)
+      .where("status", "in", [...OPEN_REFUND_STATUSES])
+      .execute()
+    const plan = planRefund({
+      paymentId,
+      amountMinor: Number(pay.amount_minor),
+      refundedMinor: Number(pay.refunded_minor),
+      openExpectedTotals: open.map((r) => Number(r.expected_total_minor)),
+      requestedMinor: amountMinor,
+    })
+    const id = crypto.randomUUID()
+    await trx
+      .insertInto("payments_refund_requests")
+      .values({
+        id,
+        payment_id: paymentId,
+        amount_minor: plan.reserveMinor,
+        expected_total_minor: plan.expectedTotalMinor,
+        full_refund: amountMinor === undefined,
+        status: "requested",
+      })
+      .execute()
+    return { id }
+  })
+}
+
+async function markRefundRequest(
+  db: Db,
+  id: string,
+  status: RefundRequestStatus
+): Promise<void> {
+  await db
+    .updateTable("payments_refund_requests")
+    .set({ status, updated_at: new Date() })
+    .where("id", "=", id)
+    .execute()
 }
 
 /** Inicia una suscripción en el proveedor y deja la fila `pending`; el webhook la activa. */
@@ -329,7 +416,11 @@ export async function startSubscription(
     env
   )
   if (!provider.createSubscription) {
-    throw new Error(`${provider.id} no soporta suscripciones`)
+    throw new OperationNotSupportedError(
+      provider.id,
+      "createSubscription",
+      `${provider.id} no soporta suscripciones`
+    )
   }
   const base = appBaseUrl(env)
   const created = await provider.createSubscription({
@@ -351,7 +442,12 @@ export async function startSubscription(
   return { url: created.url, externalId: created.id }
 }
 
-/** Suscripción más reciente de una persona de la app. */
+/**
+ * Suscripción más reciente de una persona de la app, en cualquier estado (fila
+ * cruda). OJO: una `pending` nueva (checkout abierto y no pagado) tapa a una
+ * `active` anterior. Para «¿qué plan tiene hoy?» usa `getActiveSubscription`;
+ * para el historial, `listSubscriptions`. Se mantiene igual por compatibilidad.
+ */
 export async function getSubscription(db: Db, subscriberRef: string) {
   return db
     .selectFrom("payments_subscriptions")

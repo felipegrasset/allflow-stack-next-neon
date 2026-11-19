@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "id": "events",
+  "feature": "events",
+  "version": "0.1.0",
+  "title": "Eventos de uso",
+  "description": "Registra eventos de uso de la app (registro, compra, paso de un flujo) y los entrega al CRM de Fulvia por la llave de ingesta. track(name, props) en servidor: sin llave no hace nada, nunca bloquea la acción de la persona y envía solo propiedades de una lista blanca, sin datos personales por defecto.",
+  "env": [
+    {
+      "key": "ALLFLOW_INGEST_URL",
+      "description": "Base de la ingesta del CRM de Fulvia; cada módulo hace POST a <base>/<recurso>. La fija la saga de la génesis.",
+      "example": "https://fulvia.app/api/ingest/v1"
+    },
+    {
+      "key": "ALLFLOW_INGEST_KEY",
+      "description": "Llave de ingesta de la app (Bearer afk_…). Sin ella el módulo no entrega nada a Fulvia. Secreto."
+    }
+  ]
+}

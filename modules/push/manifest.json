@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "id": "push",
+  "feature": "push",
+  "version": "0.1.0",
+  "title": "Notificaciones push",
+  "description": "Notificaciones push web como canal de notify(): cada persona activa el push en sus dispositivos desde /settings/notifications-push, y otros módulos usan notifyWithPush (aviso + push, idempotente) o sendPush. Envío propio con node:crypto (VAPID RFC 8292 y cifrado aes128gcm RFC 8291), sin web-push; las suscripciones que responden 404/410 se borran. Service worker servido por /api/push/sw.",
+  "dependsOn": ["notifications"],
+  "tables": ["push_subscriptions"],
+  "migrations": ["0119_push_init"],
+  "routes": [
+    { "path": "/api/push/subscribe", "entry": "server/subscribe/route.ts" },
+    { "path": "/api/push/sw", "entry": "server/sw/route.ts" },
+    { "path": "/settings/notifications-push", "entry": "ui/page.tsx" }
+  ],
+  "env": [
+    {
+      "key": "VAPID_PUBLIC_KEY",
+      "description": "Llave pública VAPID (P-256, base64url, 65 bytes). La recibe el navegador al activar el push. Sin las tres VAPID_* no se envía nada y la página lo dice. Cambiarla deja inútiles las suscripciones existentes: cada persona tiene que reactivar.",
+      "example": "BNc<llave-publica-base64url-de-87-caracteres>"
+    },
+    {
+      "key": "VAPID_PRIVATE_KEY",
+      "description": "Llave privada VAPID (32 bytes, base64url), pareja de VAPID_PUBLIC_KEY. Firma el JWT de cada envío. Secreto.",
+      "example": "<llave-privada-base64url-de-43-caracteres>"
+    },
+    {
+      "key": "VAPID_SUBJECT",
+      "description": "Contacto para los servicios de push (RFC 8292): mailto:correo o una URL https (no localhost; Apple rechaza localhost).",
+      "example": "mailto:soporte@tu-dominio.cl"
+    }
+  ],
+  "covers": ["suscripción push", "push subscription", "notificación push", "push notification"],
+  "entrypoints": {
+    "nav": "nav.ts",
+    "permissions": "permissions.ts",
+    "messages": "messages.ts"
+  }
+}

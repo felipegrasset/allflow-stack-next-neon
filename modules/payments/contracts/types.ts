@@ -146,6 +146,18 @@ export type PaymentEvent =
       subscriberRef?: string
       planRef?: string
       currentPeriodEnd?: Date
+      /**
+       * When the provider generated the event. Optional: if both this and the
+       * stored `last_event_at` exist, an older event is ignored (no out-of-order
+       * plan or status regressions).
+       */
+      occurredAt?: Date
+      /**
+       * Scheduled cancellation as the provider reports it: a date = cancels
+       * then; `null` = nothing scheduled (clears it); `undefined` = the event
+       * does not say (keeps what is stored).
+       */
+      cancelAt?: Date | null
     })
 
 export type PaymentEventType = PaymentEvent["type"]
@@ -169,12 +181,99 @@ export interface PaymentProvider {
   parseWebhook(req: Request, rawBody: string): Promise<PaymentEvent[]>
   /** Estado real del pago según el proveedor (para reconciliar al volver del checkout). */
   getPayment(providerPaymentId: string): Promise<ProviderPaymentState>
-  /** Reembolsa; sin monto, el total. */
-  refund?(providerPaymentId: string, amountMinor?: number): Promise<void>
+  /**
+   * Reembolsa; sin monto, el total. `opts.idempotencyKey` es estable por
+   * pedido de reembolso (id de `payments_refund_requests`): envíala al
+   * proveedor si su API la acepta. Regla para quien lo implementa: un error
+   * que NO sea `ProviderApiError`, o un `ProviderApiError` 4xx, significa «no
+   * se reembolsó nada» (el núcleo libera la reserva); cualquier otro
+   * `ProviderApiError` (0, 5xx) es incierto y la reserva queda tomada.
+   */
+  refund?(
+    providerPaymentId: string,
+    amountMinor?: number,
+    opts?: { idempotencyKey?: string }
+  ): Promise<void>
   createSubscription?(
     input: SubscriptionInput & { notificationUrl: string; successUrl: string }
   ): Promise<ProviderCheckout>
-  cancelSubscription?(externalId: string): Promise<void>
+  /** Sin `opts` (o `atPeriodEnd` ausente) cancela al fin del período pagado. */
+  cancelSubscription?(
+    externalId: string,
+    opts?: { atPeriodEnd?: boolean }
+  ): Promise<void>
+  /**
+   * Cambia el plan de una suscripción viva. Solo PIDE el cambio: el estado
+   * local cambia cuando el proveedor lo confirma (webhook). Un proveedor que
+   * no lo implementa hace que el núcleo lance `OperationNotSupportedError`.
+   */
+  changeSubscriptionPlan?(
+    externalId: string,
+    newPlanRef: string
+  ): Promise<ProviderPlanChange>
+}
+
+/**
+ * Cómo aplica el proveedor un cambio de plan. Hoy solo existe `in_place` (la
+ * misma suscripción cambia de precio; Paddle). Un proveedor que solo pudiera
+ * «cancelar al fin del período + suscripción nueva» necesitaría otro modo con
+ * su URL de checkout: no está modelado porque ningún proveedor lo usa aún.
+ */
+export type ProviderPlanChange = {
+  mode: "in_place"
+  /** Lo que cobra el proveedor por el cambio (Paddle: prorrateo inmediato). */
+  billing: "prorated_immediately"
+}
+
+// ── Suscripciones (lectura) ──────────────────────────────────────────────────
+
+export const SUBSCRIPTION_STATUSES = [
+  "pending",
+  "active",
+  "past_due",
+  "canceled",
+] as const
+/**
+ * - `pending`: checkout de suscripción creado, sin confirmar (puede no pagarse nunca).
+ * - `active`: el proveedor cobra y está al día.
+ * - `past_due`: un cobro falló; da derecho solo hasta `currentPeriodEnd`.
+ * - `canceled`: terminal; da derecho solo hasta `currentPeriodEnd`.
+ */
+export type SubscriptionStatus = (typeof SUBSCRIPTION_STATUSES)[number]
+
+export type SubscriptionRecord = {
+  /** Id local (`payments_subscriptions.id`). */
+  id: string
+  provider: ProviderId
+  /** Id en el proveedor (Paddle: `sub_…`; una fila `pending` puede tener el id del checkout). */
+  externalId: string
+  subscriberRef: string
+  planRef: string | null
+  status: SubscriptionStatus
+  currentPeriodEnd: Date | null
+  /** Cancelación programada que el proveedor confirmó (`null` = ninguna). */
+  cancelAt: Date | null
+  createdAt: Date
+  updatedAt: Date
+}
+
+/** A quién cancelar: una suscripción concreta (id local) o la vigente de una persona. */
+export type CancelSubscriptionTarget =
+  | { subscriptionId: string }
+  | { subscriberRef: string }
+
+export type CancelSubscriptionResult = {
+  subscriptionId: string
+  externalId: string
+  provider: ProviderId
+  atPeriodEnd: boolean
+}
+
+export type ChangeSubscriptionPlanResult = ProviderPlanChange & {
+  subscriptionId: string
+  externalId: string
+  provider: ProviderId
+  newPlanRef: string
 }
 
 // ── Errores ──────────────────────────────────────────────────────────────────
@@ -229,6 +328,55 @@ export class CheckoutInProgressError extends Error {
   constructor(orderId: string) {
     super(`El checkout de la orden ${orderId} se está creando`)
     this.name = "CheckoutInProgressError"
+  }
+}
+
+/** El proveedor no implementa esta operación. Nunca se finge un éxito. */
+export class OperationNotSupportedError extends Error {
+  constructor(
+    public readonly provider: ProviderId,
+    public readonly operation:
+      | "refund"
+      | "createSubscription"
+      | "cancelSubscription"
+      | "changeSubscriptionPlan",
+    message?: string
+  ) {
+    super(message ?? `${provider} no soporta ${operation}`)
+    this.name = "OperationNotSupportedError"
+  }
+}
+
+/**
+ * Hay un reembolso pedido y aún no confirmado que ocupa el monto: el pedido
+ * nuevo se rechaza para no reembolsar dos veces. Reintenta cuando el proveedor
+ * confirme (webhook o `syncPayment`), o pide un monto que quepa en lo libre.
+ */
+export class RefundInProgressError extends Error {
+  constructor(
+    public readonly paymentId: string,
+    /** Lo que aún se puede pedir sin chocar con lo reservado (unidad menor). */
+    public readonly availableMinor: number
+  ) {
+    super(`El pago ${paymentId} tiene un reembolso en curso`)
+    this.name = "RefundInProgressError"
+  }
+}
+
+export type SubscriptionChangeErrorCode =
+  /** No hay suscripción (o no la que se nombró). */
+  | "not_found"
+  /** Existe, pero no está en un estado que lo permita (p. ej. `pending`, o `past_due` para cambiar de plan). */
+  | "not_active"
+  /** Ya está cancelada. */
+  | "already_canceled"
+  /** El plan nuevo es el que ya tiene. */
+  | "same_plan"
+
+export class SubscriptionChangeError extends Error {
+  constructor(public readonly code: SubscriptionChangeErrorCode) {
+    super(`Suscripción: ${code}`)
+    this.name = "SubscriptionChangeError"
   }
 }
 

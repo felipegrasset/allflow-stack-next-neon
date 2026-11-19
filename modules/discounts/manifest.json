@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "id": "discounts",
+  "feature": "discounts",
+  "version": "0.1.0",
+  "title": "Descuentos",
+  "description": "Cupones y códigos de descuento para el checkout de orders: porcentaje o monto fijo, vigencia, compra mínima, tope de usos total y por persona. El descuento se calcula siempre en el servidor desde el pedido guardado, el tope lo garantiza la base (bloqueo de fila + trigger) y el uso se confirma en la misma transacción que el descuento del pedido. Gestión en /admin/discounts; la persona escribe el código en /orders/[id]/descuento antes de pagar.",
+  "dependsOn": ["orders", "catalog"],
+  "tables": ["discounts_codes", "discounts_redemptions"],
+  "migrations": ["0127_discounts_init"],
+  "routes": [
+    { "path": "/admin/discounts", "entry": "ui/admin-page.tsx" },
+    { "path": "/orders/[id]/descuento", "entry": "ui/order-discount-page.tsx" }
+  ],
+  "covers": ["cupón", "coupon", "descuento", "discount", "código de descuento", "discount code", "promo code"],
+  "entrypoints": {
+    "nav": "nav.ts",
+    "permissions": "permissions.ts",
+    "seed": "seed.ts",
+    "messages": "messages.ts"
+  }
+}
