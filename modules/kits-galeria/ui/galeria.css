@@ -1,0 +1,105 @@
+/* Galería de kits — estética Fulvia: silencio, bordes de 1 px, un solo acento rosa. */
+.kg {
+  position: relative;
+  background: var(--background);
+  color: var(--foreground);
+}
+/* Resplandor rosado muy bajo arriba; en claro casi no se nota. */
+.kg::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 28rem;
+  pointer-events: none;
+  background: radial-gradient(
+    60rem 22rem at 50% 0,
+    color-mix(in oklch, var(--primary) 9%, transparent),
+    transparent 70%
+  );
+}
+.kg > * {
+  position: relative;
+}
+.kg-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kit-space-2);
+}
+.kg-mark {
+  width: 1.75rem;
+  height: 1.75rem;
+  color: var(--foreground);
+}
+.kg-mark .kg-stem {
+  stroke: var(--primary);
+}
+.kg-label {
+  font-family: var(--font-mono);
+  font-size: var(--kit-text-xs);
+  letter-spacing: var(--kit-tracking-wide);
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.kg-em {
+  font-family: var(--font-mono);
+  color: var(--primary);
+  font-weight: 500;
+}
+.kg-alt {
+  background: oklch(0.985 calc(var(--brand-c) * 0.05) var(--brand-h));
+}
+.dark .kg-alt {
+  background: oklch(0.15 calc(var(--brand-c) * 0.08) var(--brand-h));
+}
+/* Tarjeta: borde de 1 px, sin sombra; al pasar el cursor solo cambia el fondo. */
+.kg-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kit-space-2);
+  height: 100%;
+  min-height: 44px;
+  padding: var(--kit-space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--kit-radius-lg);
+  background: var(--card);
+  color: var(--card-foreground);
+  box-shadow: none;
+  transition: background-color 160ms ease;
+}
+.kg-card:hover {
+  background: oklch(0.975 calc(var(--brand-c) * 0.08) var(--brand-h));
+}
+.dark .kg-card:hover {
+  background: oklch(0.2 calc(var(--brand-c) * 0.1) var(--brand-h));
+}
+.kg-card:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.kg-go {
+  margin-top: auto;
+  padding-top: var(--kit-space-2);
+  font-size: var(--kit-text-sm);
+  color: var(--primary);
+}
+.kg-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--kit-space-4);
+  margin-top: var(--kit-space-6);
+}
+@media (min-width: 48rem) {
+  .kg-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 64rem) {
+  .kg-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kg-card {
+    transition: none;
+  }
+}
