@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "kit-presupuesto-claro",
+  "feature": "kit-presupuesto-claro",
+  "version": "0.1.0",
+  "title": "Kit Presupuesto Claro",
+  "description": "Cotizaciones de servicios: armador con líneas, descuento e IVA en vivo, documento para el cliente con aceptar o pedir cambios, lista con filtros y estados, incluido el de presupuesto vencido.",
+  "dependsOn": ["kit-core"],
+  "routes": [
+    {
+      "path": "/kits/presupuesto-claro",
+      "entry": "ui/page.tsx",
+      "group": "marketing"
+    }
+  ]
+}
