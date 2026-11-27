@@ -35,6 +35,7 @@ export const kitGroups: { id: string; title: string; lead: string; kits: KitEntr
   { slug: "evento-en-vivo", title: "Evento en Vivo", description: "Webinar, evento o comunidad: cuenta regresiva, agenda por día, ponentes, registro, sala de espera con chat, material, encuesta y directorio de miembros." },
   { slug: "noche-de-cifras", title: "Noche de Cifras", description: "Dashboard analítico oscuro: KPIs con tendencia, gráfico de línea y de barras, tabla con filtro de fecha, detalle lateral, alertas y estados." },
   { slug: "panel-de-ciclos", title: "Panel de Ciclos", description: "SaaS con panel de administración: resumen del ciclo, cuentas, equipo y roles, facturación, notificaciones y la hoja de estados." },
+  { slug: "presupuesto-claro", title: "Presupuesto Claro", description: "Cotizaciones de servicios: armador con líneas, descuento e IVA en vivo, documento para el cliente con aceptar o pedir cambios, lista con filtros y estado «Vencido»." },
   { slug: "reserva-simple", title: "Reserva Simple", description: "Agenda de servicios (peluquería, taller): servicio, profesional, día y hora, datos, confirmación, recordatorio y panel de agenda." },
   { slug: "ruta-viva", title: "Ruta Viva", description: "Operación y reparto: rutas, pedidos, mapa de zonas de maqueta, repartidores, línea de tiempo, escaneo e incidencias." },
   { slug: "taller-claro", title: "Taller Claro", description: "CRM liviano para pymes: pipeline kanban, contactos, ficha, tareas, actividad, semana y carga de CSV." },
